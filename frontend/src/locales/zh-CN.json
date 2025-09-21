@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "dashboard": "仪表板",
+    "users": "用户管理",
+    "settings": "系统设置",
+    "logout": "退出登录"
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "loading": "加载中...",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否"
+  },
+  "auth": {
+    "login": "登录",
+    "username": "用户名",
+    "password": "密码",
+    "rememberMe": "记住我",
+    "loginFailed": "登录失败",
+    "pleaseLogin": "请登录"
+  }
+}
