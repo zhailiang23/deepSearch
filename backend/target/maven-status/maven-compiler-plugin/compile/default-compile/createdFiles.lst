@@ -1,0 +1,3 @@
+com/ynet/mgmt/MgmtApplication.class
+com/ynet/mgmt/entity/BaseEntity.class
+com/ynet/mgmt/config/JpaConfig.class
