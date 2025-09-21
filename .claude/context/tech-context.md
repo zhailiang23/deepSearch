@@ -1,223 +1,217 @@
 ---
-created: 2025-09-21T07:41:34Z
-last_updated: 2025-09-21T09:09:21Z
-version: 1.1
+created: 2025-09-21T10:31:04Z
+last_updated: 2025-09-21T10:31:04Z
+version: 1.0
 author: Claude Code PM System
 ---
 
 # Technology Context
 
-## Current Technology Stack
+## Technology Stack Overview
 
-### Core Technologies
+### Backend Technologies
 
-#### Backend Stack (Implemented)
-- **Primary Language**: Java 17+
-- **Framework**: Spring Boot 3.2.1
-- **Data Access**: Spring Data JPA
-- **Database**: PostgreSQL 15+
-- **Security**: Spring Security 6 (for upcoming auth features)
-- **Build Tool**: Maven
-- **Connection Pool**: HikariCP
+**Core Framework**
+- **Spring Boot:** 3.2.1
+- **Java:** 17 (LTS)
+- **Maven:** Build and dependency management
 
-#### Frontend Stack (Implemented)
-- **Framework**: Vue 3 + Composition API
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **UI Library**: shadcn-vue + Tailwind CSS
-- **State Management**: Pinia
-- **HTTP Client**: Axios
-- **Routing**: Vue Router 4
-- **Internationalization**: Vue I18n
+**Spring Ecosystem**
+- **Spring Boot Starter Web** - REST API development
+- **Spring Boot Starter Data JPA** - Database integration
+- **Spring Boot Starter Validation** - Bean validation
+- **Spring Boot Starter Actuator** - Health checks and monitoring
+- **Spring Boot DevTools** - Development utilities
 
-#### Infrastructure & DevOps (Implemented)
-- **Containerization**: Docker + Docker Compose
-- **Web Server**: Nginx (reverse proxy)
-- **Cache**: Redis
-- **Environment Management**: Multi-stage configurations
-- **Deployment**: Automated scripts (deploy.sh)
-- **Version Control**: Git + GitHub
-- **AI Framework**: Claude AI with agent-based architecture
+**Database & Persistence**
+- **PostgreSQL:** 15-alpine (Primary database)
+- **Hibernate:** ORM through Spring Data JPA
+- **HikariCP:** Connection pooling
+- **H2 Database:** Testing (in-memory)
 
-### Development Tools
+**Development Tools**
+- **Maven Wrapper:** `./mvnw` for consistent builds
+- **Spring Boot Maven Plugin** - Application packaging
 
-#### Allowed Development Tools (from `.claude/settings.local.json`)
-- **Package Managers**:
-  - npm, npx, pnpm (Node.js ecosystem)
-  - composer (PHP)
-- **Programming Languages**:
-  - Python (with pytest for testing)
-  - Node.js/JavaScript
-- **Testing Frameworks**:
-  - pytest (Python)
-  - Custom test runner via `.claude/scripts/test-and-log.sh`
-- **Code Quality**:
-  - ruff (Python linting)
-- **System Tools**:
-  - bash, find, grep, sed
-  - git, gh (GitHub CLI)
-  - Standard Unix utilities (ls, mv, rm, touch, tree)
+### Frontend Technologies
 
-### AI Agent Technology
+**Core Framework**
+- **Vue.js:** 3.5.18 (Composition API)
+- **TypeScript:** 5.8.0 (Strict mode)
+- **Vite:** 7.0.6 (Build tool and dev server)
 
-#### Specialized Agents
-1. **code-analyzer** - Code analysis and vulnerability detection
-2. **file-analyzer** - File content analysis and summarization
-3. **test-runner** - Test execution and result analysis
-4. **parallel-worker** - Parallel task coordination
+**State Management & Routing**
+- **Pinia:** 3.0.3 (State management)
+- **Vue Router:** 4.5.1 (SPA routing)
+- **Vue I18n:** 9.14.5 (Internationalization)
 
-#### Agent Capabilities
-- Context optimization through intelligent summarization
-- Parallel execution for complex workflows
-- Specialized knowledge for different domains
-- Integration with development tools
+**UI & Styling**
+- **Reka UI:** 2.5.0 (Component library)
+- **TailwindCSS:** 3.4.17 (Utility-first CSS)
+- **Lucide Vue Next:** 0.544.0 (Icon library)
+- **Class Variance Authority:** 0.7.1 (Component variants)
+- **TailwindCSS Merge:** 3.3.1 (Class merging)
 
-## Dependencies and Frameworks
+**Development Dependencies**
+- **Vue TSC:** 3.0.4 (TypeScript checking)
+- **Vue DevTools:** 8.0.0 (Development tools)
+- **PostCSS:** 8.5.6 (CSS processing)
+- **Autoprefixer:** 10.4.21 (CSS vendor prefixes)
 
-### Current Dependencies
-**Status**: No package management files detected
-- No `package.json` (Node.js)
-- No `requirements.txt` or `pyproject.toml` (Python)
-- No `Cargo.toml` (Rust)
-- No `go.mod` (Go)
-- No Maven/Gradle files (Java)
+### Infrastructure & DevOps
 
-### Expected Dependencies (Future)
-Based on Java project setup and agent system:
-- **Java Build Tool**: Maven or Gradle
-- **Testing Framework**: JUnit or TestNG
-- **Logging**: SLF4J, Logback
-- **JSON Processing**: Jackson or Gson
-- **HTTP Client**: Java 11+ HttpClient or OkHttp
+**Containerization**
+- **Docker:** Container platform
+- **Docker Compose:** Multi-service orchestration
+- **Alpine Linux:** Lightweight base images
 
-### AI Integration Dependencies
-- **Claude AI API**: For agent communication
-- **GitHub CLI**: For repository integration (`gh` tool)
-- **Shell Scripting**: Bash for automation
+**Services Configuration**
+- **PostgreSQL:** 15-alpine with custom configuration
+- **Redis:** 7-alpine for caching/sessions
+- **Nginx:** (Implicit in frontend container)
 
-## Development Environment
+**Database Configuration**
+- **Database Name:** mgmt_db
+- **Username:** mgmt_user
+- **Connection Pool:** HikariCP (max 10 connections)
+- **Dialect:** PostgreSQL
 
-### Required Environment
-- **Java**: JDK (version TBD)
-- **Git**: Version control
-- **GitHub CLI**: Repository operations
-- **Shell**: Bash for script execution
-- **Claude Code**: AI development assistant
+### Development Environment
 
-### Optional Tools
-- **Python**: For testing and automation (pytest available)
-- **Node.js**: For JavaScript tooling (npm, npx, pnpm available)
-- **ruff**: Python code formatting and linting
+**Node.js Requirements**
+- **Node.js:** ^20.19.0 || >=22.12.0
+- **Package Manager:** npm (with lock file)
 
-## Configuration Management
+**Build Tools**
+- **Frontend Build:** Vite with TypeScript
+- **Backend Build:** Maven 3.x
+- **Docker Images:** Multi-stage builds
 
-### Environment Configuration
-- **Git Configuration**: Required for commits and pushes
-- **GitHub Authentication**: Required for `gh` commands
-- **Shell Environment**: Bash with PATH for development tools
+**Port Configuration**
+- **Frontend:** 3000 (development), 80 (production)
+- **Backend:** 8080 (API context: /api)
+- **PostgreSQL:** 5432
+- **Redis:** 6379
 
-### Project Configuration
-- **`.claude/settings.local.json`**: Tool permissions and access control
-- **`.gitignore`**: Java project ignore patterns
-- **`.claude/CLAUDE.md`**: Development rules and practices
+## Dependency Versions
 
-## Build and Deployment
+### Backend Dependencies (pom.xml)
 
-### Current State
-**Status**: No build system configured
-- No build scripts or configuration files
-- No deployment configuration
-- Framework project without business logic
+```xml
+<properties>
+    <java.version>17</java.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+```
 
-### Expected Build System (Future)
-For Java project:
-- **Build Tool**: Maven (`pom.xml`) or Gradle (`build.gradle`)
-- **Compilation**: `javac` or build tool
-- **Testing**: JUnit with build tool integration
-- **Packaging**: JAR or WAR files
-- **Dependencies**: Maven Central or similar repository
+**Production Dependencies:**
+- Spring Boot Starter Web
+- Spring Boot Starter Data JPA
+- Spring Boot Starter Validation
+- Spring Boot Starter Actuator
+- PostgreSQL Driver
+- Spring Boot DevTools (runtime)
 
-### Testing Strategy
-- **Test Runner Agent**: Intelligent test execution with analysis
-- **Framework Agnostic**: Supports pytest, npm test, Java testing
-- **Logging**: Custom test-and-log script for output capture
-- **Analysis**: AI-powered test result interpretation
+**Test Dependencies:**
+- Spring Boot Starter Test
+- H2 Database (test scope)
 
-## Integration Points
+### Frontend Dependencies (package.json)
 
-### GitHub Integration
-- **Repository**: git@github.com:zhailiang23/deepSearch.git
-- **CLI Access**: `gh` tool for issues, PRs, releases
-- **Authentication**: SSH key or token-based
+**Production Dependencies:**
+- vue: ^3.5.18
+- pinia: ^3.0.3
+- vue-router: ^4.5.1
+- vue-i18n: ^9.14.5
+- reka-ui: ^2.5.0
+- tailwindcss: ^3.4.17
+- axios: ^1.12.2
+- @vueuse/core: ^13.9.0
 
-### Claude AI Integration
-- **Agent System**: Specialized AI agents for different tasks
-- **Command System**: Markdown-based command execution
-- **Context Management**: Intelligent context preservation
-- **Permission System**: Granular tool access control
+**Development Dependencies:**
+- typescript: ~5.8.0
+- @vitejs/plugin-vue: ^6.0.1
+- vite: ^7.0.6
+- vue-tsc: ^3.0.4
 
-## Technology Decisions
+## Configuration Files
 
-### Chosen Patterns
-- **Configuration as Code**: Markdown files for system configuration
-- **Agent-Based Architecture**: Specialized AI agents for different concerns
-- **Permission-Based Security**: Explicit tool access control
-- **Context Optimization**: AI agents provide summaries to preserve context
+### Backend Configuration
 
-### Technology Constraints
-- **Shell Access**: Bash commands allowed with specific tool permissions
-- **File Operations**: Full file system access for project files
-- **Web Access**: Limited to GitHub domain and general web search
-- **Language Support**: Multi-language support (Java, Python, Node.js)
+**application.yml:**
+- Database connection (PostgreSQL)
+- JPA/Hibernate settings
+- Actuator endpoints
+- Logging configuration
+- Server configuration (port 8080, context-path /api)
 
-## Future Technology Considerations
+**Docker Configuration:**
+- Multi-stage Dockerfile
+- Production optimizations
+- Health check endpoints
 
-### Potential Additions
-- **Java Framework**: Spring Boot, Micronaut, or Quarkus
-- **Database**: PostgreSQL, MySQL, or embedded H2
-- **Caching**: Redis or in-memory caching
-- **API Framework**: JAX-RS, Spring MVC, or similar
-- **Containerization**: Docker for deployment
-- **CI/CD**: GitHub Actions or similar
+### Frontend Configuration
 
-### Monitoring and Observability
-- **Logging Framework**: SLF4J with Logback
-- **Metrics**: Micrometer for application metrics
-- **Health Checks**: Framework-provided health endpoints
-- **Documentation**: OpenAPI/Swagger for API documentation
+**TypeScript:**
+- Strict mode enabled
+- Multiple tsconfig files (app, node)
+- Vue 3 type support
 
-## Implementation Status Update (2025-09-21)
+**Build Configuration:**
+- Vite for development and build
+- Vue plugin integration
+- TypeScript compilation
+- Asset optimization
 
-### ✅ Major Technology Implementations Completed
+**Styling:**
+- TailwindCSS configuration
+- PostCSS processing
+- Component styling patterns
 
-#### Backend Stack Implemented (Task 001)
-- **Spring Boot 3.2.1**: Production-ready application with health checks
-- **Spring Data JPA**: Entity management and repository layer
-- **PostgreSQL Integration**: Database connectivity and configuration
-- **Multi-environment Support**: dev/test/prod configurations
-- **Maven Build System**: Dependency management and build automation
+## Development Tools
 
-#### Frontend Stack Implemented (Task 005)
-- **Vue 3 + TypeScript**: Modern reactive frontend framework
-- **shadcn-vue + Tailwind**: Professional UI component system
-- **Pinia**: State management for authentication and app state
-- **Vue Router**: Client-side routing with guards
-- **Internationalization**: Chinese/English language support
-- **Theme System**: Dark/light mode switching
+**Backend Development:**
+- Maven Wrapper for consistent builds
+- Spring Boot DevTools for hot reload
+- Actuator for health monitoring
+- H2 for testing without external database
 
-#### DevOps Infrastructure Implemented (Task 008)
-- **Docker Containerization**: Multi-stage builds for both applications
-- **Container Orchestration**: Development, test, and production environments
-- **Database Services**: PostgreSQL and Redis containers
-- **Reverse Proxy**: Nginx configuration for production
-- **Deployment Automation**: Shell scripts for environment management
+**Frontend Development:**
+- Vite dev server with HMR
+- Vue DevTools browser extension
+- TypeScript language server
+- Component library (Reka UI)
 
-### 📊 Technology Readiness: 100% Infrastructure Complete
+**Database Tools:**
+- PostgreSQL command line tools
+- Docker exec for database access
+- JPA/Hibernate DDL generation
+- Database migration support
 
-The project now has a complete, working technology stack with:
-- ✅ **Full-stack Development Environment**: Both frontend and backend running
-- ✅ **Production-Ready Infrastructure**: Docker containerization complete
-- ✅ **Modern Development Workflow**: TypeScript, hot reloading, debugging
-- ✅ **Scalable Architecture**: Microservices-ready container setup
+## External Services
 
-**Next Phase**: Business logic implementation starting with JPA entities and authentication systems.
+**Development Services:**
+- PostgreSQL database server
+- Redis cache server
+- Docker network for service communication
+
+**Monitoring & Health:**
+- Spring Actuator health endpoints
+- Docker container health checks
+- Application logging
+- Build information generation
+
+## Version Compatibility
+
+**Minimum Requirements:**
+- Java 17 (LTS)
+- Node.js 20.19.0+
+- Docker with Compose support
+- Git 2.x
+
+**Browser Support:**
+- Modern browsers with ES2020 support
+- TypeScript strict mode compatibility
+- Vue 3 Composition API support
