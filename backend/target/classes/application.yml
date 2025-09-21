@@ -5,8 +5,8 @@ spring:
   # 数据源配置
   datasource:
     url: jdbc:postgresql://localhost:5432/mgmt_db
-    username: ${DB_USERNAME:admin}
-    password: ${DB_PASSWORD:password}
+    username: ${DB_USERNAME:mgmt_user}
+    password: ${DB_PASSWORD:mgmt_password}
     driver-class-name: org.postgresql.Driver
 
     # HikariCP 连接池配置

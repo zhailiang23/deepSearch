@@ -1,10 +1,17 @@
--- 创建数据库
-CREATE DATABASE mgmt_db;
-CREATE DATABASE mgmt_test;
+-- 创建数据库（如果不存在）
+SELECT 'CREATE DATABASE mgmt_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mgmt_db')\gexec
+SELECT 'CREATE DATABASE mgmt_test' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mgmt_test')\gexec
 
--- 创建用户
-CREATE USER mgmt_user WITH ENCRYPTED PASSWORD 'mgmt_password';
-CREATE USER mgmt_test_user WITH ENCRYPTED PASSWORD 'test_password';
+-- 创建用户（如果不存在）
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'mgmt_user') THEN
+        CREATE USER mgmt_user WITH ENCRYPTED PASSWORD 'mgmt_password';
+    END IF;
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'mgmt_test_user') THEN
+        CREATE USER mgmt_test_user WITH ENCRYPTED PASSWORD 'test_password';
+    END IF;
+END $$;
 
 -- 授予权限
 GRANT ALL PRIVILEGES ON DATABASE mgmt_db TO mgmt_user;
