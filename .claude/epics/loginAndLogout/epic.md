@@ -1,9 +1,9 @@
 ---
 name: loginAndLogout
-status: backlog
+status: in_progress
 created: 2025-09-21T11:00:25Z
-updated: 2025-09-21T11:10:02Z
-progress: 0%
+updated: 2025-09-21T12:06:31Z
+progress: 22%
 prd: .claude/prds/loginAndLogout.md
 github: https://github.com/zhailiang23/deepSearch/issues/10
 ---
