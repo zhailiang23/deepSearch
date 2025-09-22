@@ -11,7 +11,33 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "test:e2e": "playwright test --config=tests/e2e/config/playwright.config.ts",
+    "test:e2e:headed": "playwright test --config=tests/e2e/config/playwright.config.ts --headed",
+    "test:e2e:debug": "playwright test --config=tests/e2e/config/playwright.config.ts --debug",
+    "test:e2e:ui": "playwright test --config=tests/e2e/config/playwright.config.ts --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:install": "playwright install",
+    "test:e2e:chrome": "playwright test --config=tests/e2e/config/playwright.config.ts --project=chromium",
+    "test:e2e:firefox": "playwright test --config=tests/e2e/config/playwright.config.ts --project=firefox",
+    "test:e2e:safari": "playwright test --config=tests/e2e/config/playwright.config.ts --project=webkit",
+    "test:e2e:mobile": "playwright test --config=tests/e2e/config/playwright.config.ts --project=\"Mobile Chrome\" --project=\"Mobile Safari\"",
+    "test:e2e:ci": "playwright test --config=tests/e2e/config/playwright.config.ts --reporter=github",
+    "test:performance": "playwright test tests/performance/ --config=tests/e2e/config/playwright.config.ts",
+    "test:performance:load": "playwright test tests/performance/auth-load.spec.ts --config=tests/e2e/config/playwright.config.ts",
+    "test:performance:api": "playwright test tests/performance/api-benchmark.spec.ts --config=tests/e2e/config/playwright.config.ts",
+    "test:performance:memory": "playwright test tests/performance/memory-leak.spec.ts --config=tests/e2e/config/playwright.config.ts",
+    "test:performance:headed": "playwright test tests/performance/ --config=tests/e2e/config/playwright.config.ts --headed",
+    "test:performance:report": "playwright show-report tests/performance/",
+    "test:k6": "k6 run ../performance/k6-load-test.js",
+    "test:k6:light": "k6 run --vus 10 --duration 30s ../performance/k6-load-test.js",
+    "test:k6:heavy": "k6 run --vus 100 --duration 5m ../performance/k6-load-test.js",
+    "monitor:performance": "node ../scripts/performance-monitor.js",
+    "monitor:performance:short": "node ../scripts/performance-monitor.js --duration 60 --interval 10",
+    "monitor:performance:long": "node ../scripts/performance-monitor.js --duration 600 --interval 30",
+    "build:analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "benchmark:build": "time npm run build",
+    "benchmark:all": "npm run benchmark:build && npm run test:performance && npm run test:k6:light"
   },
   "dependencies": {
     "@vueuse/core": "^13.9.0",
@@ -28,6 +54,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.16.5",
     "@vitejs/plugin-vue": "^6.0.1",
@@ -36,8 +63,10 @@
     "npm-run-all2": "^8.0.4",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "terser": "^5.34.1",
     "typescript": "~5.8.0",
     "vite": "^7.0.6",
+    "vite-bundle-analyzer": "^0.12.1",
     "vite-plugin-vue-devtools": "^8.0.0",
     "vue-tsc": "^3.0.4"
   }

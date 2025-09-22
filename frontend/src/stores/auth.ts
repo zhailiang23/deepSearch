@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   // Token过期监听
-  let refreshTimer: NodeJS.Timeout | null = null
+  let refreshTimer: number | null = null
 
   const setupTokenRefresh = () => {
     if (refreshTimer) {
@@ -216,7 +216,7 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 刷新Token（公开方法）
    */
-  const refreshToken = async (): Promise<string | null> => {
+  const refreshTokenAction = async (): Promise<string | null> => {
     return refreshTokenSilently()
   }
 
@@ -306,7 +306,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     getCurrentUser,
-    refreshToken,
+    refreshTokenAction,
     hasRole,
     hasPermission,
     initialize
