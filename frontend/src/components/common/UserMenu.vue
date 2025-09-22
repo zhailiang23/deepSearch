@@ -1,7 +1,11 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="ghost" class="relative h-8 w-8 rounded-full">
+      <Button
+        variant="ghost"
+        class="relative h-8 w-8 rounded-full"
+        data-testid="user-menu"
+      >
         <div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
           <User class="h-4 w-4" />
         </div>
@@ -26,7 +30,7 @@
         <span>设置</span>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem @click="logout">
+      <DropdownMenuItem @click="logout" data-testid="logout-button">
         <LogOut class="mr-2 h-4 w-4" />
         <span>退出登录</span>
       </DropdownMenuItem>
@@ -62,8 +66,15 @@ const goToSettings = () => {
   router.push('/settings')
 }
 
-const logout = () => {
-  authStore.logout()
-  router.push('/login')
+const logout = async () => {
+  try {
+    await authStore.logout()
+    // 登出后重定向到登录页面
+    await router.push('/login')
+  } catch (error) {
+    console.error('登出失败:', error)
+    // 即使登出失败也要重定向到登录页面
+    await router.push('/login')
+  }
 }
 </script>
