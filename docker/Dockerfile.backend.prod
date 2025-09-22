@@ -1,0 +1,85 @@
+# 多阶段构建 - 构建阶段
+FROM openjdk:17-jdk-slim as builder
+
+# 设置工作目录
+WORKDIR /app
+
+# 安装构建依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    git && \
+    rm -rf /var/lib/apt/lists/*
+
+# 复制Maven配置和源代码
+COPY pom.xml ./
+COPY .mvn/ .mvn/
+COPY mvnw ./
+COPY src/ src/
+
+# 设置Maven包装器执行权限
+RUN chmod +x mvnw
+
+# 下载依赖并构建应用
+RUN ./mvnw dependency:go-offline -B
+RUN ./mvnw clean package -DskipTests -Pprod --batch-mode
+
+# 生产运行时阶段 - 使用更安全的JRE镜像
+FROM openjdk:17-jre-slim
+
+# 安装运行时依赖和安全更新
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    dumb-init \
+    tini \
+    ca-certificates && \
+    apt-get upgrade -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# 设置工作目录
+WORKDIR /app
+
+# 创建应用用户和组
+RUN groupadd -r --gid 1001 spring && \
+    useradd -r --uid 1001 -g spring spring
+
+# 创建必要的目录
+RUN mkdir -p /app/logs /app/config /app/data && \
+    chown -R spring:spring /app
+
+# 从构建阶段复制JAR文件
+COPY --from=builder --chown=spring:spring /app/target/*.jar /app/app.jar
+
+# 设置JVM参数优化
+ENV JAVA_OPTS="-server \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=200 \
+    -XX:+UseStringDeduplication \
+    -XX:+OptimizeStringConcat \
+    -XX:+UseCompressedOops \
+    -XX:+UseCompressedClassPointers \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Djava.awt.headless=true \
+    -Dnetworkaddress.cache.ttl=60"
+
+# 设置Spring Boot配置
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV SERVER_PORT=8080
+
+# 切换到应用用户
+USER spring
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/api/actuator/health || exit 1
+
+# 暴露端口
+EXPOSE 8080
+
+# 使用tini作为init进程
+ENTRYPOINT ["tini", "--"]
+
+# 启动应用
+CMD exec java $JAVA_OPTS -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE -jar app.jar
