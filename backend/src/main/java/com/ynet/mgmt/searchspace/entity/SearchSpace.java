@@ -1,6 +1,6 @@
 package com.ynet.mgmt.searchspace.entity;
 
-import com.ynet.mgmt.entity.BaseEntity;
+import com.ynet.mgmt.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 

@@ -1,18 +1,9 @@
 package com.ynet.mgmt.searchspace.service.impl;
 
-import com.ynet.mgmt.common.dto.PageResult;
-import com.ynet.mgmt.common.exception.BusinessException;
-import com.ynet.mgmt.common.exception.EntityNotFoundException;
-import com.ynet.mgmt.searchspace.constants.ErrorCode;
-import com.ynet.mgmt.searchspace.dto.*;
-import com.ynet.mgmt.searchspace.entity.SearchSpace;
-import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
-import com.ynet.mgmt.searchspace.mapper.SearchSpaceMapper;
-import com.ynet.mgmt.searchspace.model.IndexStatus;
-import com.ynet.mgmt.searchspace.repository.SearchSpaceRepository;
-import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
-import com.ynet.mgmt.searchspace.service.SearchSpaceService;
-import com.ynet.mgmt.searchspace.validator.SearchSpaceValidator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -22,10 +13,23 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import com.ynet.mgmt.common.dto.PageResult;
+import com.ynet.mgmt.common.exception.BusinessException;
+import com.ynet.mgmt.common.exception.EntityNotFoundException;
+import com.ynet.mgmt.searchspace.constants.ErrorCode;
+import com.ynet.mgmt.searchspace.dto.CreateSearchSpaceRequest;
+import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
+import com.ynet.mgmt.searchspace.dto.SearchSpaceQueryRequest;
+import com.ynet.mgmt.searchspace.dto.SearchSpaceStatistics;
+import com.ynet.mgmt.searchspace.dto.UpdateSearchSpaceRequest;
+import com.ynet.mgmt.searchspace.entity.SearchSpace;
+import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
+import com.ynet.mgmt.searchspace.mapper.SearchSpaceMapper;
+import com.ynet.mgmt.searchspace.model.IndexStatus;
+import com.ynet.mgmt.searchspace.repository.SearchSpaceRepository;
+import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
+import com.ynet.mgmt.searchspace.service.SearchSpaceService;
+import com.ynet.mgmt.searchspace.validator.SearchSpaceValidator;
 
 /**
  * 搜索空间业务服务实现
@@ -71,13 +75,11 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         // 4. 保存到数据库
         searchSpace = searchSpaceRepository.save(searchSpace);
 
-        // 5. 如果是活跃状态，异步创建ES索引
-        if (searchSpace.isActive()) {
-            createElasticsearchIndexAsync(searchSpace);
-        }
+        // 5. 步创建ES索引
+        createElasticsearchIndex(searchSpace);
 
         log.info("搜索空间创建成功: {} (ID: {})", searchSpace.getCode(), searchSpace.getId());
-        return mapper.toDTO(searchSpace);
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
     }
 
     @Override
@@ -97,10 +99,8 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
                 "搜索空间中存在文档，无法删除: " + searchSpace.getCode());
         }
 
-        // 4. 如果是活跃状态，异步删除ES索引
-        if (searchSpace.isActive()) {
-            deleteElasticsearchIndexAsync(searchSpace);
-        }
+        // 4. 异步删除ES索引
+        deleteElasticsearchIndex(searchSpace);
 
         // 5. 删除数据库记录
         searchSpaceRepository.delete(searchSpace);
@@ -134,24 +134,14 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
 
         // 5. 处理状态变更
         if (request.getStatus() != null && !Objects.equals(searchSpace.getStatus(), request.getStatus())) {
-            SearchSpaceStatus oldStatus = searchSpace.getStatus();
             searchSpace.setStatus(request.getStatus());
-
-            // 如果从非活跃状态变为活跃状态，创建ES索引
-            if (!oldStatus.equals(SearchSpaceStatus.ACTIVE) && request.getStatus().equals(SearchSpaceStatus.ACTIVE)) {
-                createElasticsearchIndexAsync(searchSpace);
-            }
-            // 如果从活跃状态变为非活跃状态，删除ES索引
-            else if (oldStatus.equals(SearchSpaceStatus.ACTIVE) && !request.getStatus().equals(SearchSpaceStatus.ACTIVE)) {
-                deleteElasticsearchIndexAsync(searchSpace);
-            }
         }
 
         // 6. 保存更新
         searchSpace = searchSpaceRepository.save(searchSpace);
 
         log.info("搜索空间更新成功: {} ({})", searchSpace.getCode(), id);
-        return mapper.toDTO(searchSpace);
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
     }
 
     @Override
@@ -166,15 +156,12 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
                 "搜索空间已启用: " + searchSpace.getCode());
         }
 
-        // 异步创建ES索引
-        createElasticsearchIndexAsync(searchSpace);
-
         // 更新状态
         searchSpace.activate();
         searchSpace = searchSpaceRepository.save(searchSpace);
 
         log.info("搜索空间启用成功: {}", searchSpace.getCode());
-        return mapper.toDTO(searchSpace);
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
     }
 
     @Override
@@ -192,15 +179,12 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         // 验证是否可以禁用
         validator.validateDisableOperation(searchSpace);
 
-        // 异步删除ES索引
-        deleteElasticsearchIndexAsync(searchSpace);
-
         // 更新状态
         searchSpace.deactivate();
         searchSpace = searchSpaceRepository.save(searchSpace);
 
         log.info("搜索空间禁用成功: {}", searchSpace.getCode());
-        return mapper.toDTO(searchSpace);
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
     }
 
     @Override
@@ -209,14 +193,8 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         SearchSpace searchSpace = searchSpaceRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
 
-        SearchSpaceDTO dto = mapper.toDTO(searchSpace);
-
-        // 获取ES索引状态
-        if (searchSpace.isActive()) {
-            dto.setIndexStatus(getElasticsearchIndexStatus(searchSpace.getCode()));
-        }
-
-        return dto;
+        // 获取ES索引状态并转换为DTO
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
     }
 
     @Override
@@ -225,12 +203,8 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         SearchSpace searchSpace = searchSpaceRepository.findByCode(code)
             .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + code));
 
-        SearchSpaceDTO dto = mapper.toDTO(searchSpace);
-
-        // 获取ES索引状态
-        if (searchSpace.isActive()) {
-            dto.setIndexStatus(getElasticsearchIndexStatus(code));
-        }
+        // 获取ES索引状态并转换为DTO
+        SearchSpaceDTO dto = mapper.toDTO(searchSpace, getElasticsearchIndexStatus(code));
 
         return dto;
     }
@@ -252,14 +226,7 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
 
         // 转换结果
         List<SearchSpaceDTO> dtos = page.getContent().stream()
-            .map(space -> {
-                SearchSpaceDTO dto = mapper.toDTO(space);
-                // 获取ES索引状态
-                if (space.isActive()) {
-                    dto.setIndexStatus(getElasticsearchIndexStatus(space.getCode()));
-                }
-                return dto;
-            })
+            .map(space -> mapper.toDTO(space, getElasticsearchIndexStatus(space.getCode())))
             .collect(Collectors.toList());
 
         return PageResult.<SearchSpaceDTO>builder()
@@ -300,35 +267,31 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     // ========== 私有辅助方法 ==========
 
     /**
-     * 异步创建Elasticsearch索引
+     * 创建Elasticsearch索引
      */
-    private void createElasticsearchIndexAsync(SearchSpace searchSpace) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                log.info("开始创建ES索引: {}", searchSpace.getCode());
-                elasticsearchManager.createIndex(searchSpace.getIndexName());
-                log.info("ES索引创建成功: {}", searchSpace.getCode());
-            } catch (Exception e) {
-                log.error("ES索引创建失败: {}", searchSpace.getCode(), e);
-                // 在实际应用中，这里可以考虑重试机制或者通知机制
-            }
-        });
+    private void createElasticsearchIndex(SearchSpace searchSpace) {
+        try {
+            log.info("开始创建ES索引: {}", searchSpace.getCode());
+            elasticsearchManager.createIndex(searchSpace.getIndexName());
+            log.info("ES索引创建成功: {}", searchSpace.getCode());
+        } catch (Exception e) {
+            log.error("ES索引创建失败: {}", searchSpace.getCode(), e);
+            // 在实际应用中，这里可以考虑重试机制或者通知机制
+        }
     }
 
     /**
-     * 异步删除Elasticsearch索引
+     * 删除Elasticsearch索引
      */
-    private void deleteElasticsearchIndexAsync(SearchSpace searchSpace) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                log.info("开始删除ES索引: {}", searchSpace.getCode());
-                elasticsearchManager.deleteIndex(searchSpace.getIndexName());
-                log.info("ES索引删除成功: {}", searchSpace.getCode());
-            } catch (Exception e) {
-                log.error("ES索引删除失败: {}", searchSpace.getCode(), e);
-                // 在实际应用中，这里可以考虑重试机制或者通知机制
-            }
-        });
+    private void deleteElasticsearchIndex(SearchSpace searchSpace) {
+        try {
+            log.info("开始删除ES索引: {}", searchSpace.getCode());
+            elasticsearchManager.deleteIndex(searchSpace.getIndexName());
+            log.info("ES索引删除成功: {}", searchSpace.getCode());
+        } catch (Exception e) {
+            log.error("ES索引删除失败: {}", searchSpace.getCode(), e);
+            // 在实际应用中，这里可以考虑重试机制或者通知机制
+        }
     }
 
     /**

@@ -12,7 +12,7 @@
       href="#main-content"
       class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md"
     >
-      {{ $t('common.skipToMain') }}
+      跳转到主内容
     </a>
 
     <!-- 桌面端侧边栏 -->
@@ -63,7 +63,7 @@
           breakpoints.isMobile ? 'p-4' : 'p-6'
         ]"
         role="main"
-        :aria-label="$t('common.mainContent')"
+        aria-label="主要内容"
       >
         <router-view />
       </main>
@@ -80,7 +80,7 @@
         <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
           <span class="text-primary-foreground text-sm font-bold">M</span>
         </div>
-        <span class="font-semibold">{{ $t('auth.managementSystem') }}</span>
+        <span class="font-semibold">管理系统</span>
       </div>
     </template>
   </ResponsiveLayout>
@@ -88,14 +88,12 @@
 
 <script setup lang="ts">
 import { ref, provide, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout.vue'
 import SidebarNav from '@/components/layout/SidebarNav.vue'
 import TopNav from '@/components/layout/TopNav.vue'
 import { useBreakpoints } from '@/composables/useBreakpoints'
 
-const { t } = useI18n()
 const breakpoints = useBreakpoints()
 
 // 响应式布局引用

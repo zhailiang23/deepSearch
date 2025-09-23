@@ -16,6 +16,10 @@ export interface IndexStatus {
   name: string
   exists: boolean
   health: string
+  docsCount?: number
+  storeSize?: string
+  primaryShards?: number
+  replicas?: number
   error?: string
 }
 

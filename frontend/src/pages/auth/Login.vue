@@ -9,13 +9,9 @@
       href="#login-form"
       class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-md"
     >
-      {{ $t('common.skipToMain') }}
+      跳转到主要内容
     </a>
 
-    <!-- 语言选择器 - 右上角 -->
-    <div class="absolute top-4 right-4 z-40">
-      <LanguageSelector />
-    </div>
 
     <!-- 主要登录区域 -->
     <div class="min-h-screen flex items-center justify-center bg-background relative">
@@ -60,7 +56,7 @@
               breakpoints.isMobile ? 'text-2xl' : 'text-3xl lg:text-4xl'
             ]"
           >
-            {{ $t('auth.welcome') }} {{ $t('auth.managementSystem') }}
+            欢迎使用管理系统
           </h1>
 
           <p
@@ -69,7 +65,7 @@
               breakpoints.isMobile ? 'text-sm' : 'text-base'
             ]"
           >
-            {{ $t('auth.loginToAccount') }}
+            登录您的账户
           </p>
         </div>
 
@@ -82,7 +78,7 @@
             breakpoints.isMobile ? 'p-4' : 'p-6'
           ]"
           role="main"
-          :aria-label="$t('auth.login')"
+          aria-label="登录"
         >
           <form @submit.prevent="handleLogin" class="space-y-4">
             <!-- 用户名输入 -->
@@ -91,7 +87,7 @@
                 for="username"
                 class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {{ $t('auth.username') }}
+                用户名
               </label>
               <input
                 id="username"
@@ -99,7 +95,7 @@
                 type="text"
                 autocomplete="username"
                 required
-                :placeholder="$t('auth.enterUsername')"
+                placeholder="请输入用户名"
                 :class="[
                   'w-full px-3 py-2 border border-input bg-background rounded-md',
                   'text-sm ring-offset-background',
@@ -120,7 +116,7 @@
                 for="password"
                 class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {{ $t('auth.password') }}
+                密码
               </label>
               <div class="relative">
                 <input
@@ -129,7 +125,7 @@
                   :type="showPassword ? 'text' : 'password'"
                   autocomplete="current-password"
                   required
-                  :placeholder="$t('auth.enterPassword')"
+                  placeholder="请输入密码"
                   :class="[
                     'w-full px-3 py-2 pr-10 border border-input bg-background rounded-md',
                     'text-sm ring-offset-background',
@@ -152,7 +148,7 @@
                     // 触摸设备优化
                     breakpoints.isTouchDevice && 'p-1'
                   ]"
-                  :aria-label="showPassword ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                  :aria-label="showPassword ? '隐藏密码' : '显示密码'"
                   :disabled="isLoading"
                 >
                   <Eye v-if="showPassword" class="h-4 w-4" />
@@ -183,7 +179,7 @@
                   breakpoints.isTouchDevice && 'text-base'
                 ]"
               >
-                {{ $t('auth.rememberMe') }}
+                记住我
               </label>
             </div>
 
@@ -209,7 +205,7 @@
               :disabled="isLoading || !isFormValid"
             >
               <Loader2 v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />
-              {{ isLoading ? $t('common.loading') : $t('auth.login') }}
+              {{ isLoading ? '登录中...' : '登录' }}
             </Button>
 
             <!-- 忘记密码链接 -->
@@ -220,7 +216,7 @@
                 @click="handleForgotPassword"
                 :disabled="isLoading"
               >
-                {{ $t('auth.forgotPassword') }}
+                忘记密码？
               </button>
             </div>
           </form>
@@ -229,14 +225,14 @@
         <!-- 注册链接 -->
         <div class="text-center">
           <p class="text-sm text-muted-foreground">
-            {{ $t('auth.noAccount') }}
+            还没有账户？
             <button
               type="button"
               class="text-primary hover:text-primary/80 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
               @click="handleRegister"
               :disabled="isLoading"
             >
-              {{ $t('auth.register') }}
+              立即注册
             </button>
           </p>
         </div>
@@ -246,9 +242,9 @@
           v-if="isDev && breakpoints"
           class="mt-8 p-4 bg-muted rounded-lg text-xs text-muted-foreground"
         >
-          <p><strong>{{ $t('responsive.currentBreakpoint') }}:</strong> {{ breakpoints.current }}</p>
-          <p><strong>{{ $t('responsive.screenSize') }}:</strong> {{ breakpoints.width }}x{{ breakpoints.height }}</p>
-          <p><strong>{{ $t('responsive.touchDevice') }}:</strong> {{ breakpoints.isTouchDevice ? $t('common.yes') : $t('common.no') }}</p>
+          <p><strong>当前断点:</strong> {{ breakpoints.current }}</p>
+          <p><strong>屏幕尺寸:</strong> {{ breakpoints.width }}x{{ breakpoints.height }}</p>
+          <p><strong>触摸设备:</strong> {{ breakpoints.isTouchDevice ? '是' : '否' }}</p>
         </div>
       </div>
     </div>
@@ -258,18 +254,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { Shield, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button'
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout.vue'
-import LanguageSelector from '@/components/common/LanguageSelector.vue'
 import { useBreakpoints } from '@/composables/useBreakpoints'
 import { useAuthStore } from '@/stores/auth'
 
 // 组合式API
 const router = useRouter()
-const { t } = useI18n()
 const authStore = useAuthStore()
 const breakpoints = useBreakpoints()
 
@@ -314,7 +307,7 @@ const handleLogin = async () => {
     // 登录成功，跳转到仪表板
     await router.push('/')
   } catch (error: any) {
-    loginError.value = error.message || t('auth.loginError')
+    loginError.value = error.message || '登录失败'
   } finally {
     isLoading.value = false
   }

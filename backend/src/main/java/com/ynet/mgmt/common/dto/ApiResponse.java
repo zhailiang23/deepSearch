@@ -1,65 +1,95 @@
 package com.ynet.mgmt.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * 统一API响应格式
  *
  * @author system
  * @since 1.0.0
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
     private boolean success;
     private String message;
     private T data;
-    private String errorCode;
+    private String code;
+    private Long timestamp;
 
     // 构造函数
-    public ApiResponse() {}
+    public ApiResponse() {
+        this.timestamp = System.currentTimeMillis();
+    }
 
     public ApiResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;
         this.data = data;
+        this.timestamp = System.currentTimeMillis();
     }
 
-    public ApiResponse(boolean success, String message, T data, String errorCode) {
+    public ApiResponse(boolean success, String message, T data, String code) {
         this.success = success;
         this.message = message;
         this.data = data;
-        this.errorCode = errorCode;
+        this.code = code;
+        this.timestamp = System.currentTimeMillis();
     }
 
-    // 静态工厂方法
+    // 成功响应静态方法
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(true, "操作成功", null, "200");
+    }
+
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, "操作成功", data);
+        return new ApiResponse<>(true, "操作成功", data, "200");
     }
 
     public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, message, data);
+        return new ApiResponse<>(true, message, data, "200");
     }
 
+    public static <T> ApiResponse<T> success(String message, T data, String code) {
+        return new ApiResponse<>(true, message, data, code);
+    }
+
+    // 失败响应静态方法
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null);
+        return new ApiResponse<>(false, message, null, "500");
     }
 
-    public static <T> ApiResponse<T> error(String message, String errorCode) {
-        return new ApiResponse<>(false, message, null, errorCode);
+    public static <T> ApiResponse<T> error(String message, String code) {
+        return new ApiResponse<>(false, message, null, code);
     }
 
-    public static <T> ApiResponse<T> error(String message, T data) {
-        return new ApiResponse<>(false, message, data);
+    public static <T> ApiResponse<T> error(String message, T data, String code) {
+        return new ApiResponse<>(false, message, data, code);
     }
 
+    // 业务便捷方法
     public static <T> ApiResponse<T> created(T data) {
-        return new ApiResponse<>(true, "创建成功", data);
+        return new ApiResponse<>(true, "创建成功", data, "201");
     }
 
     public static <T> ApiResponse<T> updated(T data) {
-        return new ApiResponse<>(true, "更新成功", data);
+        return new ApiResponse<>(true, "更新成功", data, "200");
     }
 
     public static <T> ApiResponse<T> deleted() {
-        return new ApiResponse<>(true, "删除成功", null);
+        return new ApiResponse<>(true, "删除成功", null, "200");
+    }
+
+    public static <T> ApiResponse<T> notFound(String message) {
+        return new ApiResponse<>(false, message, null, "404");
+    }
+
+    public static <T> ApiResponse<T> badRequest(String message) {
+        return new ApiResponse<>(false, message, null, "400");
+    }
+
+    public static <T> ApiResponse<T> validationError(String message, T errors) {
+        return new ApiResponse<>(false, message, errors, "400");
     }
 
     // Getters and Setters
@@ -87,12 +117,20 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    public String getErrorCode() {
-        return errorCode;
+    public String getCode() {
+        return code;
     }
 
-    public void setErrorCode(String errorCode) {
-        this.errorCode = errorCode;
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override
@@ -100,8 +138,8 @@ public class ApiResponse<T> {
         return "ApiResponse{" +
                 "success=" + success +
                 ", message='" + message + '\'' +
-                ", data=" + data +
-                ", errorCode='" + errorCode + '\'' +
+                ", code='" + code + '\'' +
+                ", timestamp=" + timestamp +
                 '}';
     }
 }

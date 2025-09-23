@@ -1,6 +1,6 @@
 package com.ynet.mgmt.searchspace.controller;
 
-import com.ynet.mgmt.searchspace.dto.ApiResponse;
+import com.ynet.mgmt.common.dto.ApiResponse;
 import com.ynet.mgmt.searchspace.exception.ElasticsearchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

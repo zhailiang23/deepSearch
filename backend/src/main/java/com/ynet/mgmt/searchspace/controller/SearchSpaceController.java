@@ -30,8 +30,7 @@ import java.util.Map;
  */
 @Tag(name = "搜索空间管理", description = "搜索空间管理相关API")
 @RestController
-@RequestMapping("/api/search-spaces")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"})
+@RequestMapping("/search-spaces")
 public class SearchSpaceController {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchSpaceController.class);

@@ -8,7 +8,7 @@ import co.elastic.clients.elasticsearch.core.CountRequest;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.indices.*;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
-import com.ynet.mgmt.searchspace.config.ElasticsearchProperties;
+import com.ynet.mgmt.config.ElasticsearchProperties;
 import com.ynet.mgmt.searchspace.exception.ElasticsearchException;
 import com.ynet.mgmt.searchspace.model.ClusterHealth;
 import com.ynet.mgmt.searchspace.model.IndexStatus;

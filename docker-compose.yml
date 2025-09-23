@@ -41,6 +41,38 @@ services:
       retries: 3
     command: redis-server /etc/redis/redis.conf
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: mgmt-elasticsearch-dev
+    environment:
+      - node.name=es-node-1
+      - cluster.name=mgmt-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - action.destructive_requires_name=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - mgmt-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   backend:
     build:
       context: ./backend
@@ -55,12 +87,15 @@ services:
       DB_PASSWORD: mgmt_password
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      ELASTICSEARCH_URI: http://elasticsearch:9200
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     networks:
       - mgmt-network
@@ -85,6 +120,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  elasticsearch_data:
     driver: local
 
 networks:

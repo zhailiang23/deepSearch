@@ -42,6 +42,21 @@ public class SearchSpaceMapper {
     }
 
     /**
+     * 实体转DTO（包含索引状态）
+     *
+     * @param entity 搜索空间实体
+     * @param indexStatus 索引状态
+     * @return 搜索空间DTO
+     */
+    public SearchSpaceDTO toDTO(SearchSpace entity, com.ynet.mgmt.searchspace.model.IndexStatus indexStatus) {
+        SearchSpaceDTO dto = toDTO(entity);
+        if (dto != null) {
+            dto.setIndexStatus(indexStatus);
+        }
+        return dto;
+    }
+
+    /**
      * 实体列表转DTO列表
      *
      * @param entities 搜索空间实体列表

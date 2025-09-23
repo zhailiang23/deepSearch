@@ -157,8 +157,16 @@ http.interceptors.response.use(
 
     // 处理403错误 - 权限不足
     if (error.response?.status === 403) {
-      // 可以显示权限不足的提示
+      // 显示权限不足的提示
       console.warn('Access forbidden - insufficient permissions')
+
+      // 创建自定义事件来显示权限错误
+      window.dispatchEvent(new CustomEvent('auth-error', {
+        detail: {
+          type: 'forbidden',
+          message: '您没有权限访问此资源，请联系管理员'
+        }
+      }))
     }
 
     // 处理网络错误和超时

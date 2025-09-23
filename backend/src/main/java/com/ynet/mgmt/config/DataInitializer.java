@@ -1,9 +1,9 @@
 package com.ynet.mgmt.config;
 
-import com.ynet.mgmt.entity.User;
-import com.ynet.mgmt.entity.UserRole;
-import com.ynet.mgmt.entity.UserStatus;
-import com.ynet.mgmt.repository.UserRepository;
+import com.ynet.mgmt.user.entity.User;
+import com.ynet.mgmt.user.entity.UserRole;
+import com.ynet.mgmt.user.entity.UserStatus;
+import com.ynet.mgmt.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

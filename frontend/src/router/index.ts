@@ -4,11 +4,26 @@ import { authGuard } from './guards/auth'
 const routes = [
   {
     path: '/',
-    name: 'Dashboard',
     component: () => import('@/pages/DashboardSimple.vue'),
-    meta: {
-      title: '控制台'
-    }
+    children: [
+      {
+        path: '',
+        name: 'Dashboard',
+        component: () => import('@/pages/DashboardContent.vue'),
+        meta: {
+          title: '控制台'
+        }
+      },
+      {
+        path: 'search-spaces',
+        name: 'SearchSpaces',
+        component: () => import('@/pages/searchSpace/SearchSpaceContent.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '搜索空间管理'
+        }
+      }
+    ]
   },
   {
     path: '/old',
@@ -37,11 +52,11 @@ const routes = [
       },
       {
         path: '/search-spaces',
-        name: 'SearchSpaces',
+        name: 'OldSearchSpaces',
         component: () => import('@/pages/searchSpace/SearchSpaceManage.vue'),
         meta: {
           requiresAuth: true,
-          title: '搜索空间管理'
+          title: '搜索空间管理（旧版）'
         }
       }
     ]

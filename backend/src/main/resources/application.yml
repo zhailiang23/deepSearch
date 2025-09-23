@@ -21,7 +21,7 @@ spring:
   # JPA配置
   jpa:
     hibernate:
-      ddl-auto: create-drop  # 开发阶段使用，生产环境改为validate
+      ddl-auto: update  # 保持数据持久性，自动更新表结构
     show-sql: true
     properties:
       hibernate:
@@ -48,6 +48,23 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
+
+# Elasticsearch配置
+elasticsearch:
+  uris:
+    - ${ELASTICSEARCH_URI:http://localhost:9200}
+  username: ${ELASTICSEARCH_USERNAME:}
+  password: ${ELASTICSEARCH_PASSWORD:}
+  api-key: ${ELASTICSEARCH_API_KEY:}
+  connection-timeout: 30s
+  read-timeout: 30s
+  ssl-enabled: ${ELASTICSEARCH_SSL_ENABLED:false}
+  ssl-fingerprint: ${ELASTICSEARCH_SSL_FINGERPRINT:}
+  index:
+    default-settings:
+      number-of-shards: ${ELASTICSEARCH_DEFAULT_SHARDS:1}
+      number-of-replicas: ${ELASTICSEARCH_DEFAULT_REPLICAS:0}
+      refresh-interval: 1s
 
 # Actuator健康检查配置
 management:

@@ -14,7 +14,7 @@
           'flex items-center transition-all duration-300',
           collapsed ? 'space-x-0' : 'space-x-2'
         ]"
-        :aria-label="collapsed ? $t('auth.managementSystem') : undefined"
+        :aria-label="collapsed ? '管理系统' : undefined"
       >
         <div
           :class="[
@@ -28,7 +28,7 @@
           v-if="!collapsed"
           class="font-semibold text-lg transition-opacity duration-300"
         >
-          {{ $t('auth.managementSystem') }}
+          管理系统
         </span>
       </router-link>
     </div>
@@ -54,8 +54,8 @@
               // 激活状态
               isActiveRoute(item.to) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
             ]"
-            :aria-label="collapsed && !isMobile ? $t(item.label) : undefined"
-            :title="collapsed && !isMobile ? $t(item.label) : undefined"
+            :aria-label="collapsed && !isMobile ? item.label : undefined"
+            :title="collapsed && !isMobile ? item.label : undefined"
           >
             <component
               :is="item.icon"
@@ -71,7 +71,7 @@
                 collapsed && !isMobile ? 'opacity-0 w-0' : 'opacity-100'
               ]"
             >
-              {{ $t(item.label) }}
+              {{ item.label }}
             </span>
           </router-link>
         </li>
@@ -98,7 +98,7 @@
           >
             <component :is="item.icon" class="h-5 w-5 flex-shrink-0" />
             <span class="transition-all duration-300">
-              {{ $t(item.label) }}
+              {{ item.label }}
             </span>
           </router-link>
         </li>
@@ -126,7 +126,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { LayoutDashboard, Users, Settings, HelpCircle as Help, User } from 'lucide-vue-next'
 
 interface Props {
@@ -140,7 +139,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const $route = useRoute()
-const { t } = useI18n()
 
 // 主要导航菜单
 const navigation = computed(() => [

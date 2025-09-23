@@ -16,7 +16,11 @@ import java.util.Optional;
  * @since 1.0.0
  */
 @Configuration
-@EnableJpaRepositories(basePackages = "com.ynet.mgmt.repository")
+@EnableJpaRepositories(basePackages = {
+    "com.ynet.mgmt.repository",
+    "com.ynet.mgmt.user.repository",
+    "com.ynet.mgmt.searchspace.repository"
+})
 @EnableJpaAuditing
 public class JpaConfig {
 

@@ -87,7 +87,7 @@
             <!-- 描述 -->
             <div v-if="currentSearchSpace.description">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">描述</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{{ currentSearchSpace.description }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">{{ currentSearchSpace.description }}</p>
             </div>
 
             <!-- 索引状态 -->
@@ -116,11 +116,40 @@
                   </div>
                   <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">健康状态</dt>
-                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ currentSearchSpace.indexStatus.health }}</dd>
+                    <dd class="mt-1">
+                      <span
+                        :class="[
+                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                          currentSearchSpace.indexStatus.health === 'green'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : currentSearchSpace.indexStatus.health === 'yellow'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        ]"
+                      >
+                        {{ currentSearchSpace.indexStatus.health }}
+                      </span>
+                    </dd>
                   </div>
-                  <div v-if="currentSearchSpace.indexStatus.error">
+                  <div v-if="currentSearchSpace.indexStatus.exists && currentSearchSpace.indexStatus.docsCount !== undefined">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">文档数量</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ currentSearchSpace.indexStatus.docsCount.toLocaleString() }}</dd>
+                  </div>
+                  <div v-if="currentSearchSpace.indexStatus.storeSize">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">存储大小</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ currentSearchSpace.indexStatus.storeSize }}</dd>
+                  </div>
+                  <div v-if="currentSearchSpace.indexStatus.primaryShards">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">主分片数</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ currentSearchSpace.indexStatus.primaryShards }}</dd>
+                  </div>
+                  <div v-if="currentSearchSpace.indexStatus.replicas !== undefined">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">副本数</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ currentSearchSpace.indexStatus.replicas }}</dd>
+                  </div>
+                  <div v-if="currentSearchSpace.indexStatus.error" class="md:col-span-2">
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">错误信息</dt>
-                    <dd class="mt-1 text-sm text-red-600 dark:text-red-400">{{ currentSearchSpace.indexStatus.error }}</dd>
+                    <dd class="mt-1 text-sm text-red-600 dark:text-red-400 break-words">{{ currentSearchSpace.indexStatus.error }}</dd>
                   </div>
                 </div>
               </div>

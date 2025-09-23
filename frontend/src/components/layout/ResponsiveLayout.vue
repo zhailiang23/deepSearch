@@ -15,7 +15,7 @@
         mainContentClasses
       ]"
       role="main"
-      :aria-label="$t('common.mainContent')"
+      aria-label="主要内容"
     >
       <slot />
     </main>
@@ -43,12 +43,12 @@
         <!-- 侧边栏头部 -->
         <div class="flex items-center justify-between p-4 border-b">
           <slot name="sidebar-header">
-            <h2 class="text-lg font-semibold">{{ $t('nav.menu') }}</h2>
+            <h2 class="text-lg font-semibold">菜单</h2>
           </slot>
           <button
             @click="closeMobileSidebar"
             class="p-2 rounded-md hover:bg-accent"
-            :aria-label="$t('common.close')"
+            aria-label="关闭"
           >
             <X class="h-4 w-4" />
           </button>
@@ -81,7 +81,7 @@
             'transition-all duration-200',
             'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
           ]"
-          :aria-label="$t('nav.toggleMenu')"
+          aria-label="切换菜单"
         >
           <Menu class="h-6 w-6" />
         </button>
@@ -101,7 +101,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { Menu, X } from 'lucide-vue-next'
 import { useBreakpoints } from '@/composables/useBreakpoints'
 
@@ -152,7 +151,6 @@ const emit = defineEmits<{
   orientationChange: [orientation: 'portrait' | 'landscape']
 }>()
 
-const { t } = useI18n()
 const breakpoints = useBreakpoints({
   md: props.mobileBreakpoint,
   lg: props.tabletBreakpoint

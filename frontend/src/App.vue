@@ -1,7 +1,8 @@
 <template>
   <router-view />
+  <GlobalNotification />
 </template>
 
 <script setup lang="ts">
-// 应用程序的根组件，所有路由内容都会在这里渲染
+import GlobalNotification from '@/components/common/GlobalNotification.vue'
 </script>
