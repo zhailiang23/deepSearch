@@ -17,7 +17,6 @@ import jakarta.validation.constraints.*;
            @Index(name = "idx_search_space_code", columnList = "code", unique = true),
            @Index(name = "idx_search_space_name", columnList = "name"),
            @Index(name = "idx_search_space_status", columnList = "status"),
-           @Index(name = "idx_search_space_vector_enabled", columnList = "vector_enabled"),
            @Index(name = "idx_search_space_created_at", columnList = "created_at")
        })
 public class SearchSpace extends BaseEntity {
@@ -41,8 +40,6 @@ public class SearchSpace extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "vector_enabled", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean vectorEnabled = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "VARCHAR(20) DEFAULT 'ACTIVE'")
@@ -83,13 +80,6 @@ public class SearchSpace extends BaseEntity {
         return this.status != null && this.status.isSearchable();
     }
 
-    /**
-     * 检查是否启用了向量检索
-     * @return true if 启用了向量检索
-     */
-    public boolean isVectorEnabled() {
-        return Boolean.TRUE.equals(this.vectorEnabled);
-    }
 
     /**
      * 获取Elasticsearch索引名称
@@ -99,27 +89,7 @@ public class SearchSpace extends BaseEntity {
         return this.code;
     }
 
-    /**
-     * 获取向量索引名称
-     * @return 基于code生成的向量索引名称
-     */
-    public String getVectorIndexName() {
-        return this.code + "_vector";
-    }
 
-    /**
-     * 启用向量检索
-     */
-    public void enableVector() {
-        this.vectorEnabled = true;
-    }
-
-    /**
-     * 禁用向量检索
-     */
-    public void disableVector() {
-        this.vectorEnabled = false;
-    }
 
     /**
      * 激活搜索空间
@@ -183,13 +153,6 @@ public class SearchSpace extends BaseEntity {
         this.description = description;
     }
 
-    public Boolean getVectorEnabled() {
-        return vectorEnabled;
-    }
-
-    public void setVectorEnabled(Boolean vectorEnabled) {
-        this.vectorEnabled = vectorEnabled;
-    }
 
     public SearchSpaceStatus getStatus() {
         return status;
@@ -239,7 +202,6 @@ public class SearchSpace extends BaseEntity {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
-                ", vectorEnabled=" + vectorEnabled +
                 ", status=" + status +
                 '}';
     }

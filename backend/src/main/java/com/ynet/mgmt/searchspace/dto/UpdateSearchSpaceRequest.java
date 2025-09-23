@@ -1,5 +1,6 @@
 package com.ynet.mgmt.searchspace.dto;
 
+import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -16,7 +17,7 @@ public class UpdateSearchSpaceRequest {
     @Size(max = 500, message = "描述长度不能超过500字符")
     private String description;
 
-    private Boolean vectorEnabled;
+    private SearchSpaceStatus status;
 
     // 构造函数
     public UpdateSearchSpaceRequest() {}
@@ -30,10 +31,10 @@ public class UpdateSearchSpaceRequest {
         this.description = description;
     }
 
-    public UpdateSearchSpaceRequest(String name, String description, Boolean vectorEnabled) {
+    public UpdateSearchSpaceRequest(String name, String description, SearchSpaceStatus status) {
         this.name = name;
         this.description = description;
-        this.vectorEnabled = vectorEnabled;
+        this.status = status;
     }
 
     // Getters and Setters
@@ -53,19 +54,19 @@ public class UpdateSearchSpaceRequest {
         this.description = description;
     }
 
-    public Boolean getVectorEnabled() {
-        return vectorEnabled;
+    public SearchSpaceStatus getStatus() {
+        return status;
     }
 
-    public void setVectorEnabled(Boolean vectorEnabled) {
-        this.vectorEnabled = vectorEnabled;
+    public void setStatus(SearchSpaceStatus status) {
+        this.status = status;
     }
 
     @Override
     public String toString() {
         return "UpdateSearchSpaceRequest{" +
                 "name='" + name + '\'' +
-                ", vectorEnabled=" + vectorEnabled +
+                ", status=" + status +
                 '}';
     }
 }

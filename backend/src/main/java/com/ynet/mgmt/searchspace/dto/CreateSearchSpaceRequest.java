@@ -22,7 +22,6 @@ public class CreateSearchSpaceRequest {
     @Size(max = 500, message = "描述长度不能超过500字符")
     private String description;
 
-    private Boolean vectorEnabled;
 
     // 构造函数
     public CreateSearchSpaceRequest() {}
@@ -38,12 +37,6 @@ public class CreateSearchSpaceRequest {
         this.description = description;
     }
 
-    public CreateSearchSpaceRequest(String name, String code, String description, Boolean vectorEnabled) {
-        this.name = name;
-        this.code = code;
-        this.description = description;
-        this.vectorEnabled = vectorEnabled;
-    }
 
     // Getters and Setters
     public String getName() {
@@ -70,20 +63,12 @@ public class CreateSearchSpaceRequest {
         this.description = description;
     }
 
-    public Boolean getVectorEnabled() {
-        return vectorEnabled;
-    }
-
-    public void setVectorEnabled(Boolean vectorEnabled) {
-        this.vectorEnabled = vectorEnabled;
-    }
 
     @Override
     public String toString() {
         return "CreateSearchSpaceRequest{" +
                 "name='" + name + '\'' +
                 ", code='" + code + '\'' +
-                ", vectorEnabled=" + vectorEnabled +
                 '}';
     }
 }

@@ -17,10 +17,10 @@ public final class ErrorCode {
     public static final String SEARCH_SPACE_HAS_DOCUMENTS = "SEARCH_SPACE_HAS_DOCUMENTS";
     public static final String SEARCH_SPACE_INVALID_STATUS = "SEARCH_SPACE_INVALID_STATUS";
 
-    // 向量检索相关错误
-    public static final String VECTOR_ALREADY_ENABLED = "VECTOR_ALREADY_ENABLED";
-    public static final String VECTOR_ALREADY_DISABLED = "VECTOR_ALREADY_DISABLED";
-    public static final String VECTOR_OPERATION_FAILED = "VECTOR_OPERATION_FAILED";
+    // 搜索空间状态相关错误
+    public static final String SEARCH_SPACE_ALREADY_ACTIVE = "SEARCH_SPACE_ALREADY_ACTIVE";
+    public static final String SEARCH_SPACE_ALREADY_INACTIVE = "SEARCH_SPACE_ALREADY_INACTIVE";
+    public static final String SEARCH_SPACE_STATUS_OPERATION_FAILED = "SEARCH_SPACE_STATUS_OPERATION_FAILED";
 
     // Elasticsearch相关错误
     public static final String ELASTICSEARCH_INDEX_EXISTS = "ELASTICSEARCH_INDEX_EXISTS";

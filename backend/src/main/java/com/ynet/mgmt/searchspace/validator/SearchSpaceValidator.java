@@ -106,29 +106,29 @@ public class SearchSpaceValidator {
     }
 
     /**
-     * 验证向量检索禁用操作
+     * 验证禁用操作
      *
      * @param searchSpace 搜索空间
      * @throws ValidationException 验证失败时抛出
      */
-    public void validateVectorDisable(SearchSpace searchSpace) {
-        log.debug("验证向量检索禁用操作: {}", searchSpace);
+    public void validateDisableOperation(SearchSpace searchSpace) {
+        log.debug("验证禁用搜索空间操作: {}", searchSpace);
 
         if (searchSpace == null) {
             throw new ValidationException("搜索空间不存在");
         }
 
-        if (!searchSpace.getVectorEnabled()) {
-            throw new ValidationException("向量检索已禁用");
+        if (!searchSpace.isActive()) {
+            throw new ValidationException("搜索空间已禁用");
         }
 
-        // 检查是否有正在进行的向量操作
-        // TODO: 在后续版本中添加向量操作检查逻辑
+        // 检查是否有正在进行的操作
+        // TODO: 在后续版本中添加操作检查逻辑
 
-        // 检查是否有依赖向量检索的功能
+        // 检查是否有依赖此搜索空间的功能
         // TODO: 在后续版本中添加依赖检查逻辑
 
-        log.debug("向量检索禁用操作验证通过");
+        log.debug("禁用搜索空间操作验证通过");
     }
 
     /**

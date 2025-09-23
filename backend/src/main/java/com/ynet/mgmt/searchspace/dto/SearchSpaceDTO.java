@@ -18,7 +18,6 @@ public class SearchSpaceDTO {
     private String name;
     private String code;
     private String description;
-    private Boolean vectorEnabled;
     private SearchSpaceStatus status;
     private Long version;
     private LocalDateTime createdAt;
@@ -45,9 +44,6 @@ public class SearchSpaceDTO {
         return this.status != null && this.status.isSearchable();
     }
 
-    public boolean isVectorEnabled() {
-        return Boolean.TRUE.equals(this.vectorEnabled);
-    }
 
     // Getters and Setters
     public Long getId() {
@@ -82,13 +78,6 @@ public class SearchSpaceDTO {
         this.description = description;
     }
 
-    public Boolean getVectorEnabled() {
-        return vectorEnabled;
-    }
-
-    public void setVectorEnabled(Boolean vectorEnabled) {
-        this.vectorEnabled = vectorEnabled;
-    }
 
     public SearchSpaceStatus getStatus() {
         return status;
@@ -136,7 +125,6 @@ public class SearchSpaceDTO {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
-                ", vectorEnabled=" + vectorEnabled +
                 ", status=" + status +
                 '}';
     }

@@ -34,18 +34,18 @@ public interface SearchSpaceService {
     SearchSpaceDTO updateSearchSpace(Long id, UpdateSearchSpaceRequest updateRequest);
 
     /**
-     * 启用向量检索
+     * 启用搜索空间
      * @param id 搜索空间ID
      * @return 更新后的搜索空间
      */
-    SearchSpaceDTO enableVectorSearch(Long id);
+    SearchSpaceDTO enableSearchSpace(Long id);
 
     /**
-     * 禁用向量检索
+     * 禁用搜索空间
      * @param id 搜索空间ID
      * @return 更新后的搜索空间
      */
-    SearchSpaceDTO disableVectorSearch(Long id);
+    SearchSpaceDTO disableSearchSpace(Long id);
 
     /**
      * 根据ID查询搜索空间

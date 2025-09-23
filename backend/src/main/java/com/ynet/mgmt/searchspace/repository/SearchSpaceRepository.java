@@ -62,17 +62,7 @@ public interface SearchSpaceRepository extends JpaRepository<SearchSpace, Long> 
            "LOWER(s.code) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<SearchSpace> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    /**
-     * 获取启用向量检索的搜索空间
-     * @return 启用向量检索的搜索空间列表
-     */
-    List<SearchSpace> findByVectorEnabledTrue();
 
-    /**
-     * 获取启用向量检索且状态为活跃的搜索空间
-     * @return 启用向量检索且活跃的搜索空间列表
-     */
-    List<SearchSpace> findByVectorEnabledTrueAndStatus(SearchSpaceStatus status);
 
     /**
      * 根据状态查询搜索空间
@@ -135,11 +125,6 @@ public interface SearchSpaceRepository extends JpaRepository<SearchSpace, Long> 
      */
     long countByStatus(SearchSpaceStatus status);
 
-    /**
-     * 统计启用向量检索的搜索空间数量
-     * @return 启用向量检索的搜索空间数量
-     */
-    long countByVectorEnabledTrue();
 
     /**
      * 根据名称或代码模糊查询（排除指定ID）

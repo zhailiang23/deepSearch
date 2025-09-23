@@ -71,8 +71,8 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         // 4. 保存到数据库
         searchSpace = searchSpaceRepository.save(searchSpace);
 
-        // 5. 如果启用向量检索，异步创建ES索引
-        if (searchSpace.isVectorEnabled()) {
+        // 5. 如果是活跃状态，异步创建ES索引
+        if (searchSpace.isActive()) {
             createElasticsearchIndexAsync(searchSpace);
         }
 
@@ -97,8 +97,8 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
                 "搜索空间中存在文档，无法删除: " + searchSpace.getCode());
         }
 
-        // 4. 如果启用了向量检索，异步删除ES索引
-        if (searchSpace.isVectorEnabled()) {
+        // 4. 如果是活跃状态，异步删除ES索引
+        if (searchSpace.isActive()) {
             deleteElasticsearchIndexAsync(searchSpace);
         }
 
@@ -132,19 +132,18 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
             searchSpace.setDescription(request.getDescription());
         }
 
-        // 5. 处理向量检索状态变更
-        if (request.getVectorEnabled() != null &&
-            !Objects.equals(searchSpace.getVectorEnabled(), request.getVectorEnabled())) {
+        // 5. 处理状态变更
+        if (request.getStatus() != null && !Objects.equals(searchSpace.getStatus(), request.getStatus())) {
+            SearchSpaceStatus oldStatus = searchSpace.getStatus();
+            searchSpace.setStatus(request.getStatus());
 
-            if (request.getVectorEnabled()) {
-                // 启用向量检索
+            // 如果从非活跃状态变为活跃状态，创建ES索引
+            if (!oldStatus.equals(SearchSpaceStatus.ACTIVE) && request.getStatus().equals(SearchSpaceStatus.ACTIVE)) {
                 createElasticsearchIndexAsync(searchSpace);
-                searchSpace.enableVector();
-            } else {
-                // 禁用向量检索
-                validator.validateVectorDisable(searchSpace);
+            }
+            // 如果从活跃状态变为非活跃状态，删除ES索引
+            else if (oldStatus.equals(SearchSpaceStatus.ACTIVE) && !request.getStatus().equals(SearchSpaceStatus.ACTIVE)) {
                 deleteElasticsearchIndexAsync(searchSpace);
-                searchSpace.disableVector();
             }
         }
 
@@ -156,51 +155,51 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     }
 
     @Override
-    public SearchSpaceDTO enableVectorSearch(Long id) {
-        log.info("启用向量检索: {}", id);
+    public SearchSpaceDTO enableSearchSpace(Long id) {
+        log.info("启用搜索空间: {}", id);
 
         SearchSpace searchSpace = searchSpaceRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
 
-        if (searchSpace.isVectorEnabled()) {
-            throw new BusinessException(ErrorCode.VECTOR_ALREADY_ENABLED,
-                "向量检索已启用: " + searchSpace.getCode());
+        if (searchSpace.isActive()) {
+            throw new BusinessException(ErrorCode.SEARCH_SPACE_ALREADY_ACTIVE,
+                "搜索空间已启用: " + searchSpace.getCode());
         }
 
         // 异步创建ES索引
         createElasticsearchIndexAsync(searchSpace);
 
         // 更新状态
-        searchSpace.enableVector();
+        searchSpace.activate();
         searchSpace = searchSpaceRepository.save(searchSpace);
 
-        log.info("向量检索启用成功: {}", searchSpace.getCode());
+        log.info("搜索空间启用成功: {}", searchSpace.getCode());
         return mapper.toDTO(searchSpace);
     }
 
     @Override
-    public SearchSpaceDTO disableVectorSearch(Long id) {
-        log.info("禁用向量检索: {}", id);
+    public SearchSpaceDTO disableSearchSpace(Long id) {
+        log.info("禁用搜索空间: {}", id);
 
         SearchSpace searchSpace = searchSpaceRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
 
-        if (!searchSpace.isVectorEnabled()) {
-            throw new BusinessException(ErrorCode.VECTOR_ALREADY_DISABLED,
-                "向量检索已禁用: " + searchSpace.getCode());
+        if (!searchSpace.isActive()) {
+            throw new BusinessException(ErrorCode.SEARCH_SPACE_ALREADY_INACTIVE,
+                "搜索空间已禁用: " + searchSpace.getCode());
         }
 
         // 验证是否可以禁用
-        validator.validateVectorDisable(searchSpace);
+        validator.validateDisableOperation(searchSpace);
 
         // 异步删除ES索引
         deleteElasticsearchIndexAsync(searchSpace);
 
         // 更新状态
-        searchSpace.disableVector();
+        searchSpace.deactivate();
         searchSpace = searchSpaceRepository.save(searchSpace);
 
-        log.info("向量检索禁用成功: {}", searchSpace.getCode());
+        log.info("搜索空间禁用成功: {}", searchSpace.getCode());
         return mapper.toDTO(searchSpace);
     }
 
@@ -213,7 +212,7 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         SearchSpaceDTO dto = mapper.toDTO(searchSpace);
 
         // 获取ES索引状态
-        if (searchSpace.isVectorEnabled()) {
+        if (searchSpace.isActive()) {
             dto.setIndexStatus(getElasticsearchIndexStatus(searchSpace.getCode()));
         }
 
@@ -229,7 +228,7 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         SearchSpaceDTO dto = mapper.toDTO(searchSpace);
 
         // 获取ES索引状态
-        if (searchSpace.isVectorEnabled()) {
+        if (searchSpace.isActive()) {
             dto.setIndexStatus(getElasticsearchIndexStatus(code));
         }
 
@@ -256,7 +255,7 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
             .map(space -> {
                 SearchSpaceDTO dto = mapper.toDTO(space);
                 // 获取ES索引状态
-                if (space.isVectorEnabled()) {
+                if (space.isActive()) {
                     dto.setIndexStatus(getElasticsearchIndexStatus(space.getCode()));
                 }
                 return dto;
@@ -278,15 +277,17 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     @Transactional(readOnly = true)
     public SearchSpaceStatistics getStatistics() {
         long totalSpaces = searchSpaceRepository.count();
-        long vectorEnabledSpaces = searchSpaceRepository.countByVectorEnabledTrue();
         long activeSpaces = searchSpaceRepository.countByStatus(SearchSpaceStatus.ACTIVE);
+        long inactiveSpaces = searchSpaceRepository.countByStatus(SearchSpaceStatus.INACTIVE);
+        long maintenanceSpaces = searchSpaceRepository.countByStatus(SearchSpaceStatus.MAINTENANCE);
+        long deletedSpaces = searchSpaceRepository.countByStatus(SearchSpaceStatus.DELETED);
 
         return SearchSpaceStatistics.builder()
             .totalSpaces(totalSpaces)
-            .vectorEnabledSpaces(vectorEnabledSpaces)
-            .vectorDisabledSpaces(totalSpaces - vectorEnabledSpaces)
             .activeSpaces(activeSpaces)
-            .inactiveSpaces(totalSpaces - activeSpaces)
+            .inactiveSpaces(inactiveSpaces)
+            .maintenanceSpaces(maintenanceSpaces)
+            .deletedSpaces(deletedSpaces)
             .build();
     }
 

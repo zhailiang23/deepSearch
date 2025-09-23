@@ -33,7 +33,6 @@ public class SearchSpaceMapper {
         dto.setName(entity.getName());
         dto.setCode(entity.getCode());
         dto.setDescription(entity.getDescription());
-        dto.setVectorEnabled(entity.getVectorEnabled());
         dto.setStatus(entity.getStatus());
         dto.setVersion(entity.getVersion());
         dto.setCreatedAt(entity.getCreatedAt());
@@ -73,7 +72,6 @@ public class SearchSpaceMapper {
         entity.setName(request.getName());
         entity.setCode(request.getCode());
         entity.setDescription(request.getDescription());
-        entity.setVectorEnabled(request.getVectorEnabled() != null ? request.getVectorEnabled() : false);
 
         return entity;
     }
@@ -94,7 +92,6 @@ public class SearchSpaceMapper {
         entity.setName(dto.getName());
         entity.setCode(dto.getCode());
         entity.setDescription(dto.getDescription());
-        entity.setVectorEnabled(dto.getVectorEnabled());
         entity.setStatus(dto.getStatus());
         entity.setVersion(dto.getVersion());
 
@@ -118,9 +115,6 @@ public class SearchSpaceMapper {
         }
         if (source.getDescription() != null) {
             target.setDescription(source.getDescription());
-        }
-        if (source.getVectorEnabled() != null) {
-            target.setVectorEnabled(source.getVectorEnabled());
         }
         if (source.getStatus() != null) {
             target.setStatus(source.getStatus());

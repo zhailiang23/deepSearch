@@ -34,6 +34,15 @@ const routes = [
           requiresAuth: true,
           title: '系统设置'
         }
+      },
+      {
+        path: '/search-spaces',
+        name: 'SearchSpaces',
+        component: () => import('@/pages/searchSpace/SearchSpaceManage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '搜索空间管理'
+        }
       }
     ]
   },

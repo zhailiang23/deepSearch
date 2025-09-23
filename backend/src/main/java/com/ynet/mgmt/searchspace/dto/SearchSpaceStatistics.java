@@ -9,18 +9,18 @@ package com.ynet.mgmt.searchspace.dto;
 public class SearchSpaceStatistics {
 
     private long totalSpaces;
-    private long vectorEnabledSpaces;
-    private long vectorDisabledSpaces;
     private long activeSpaces;
     private long inactiveSpaces;
+    private long maintenanceSpaces;
+    private long deletedSpaces;
 
     // 构造函数
     public SearchSpaceStatistics() {}
 
-    public SearchSpaceStatistics(long totalSpaces, long vectorEnabledSpaces, long vectorDisabledSpaces) {
+    public SearchSpaceStatistics(long totalSpaces, long activeSpaces, long inactiveSpaces) {
         this.totalSpaces = totalSpaces;
-        this.vectorEnabledSpaces = vectorEnabledSpaces;
-        this.vectorDisabledSpaces = vectorDisabledSpaces;
+        this.activeSpaces = activeSpaces;
+        this.inactiveSpaces = inactiveSpaces;
     }
 
     // Builder模式
@@ -36,13 +36,13 @@ public class SearchSpaceStatistics {
             return this;
         }
 
-        public Builder vectorEnabledSpaces(long vectorEnabledSpaces) {
-            statistics.vectorEnabledSpaces = vectorEnabledSpaces;
+        public Builder maintenanceSpaces(long maintenanceSpaces) {
+            statistics.maintenanceSpaces = maintenanceSpaces;
             return this;
         }
 
-        public Builder vectorDisabledSpaces(long vectorDisabledSpaces) {
-            statistics.vectorDisabledSpaces = vectorDisabledSpaces;
+        public Builder deletedSpaces(long deletedSpaces) {
+            statistics.deletedSpaces = deletedSpaces;
             return this;
         }
 
@@ -62,10 +62,6 @@ public class SearchSpaceStatistics {
     }
 
     // 业务方法
-    public double getVectorEnabledPercentage() {
-        if (totalSpaces == 0) return 0.0;
-        return (double) vectorEnabledSpaces / totalSpaces * 100;
-    }
 
     public double getActivePercentage() {
         if (totalSpaces == 0) return 0.0;
@@ -81,20 +77,20 @@ public class SearchSpaceStatistics {
         this.totalSpaces = totalSpaces;
     }
 
-    public long getVectorEnabledSpaces() {
-        return vectorEnabledSpaces;
+    public long getMaintenanceSpaces() {
+        return maintenanceSpaces;
     }
 
-    public void setVectorEnabledSpaces(long vectorEnabledSpaces) {
-        this.vectorEnabledSpaces = vectorEnabledSpaces;
+    public void setMaintenanceSpaces(long maintenanceSpaces) {
+        this.maintenanceSpaces = maintenanceSpaces;
     }
 
-    public long getVectorDisabledSpaces() {
-        return vectorDisabledSpaces;
+    public long getDeletedSpaces() {
+        return deletedSpaces;
     }
 
-    public void setVectorDisabledSpaces(long vectorDisabledSpaces) {
-        this.vectorDisabledSpaces = vectorDisabledSpaces;
+    public void setDeletedSpaces(long deletedSpaces) {
+        this.deletedSpaces = deletedSpaces;
     }
 
     public long getActiveSpaces() {
@@ -117,8 +113,8 @@ public class SearchSpaceStatistics {
     public String toString() {
         return "SearchSpaceStatistics{" +
                 "totalSpaces=" + totalSpaces +
-                ", vectorEnabledSpaces=" + vectorEnabledSpaces +
-                ", vectorDisabledSpaces=" + vectorDisabledSpaces +
+                ", maintenanceSpaces=" + maintenanceSpaces +
+                ", deletedSpaces=" + deletedSpaces +
                 ", activeSpaces=" + activeSpaces +
                 ", inactiveSpaces=" + inactiveSpaces +
                 '}';

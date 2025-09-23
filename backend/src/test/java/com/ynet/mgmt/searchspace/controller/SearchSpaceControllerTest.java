@@ -3,6 +3,7 @@ package com.ynet.mgmt.searchspace.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.searchspace.dto.*;
+import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +30,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author system
  * @since 1.0.0
  */
-@WebMvcTest(SearchSpaceController.class)
+@WebMvcTest(value = SearchSpaceController.class, excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class
+})
 @DisplayName("SearchSpaceController 控制器测试")
 class SearchSpaceControllerTest {
 
@@ -217,11 +221,13 @@ class SearchSpaceControllerTest {
     @DisplayName("获取统计信息 - 成功")
     void testGetStatistics_Success() throws Exception {
         // Given
-        SearchSpaceStatistics stats = new SearchSpaceStatistics();
-        stats.setTotalCount(10L);
-        stats.setActiveCount(8L);
-        stats.setInactiveCount(2L);
-        stats.setVectorEnabledCount(5L);
+        SearchSpaceStatistics stats = SearchSpaceStatistics.builder()
+                .totalSpaces(10L)
+                .activeSpaces(8L)
+                .inactiveSpaces(2L)
+                .maintenanceSpaces(0L)
+                .deletedSpaces(0L)
+                .build();
 
         when(searchSpaceService.getStatistics()).thenReturn(stats);
 
@@ -229,52 +235,52 @@ class SearchSpaceControllerTest {
         mockMvc.perform(get("/api/search-spaces/statistics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.totalCount").value(10))
-                .andExpect(jsonPath("$.data.activeCount").value(8));
+                .andExpect(jsonPath("$.data.totalSpaces").value(10))
+                .andExpect(jsonPath("$.data.activeSpaces").value(8));
 
         verify(searchSpaceService, times(1)).getStatistics();
     }
 
     @Test
-    @DisplayName("启用向量检索 - 成功")
-    void testEnableVectorSearch_Success() throws Exception {
+    @DisplayName("启用搜索空间 - 成功")
+    void testEnableSearchSpace_Success() throws Exception {
         // Given
         Long searchSpaceId = 1L;
         SearchSpaceDTO enabledDto = createMockSearchSpaceDTO();
-        enabledDto.setVectorEnabled(true);
+        enabledDto.setStatus(SearchSpaceStatus.ACTIVE);
 
-        when(searchSpaceService.enableVectorSearch(searchSpaceId))
+        when(searchSpaceService.enableSearchSpace(searchSpaceId))
                 .thenReturn(enabledDto);
 
         // When & Then
-        mockMvc.perform(post("/api/search-spaces/{id}/vector/enable", searchSpaceId))
+        mockMvc.perform(post("/api/search-spaces/{id}/enable", searchSpaceId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("向量检索启用成功"))
-                .andExpect(jsonPath("$.data.vectorEnabled").value(true));
+                .andExpect(jsonPath("$.message").value("搜索空间启用成功"))
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"));
 
-        verify(searchSpaceService, times(1)).enableVectorSearch(searchSpaceId);
+        verify(searchSpaceService, times(1)).enableSearchSpace(searchSpaceId);
     }
 
     @Test
-    @DisplayName("禁用向量检索 - 成功")
-    void testDisableVectorSearch_Success() throws Exception {
+    @DisplayName("禁用搜索空间 - 成功")
+    void testDisableSearchSpace_Success() throws Exception {
         // Given
         Long searchSpaceId = 1L;
         SearchSpaceDTO disabledDto = createMockSearchSpaceDTO();
-        disabledDto.setVectorEnabled(false);
+        disabledDto.setStatus(SearchSpaceStatus.INACTIVE);
 
-        when(searchSpaceService.disableVectorSearch(searchSpaceId))
+        when(searchSpaceService.disableSearchSpace(searchSpaceId))
                 .thenReturn(disabledDto);
 
         // When & Then
-        mockMvc.perform(post("/api/search-spaces/{id}/vector/disable", searchSpaceId))
+        mockMvc.perform(post("/api/search-spaces/{id}/disable", searchSpaceId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("向量检索禁用成功"))
-                .andExpect(jsonPath("$.data.vectorEnabled").value(false));
+                .andExpect(jsonPath("$.message").value("搜索空间禁用成功"))
+                .andExpect(jsonPath("$.data.status").value("INACTIVE"));
 
-        verify(searchSpaceService, times(1)).disableVectorSearch(searchSpaceId);
+        verify(searchSpaceService, times(1)).disableSearchSpace(searchSpaceId);
     }
 
     @Test
@@ -319,7 +325,7 @@ class SearchSpaceControllerTest {
         dto.setName("测试搜索空间");
         dto.setCode("test_space");
         dto.setDescription("测试用的搜索空间");
-        dto.setVectorEnabled(false);
+        dto.setStatus(SearchSpaceStatus.ACTIVE);
         dto.setVersion(1L);
         return dto;
     }
@@ -330,7 +336,6 @@ class SearchSpaceControllerTest {
         request.setName("测试搜索空间");
         request.setCode("test_space");
         request.setDescription("测试用的搜索空间");
-        request.setVectorEnabled(false);
         return request;
     }
 
@@ -339,6 +344,7 @@ class SearchSpaceControllerTest {
         UpdateSearchSpaceRequest request = new UpdateSearchSpaceRequest();
         request.setName("更新后的搜索空间");
         request.setDescription("更新后的描述");
+        request.setStatus(SearchSpaceStatus.ACTIVE);
         return request;
     }
 }
