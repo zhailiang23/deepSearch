@@ -228,7 +228,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
   // ESC 关闭移动端侧边栏
   if (event.key === 'Escape' && mobileSidebarVisible.value) {
     closeMobileSidebar()
-    keyboardHint.value = t('nav.sidebarClosed')
+    keyboardHint.value = '侧边栏已关闭'
     return
   }
 
@@ -237,13 +237,13 @@ const handleKeyDown = (event: KeyboardEvent) => {
     event.preventDefault()
     toggleMobileSidebar()
     keyboardHint.value = mobileSidebarVisible.value ?
-      t('nav.sidebarOpened') : t('nav.sidebarClosed')
+      '侧边栏已打开' : '侧边栏已关闭'
     return
   }
 
   // Tab 键导航提示
   if (event.key === 'Tab') {
-    keyboardHint.value = t('nav.tabNavigation')
+    keyboardHint.value = '使用Tab键导航'
   }
 }
 
