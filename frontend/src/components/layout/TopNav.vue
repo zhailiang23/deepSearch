@@ -14,7 +14,7 @@
         variant="ghost"
         size="sm"
         @click="$emit('toggle-sidebar')"
-        :aria-label="sidebarCollapsed ? $t('nav.expandSidebar') : $t('nav.collapseSidebar')"
+        :aria-label="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
         class="hidden lg:flex"
       >
         <PanelLeftClose v-if="!sidebarCollapsed" class="h-4 w-4" />
@@ -27,7 +27,7 @@
         variant="ghost"
         size="sm"
         @click="$emit('toggle-mobile-sidebar')"
-        :aria-label="$t('nav.toggleMenu')"
+        :aria-label="'切换菜单'"
         :class="[
           // 触摸设备优化
           'min-h-[44px] min-w-[44px]'
@@ -55,7 +55,7 @@
         v-if="isMobile"
         variant="ghost"
         size="sm"
-        :aria-label="$t('common.search')"
+        :aria-label="'搜索'"
         class="min-h-[44px] min-w-[44px]"
       >
         <Search class="h-4 w-4" />
@@ -64,15 +64,13 @@
       <!-- 主题切换 -->
       <ThemeToggle />
 
-      <!-- 语言选择器 -->
-      <LanguageSelector />
 
       <!-- 通知按钮 (桌面端) -->
       <Button
         v-if="!isMobile"
         variant="ghost"
         size="sm"
-        :aria-label="$t('nav.notifications')"
+        :aria-label="'通知'"
         class="relative"
       >
         <Bell class="h-4 w-4" />
@@ -91,12 +89,10 @@
 
 <script setup lang="ts">
 import { Menu, Search, Bell, PanelLeft, PanelLeftClose } from 'lucide-vue-next'
-import { useI18n } from 'vue-i18n'
 
 import { Button } from '@/components/ui/button'
 import Breadcrumb from '@/components/common/Breadcrumb.vue'
 import ThemeToggle from '@/components/common/ThemeToggle.vue'
-import LanguageSelector from '@/components/common/LanguageSelector.vue'
 import UserMenu from '@/components/common/UserMenu.vue'
 
 interface Props {
@@ -109,7 +105,6 @@ const props = withDefaults(defineProps<Props>(), {
   sidebarCollapsed: false
 })
 
-const { t } = useI18n()
 
 defineEmits<{
   'toggle-sidebar': []
