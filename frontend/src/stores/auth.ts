@@ -306,7 +306,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     getCurrentUser,
-    refreshTokenAction,
+    refreshTokenAsync: refreshTokenAction,
     hasRole,
     hasPermission,
     initialize

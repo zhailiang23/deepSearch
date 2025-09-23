@@ -107,7 +107,7 @@ export default defineConfig({
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId
           if (facadeModuleId) {
-            const fileName = facadeModuleId.split('/').pop().replace('.vue', '')
+            const fileName = facadeModuleId.split('/').pop()?.replace('.vue', '') || 'chunk'
             return `js/[name]-${fileName}-[hash].js`
           }
           return 'js/[name]-[hash].js'

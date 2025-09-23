@@ -1,6 +1,7 @@
 package com.ynet.mgmt.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import com.ynet.mgmt.config.JwtProperties;
@@ -27,7 +28,7 @@ public class RefreshTokenService {
     private final SecureRandom secureRandom;
 
     @Autowired
-    public RefreshTokenService(RedisTemplate<String, String> stringRedisTemplate,
+    public RefreshTokenService(@Qualifier("customStringRedisTemplate") RedisTemplate<String, String> stringRedisTemplate,
                               JwtProperties jwtProperties) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.jwtProperties = jwtProperties;

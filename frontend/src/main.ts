@@ -14,10 +14,10 @@ app.use(pinia)
 app.use(router)
 app.use(i18n)
 
-// 初始化认证状态
-const authStore = useAuthStore()
-authStore.initialize().catch(error => {
-  console.warn('Failed to initialize auth state:', error)
-})
+// 初始化认证状态 - 暂时注释掉以避免自动调用API
+// const authStore = useAuthStore()
+// authStore.initialize().catch(error => {
+//   console.warn('Failed to initialize auth state:', error)
+// })
 
 app.mount('#app')

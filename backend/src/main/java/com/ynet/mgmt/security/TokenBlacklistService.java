@@ -1,6 +1,7 @@
 package com.ynet.mgmt.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import com.ynet.mgmt.config.JwtProperties;
@@ -22,7 +23,7 @@ public class TokenBlacklistService {
     private final JwtProperties jwtProperties;
 
     @Autowired
-    public TokenBlacklistService(RedisTemplate<String, String> stringRedisTemplate,
+    public TokenBlacklistService(@Qualifier("customStringRedisTemplate") RedisTemplate<String, String> stringRedisTemplate,
                                 JwtProperties jwtProperties) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.jwtProperties = jwtProperties;

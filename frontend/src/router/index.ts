@@ -4,18 +4,17 @@ import { authGuard } from './guards/auth'
 const routes = [
   {
     path: '/',
+    name: 'Dashboard',
+    component: () => import('@/pages/DashboardSimple.vue'),
+    meta: {
+      title: '控制台'
+    }
+  },
+  {
+    path: '/old',
     component: () => import('@/layouts/DefaultLayout.vue'),
     meta: { requiresAuth: true },
     children: [
-      {
-        path: '',
-        name: 'Dashboard',
-        component: () => import('@/pages/Dashboard.vue'),
-        meta: {
-          requiresAuth: true,
-          title: '控制台'
-        }
-      },
       {
         path: '/users',
         name: 'Users',
@@ -41,7 +40,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/pages/auth/Login.vue'),
+    component: () => import('@/pages/auth/LoginSimple.vue'),
     meta: {
       guest: true,
       title: '登录'
@@ -74,8 +73,8 @@ const router = createRouter({
   routes
 })
 
-// 注册全局路由守卫
-router.beforeEach(authGuard)
+// 注册全局路由守卫 - 暂时注释掉
+// router.beforeEach(authGuard)
 
 // 设置页面标题
 router.afterEach((to) => {

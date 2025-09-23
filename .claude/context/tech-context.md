@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-21T10:31:04Z
-version: 1.0
+last_updated: 2025-09-23T04:02:26Z
+version: 1.2
 author: Claude Code PM System
 ---
 
@@ -19,12 +19,21 @@ author: Claude Code PM System
 **Spring Ecosystem**
 - **Spring Boot Starter Web** - REST API development
 - **Spring Boot Starter Data JPA** - Database integration
+- **Spring Boot Starter Security** - Authentication and authorization
+- **Spring Boot Starter Data Redis** - Redis cache integration
 - **Spring Boot Starter Validation** - Bean validation
 - **Spring Boot Starter Actuator** - Health checks and monitoring
 - **Spring Boot DevTools** - Development utilities
 
+**Security & Authentication**
+- **Spring Security:** JWT-based authentication
+- **JJWT (io.jsonwebtoken):** JWT token generation and validation
+- **BCrypt:** Password hashing
+- **Redis:** Token blacklist and refresh token storage
+
 **Database & Persistence**
 - **PostgreSQL:** 15-alpine (Primary database)
+- **Redis:** 7-alpine (Caching and token management)
 - **Hibernate:** ORM through Spring Data JPA
 - **HikariCP:** Connection pooling
 - **H2 Database:** Testing (in-memory)
@@ -46,8 +55,12 @@ author: Claude Code PM System
 - **Vue I18n:** 9.14.5 (Internationalization)
 
 **UI & Styling**
-- **Reka UI:** 2.5.0 (Component library)
+- **shadcn-vue:** Modern component library (replaces Reka UI)
+- **Reka UI:** 2.5.0 (Base component primitives)
 - **TailwindCSS:** 3.4.17 (Utility-first CSS)
+- **Lucide Vue Next:** Icon library
+- **clsx:** Conditional className utility
+- **tailwind-merge:** Tailwind class merging
 - **Lucide Vue Next:** 0.544.0 (Icon library)
 - **Class Variance Authority:** 0.7.1 (Component variants)
 - **TailwindCSS Merge:** 3.3.1 (Class merging)
@@ -215,3 +228,6 @@ author: Claude Code PM System
 - Modern browsers with ES2020 support
 - TypeScript strict mode compatibility
 - Vue 3 Composition API support
+
+## Update History
+- 2025-09-23T04:02:26Z: Added Spring Security with JWT authentication, Redis integration, shadcn-vue component library, Playwright testing framework, and enhanced development tools

@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-21T10:31:04Z
-version: 1.0
+last_updated: 2025-09-23T04:02:26Z
+version: 1.1
 author: Claude Code PM System
 ---
 
@@ -46,18 +46,38 @@ backend/
 │   │   │   │   ├── UserRepository.java
 │   │   │   │   ├── UserRepositoryCustom.java
 │   │   │   │   └── UserRepositoryImpl.java
-│   │   │   ├── service/        # Business logic (to be implemented)
-│   │   │   ├── controller/     # REST controllers (to be implemented)
+│   │   │   ├── service/        # Business logic services
+│   │   │   │   ├── AuthService.java
+│   │   │   │   ├── UserService.java
+│   │   │   │   └── UserServiceImpl.java
+│   │   │   ├── controller/     # REST controllers
+│   │   │   │   ├── AuthController.java
+│   │   │   │   └── UserController.java
 │   │   │   ├── dto/           # Data transfer objects
+│   │   │   │   ├── auth/      # Authentication DTOs
+│   │   │   │   │   ├── LoginRequest.java
+│   │   │   │   │   ├── LoginResponse.java
+│   │   │   │   │   ├── RefreshTokenRequest.java
+│   │   │   │   │   └── RefreshTokenResponse.java
 │   │   │   │   ├── UserStatistics.java
 │   │   │   │   └── UserSearchCriteria.java
 │   │   │   ├── config/        # Configuration classes
-│   │   │   │   └── JpaConfig.java
+│   │   │   │   ├── JpaConfig.java
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── RedisConfig.java
+│   │   │   │   └── DataInitializer.java
+│   │   │   ├── security/      # Security components
+│   │   │   │   ├── JwtService.java
+│   │   │   │   ├── RefreshTokenService.java
+│   │   │   │   └── TokenBlacklistService.java
 │   │   │   └── MgmtApplication.java # Main application class
 │   │   └── resources/
-│   │       └── application.yml  # Application configuration
+│   │       ├── application.yml      # Base configuration
+│   │       └── application-dev.yml  # Development configuration
 │   └── test/
 │       └── java/com/ynet/mgmt/
+│           ├── integration/        # Integration tests
+│           ├── e2e/               # End-to-end tests
 │           └── MgmtApplicationTests.java
 ├── target/                    # Maven build output
 ├── pom.xml                   # Maven dependencies
@@ -74,10 +94,21 @@ backend/
 frontend/
 ├── src/
 │   ├── components/          # Reusable Vue components
-│   │   ├── ui/             # UI library components
+│   │   ├── ui/             # shadcn-vue UI library components
 │   │   │   ├── button/     # Button component variants
-│   │   │   └── dropdown-menu/ # Dropdown menu components
+│   │   │   ├── card/       # Card components
+│   │   │   ├── collapsible/ # Collapsible components
+│   │   │   ├── dropdown-menu/ # Dropdown menu components
+│   │   │   ├── input/      # Input components
+│   │   │   ├── label/      # Label components
+│   │   │   ├── separator/  # Separator components
+│   │   │   ├── sheet/      # Sheet components
+│   │   │   ├── sidebar/    # Sidebar components
+│   │   │   ├── skeleton/   # Skeleton components
+│   │   │   ├── table/      # Table components
+│   │   │   └── tooltip/    # Tooltip components
 │   │   ├── layout/         # Layout components
+│   │   │   ├── ResponsiveLayout.vue
 │   │   │   ├── SidebarNav.vue
 │   │   │   └── TopNav.vue
 │   │   ├── common/         # Common components
@@ -85,13 +116,16 @@ frontend/
 │   │   │   ├── Breadcrumb.vue
 │   │   │   ├── LanguageSelector.vue
 │   │   │   └── ThemeToggle.vue
+│   │   ├── LoginForm.vue   # Login form component
 │   │   └── icons/          # Icon components
 │   ├── pages/              # Application pages
 │   │   ├── auth/           # Authentication pages
-│   │   │   └── Login.vue
+│   │   │   ├── Login.vue
+│   │   │   └── LoginSimple.vue
 │   │   ├── users/          # User management pages
 │   │   │   └── UserList.vue
 │   │   ├── Dashboard.vue
+│   │   ├── DashboardSimple.vue
 │   │   └── Settings.vue
 │   ├── layouts/            # Page layouts
 │   │   └── DefaultLayout.vue
@@ -112,24 +146,31 @@ frontend/
 │   │   └── en-US.json
 │   ├── assets/             # Static assets
 │   │   ├── styles/
+│   │   │   └── globals.css
 │   │   ├── main.css
 │   │   ├── base.css
 │   │   └── logo.svg
 │   ├── App.vue             # Root component
 │   ├── main.ts             # Application entry point
 │   └── env.d.ts            # Environment type definitions
+├── tests/                  # Test files
+│   └── e2e/               # End-to-end tests
+│       ├── config/        # Test configuration
+│       └── auth-integration.spec.ts
 ├── dist/                   # Build output
 ├── node_modules/           # Node.js dependencies
 ├── public/                 # Static public files
+├── .env.development        # Development environment variables
 ├── package.json            # Node.js dependencies and scripts
 ├── package-lock.json       # Dependency lock file
-├── components.json         # UI components configuration
+├── components.json         # shadcn-vue components configuration
 ├── tsconfig.json           # TypeScript configuration
 ├── tsconfig.app.json       # App TypeScript configuration
 ├── tsconfig.node.json      # Node TypeScript configuration
 ├── vite.config.ts          # Vite build configuration
 ├── tailwind.config.js      # TailwindCSS configuration
 ├── postcss.config.js       # PostCSS configuration
+├── playwright.config.ts    # Playwright test configuration
 ├── Dockerfile              # Docker image definition
 ├── Dockerfile.prod         # Production Docker image
 ├── index.html              # HTML template

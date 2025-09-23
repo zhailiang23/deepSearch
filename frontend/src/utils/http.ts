@@ -58,13 +58,19 @@ const http = axios.create({
   }
 })
 
+// 添加调试信息
+console.log('HTTP配置 - 现在使用直接API URL:', {
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  isDev: import.meta.env.DEV
+})
+
 // 请求拦截器
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const authStore = useAuthStore()
 
     // 添加请求时间戳用于超时检测
-    config.metadata = { startTime: new Date() }
+    ;(config as any).metadata = { startTime: new Date() }
 
     // 添加认证token
     if (authStore.token) {
@@ -120,7 +126,7 @@ http.interceptors.response.use(
 
       try {
         // 尝试刷新token
-        const newToken = await authStore.refreshToken()
+        const newToken = await authStore.refreshTokenAsync()
 
         if (newToken) {
           // 刷新成功，更新Authorization头并重新发送原请求
@@ -167,7 +173,7 @@ http.interceptors.response.use(
 
     // 创建格式化的错误对象
     const httpError: HttpError = new Error(
-      error.response?.data?.message ||
+      (error.response?.data as any)?.message ||
       error.message ||
       '请求失败'
     )
