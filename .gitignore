@@ -309,3 +309,10 @@ screenshot.*
 
 # Health check scripts output
 health-check.log
+
+# Playwright MCP tool files
+.playwright-mcp/
+
+# Monitoring and performance files
+monitoring/
+performance/
