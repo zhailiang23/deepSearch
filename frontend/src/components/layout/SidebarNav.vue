@@ -79,12 +79,12 @@
 
       <!-- 分隔线 -->
       <div
-        v-if="!collapsed || isMobile"
+        v-if="(!collapsed || isMobile) && auxiliaryNavigation.length > 0"
         class="my-4 border-t border-border"
       />
 
       <!-- 辅助导航 -->
-      <ul v-if="!collapsed || isMobile" class="space-y-1">
+      <ul v-if="(!collapsed || isMobile) && auxiliaryNavigation.length > 0" class="space-y-1">
         <li v-for="item in auxiliaryNavigation" :key="item.name">
           <router-link
             :to="item.to"
@@ -126,11 +126,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { LayoutDashboard, Users, Settings, HelpCircle as Help, User } from 'lucide-vue-next'
+import { Search, Settings, User } from 'lucide-vue-next'
 
 interface Props {
   collapsed?: boolean
   isMobile?: boolean
+}
+
+interface NavigationItem {
+  name: string
+  label: string
+  to: string
+  icon: any
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -141,16 +148,13 @@ const props = withDefaults(defineProps<Props>(), {
 const $route = useRoute()
 
 // 主要导航菜单
-const navigation = computed(() => [
-  { name: 'dashboard', label: 'nav.dashboard', to: '/', icon: LayoutDashboard },
-  { name: 'users', label: 'nav.users', to: '/users', icon: Users },
-  { name: 'settings', label: 'nav.settings', to: '/settings', icon: Settings },
+const navigation = computed((): NavigationItem[] => [
+  { name: 'search-spaces', label: '搜索空间管理', to: '/search-spaces', icon: Search },
+  { name: 'settings', label: '设置', to: '/settings', icon: Settings },
 ])
 
-// 辅助导航菜单
-const auxiliaryNavigation = computed(() => [
-  { name: 'help', label: 'nav.help', to: '/help', icon: Help },
-])
+// 辅助导航菜单 - 暂时移除
+const auxiliaryNavigation = computed((): NavigationItem[] => [])
 
 // 检查路由是否激活
 const isActiveRoute = (path: string) => {

@@ -170,6 +170,13 @@
                   <PlayCircle class="h-4 w-4" />
                 </button>
                 <button
+                  @click="$emit('import', space)"
+                  class="p-2 text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
+                  title="导入数据"
+                >
+                  <Upload class="h-4 w-4" />
+                </button>
+                <button
                   @click="$emit('edit', space)"
                   class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
                   title="编辑"
@@ -230,7 +237,8 @@ import {
   Edit,
   Eye,
   PlayCircle,
-  PauseCircle
+  PauseCircle,
+  Upload
 } from 'lucide-vue-next'
 import { useSearchSpaceStore } from '@/stores/searchSpace'
 import SearchSpaceStatusBadge from './SearchSpaceStatusBadge.vue'
@@ -242,6 +250,7 @@ interface Emits {
   (e: 'view', space: SearchSpace): void
   (e: 'enable', space: SearchSpace): void
   (e: 'disable', space: SearchSpace): void
+  (e: 'import', space: SearchSpace): void
 }
 
 const emit = defineEmits<Emits>()

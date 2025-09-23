@@ -22,6 +22,15 @@ const routes = [
           requiresAuth: true,
           title: '搜索空间管理'
         }
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('@/pages/Settings.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '设置'
+        }
       }
     ]
   },
