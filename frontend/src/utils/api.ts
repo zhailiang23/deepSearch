@@ -9,7 +9,10 @@ export const authApi = {
     http.get('/auth/profile'),
 
   logout: (): Promise<void> =>
-    http.post('/auth/logout')
+    http.post('/auth/logout'),
+
+  refreshToken: (refreshToken: string): Promise<LoginResponse> =>
+    http.post('/auth/refresh', { refreshToken })
 }
 
 export const userApi = {

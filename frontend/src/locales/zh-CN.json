@@ -3,7 +3,16 @@
     "dashboard": "仪表板",
     "users": "用户管理",
     "settings": "系统设置",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "menu": "菜单",
+    "toggleMenu": "切换菜单",
+    "sidebarOpened": "侧边栏已打开",
+    "sidebarClosed": "侧边栏已关闭",
+    "tabNavigation": "使用Tab键导航",
+    "expandSidebar": "展开侧边栏",
+    "collapseSidebar": "收起侧边栏",
+    "notifications": "通知",
+    "help": "帮助"
   },
   "common": {
     "save": "保存",
@@ -15,7 +24,13 @@
     "loading": "加载中...",
     "confirm": "确认",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "close": "关闭",
+    "open": "打开",
+    "mainContent": "主要内容",
+    "skipToMain": "跳转到主要内容",
+    "language": "语言",
+    "selectLanguage": "选择语言"
   },
   "auth": {
     "login": "登录",
@@ -23,6 +38,35 @@
     "password": "密码",
     "rememberMe": "记住我",
     "loginFailed": "登录失败",
-    "pleaseLogin": "请登录"
+    "pleaseLogin": "请登录",
+    "welcome": "欢迎使用",
+    "managementSystem": "管理系统",
+    "loginToAccount": "请登录您的账户",
+    "enterUsername": "请输入用户名",
+    "enterPassword": "请输入密码",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "没有账户？",
+    "register": "注册",
+    "loginSuccess": "登录成功",
+    "loginError": "登录失败，请检查用户名和密码",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码"
+  },
+  "responsive": {
+    "mobile": "移动端",
+    "tablet": "平板端",
+    "desktop": "桌面端",
+    "portrait": "竖屏",
+    "landscape": "横屏",
+    "touchDevice": "触摸设备",
+    "screenSize": "屏幕尺寸",
+    "currentBreakpoint": "当前断点"
+  },
+  "accessibility": {
+    "skipNavigation": "跳过导航",
+    "keyboardShortcuts": "键盘快捷键",
+    "screenReader": "屏幕阅读器",
+    "highContrast": "高对比度",
+    "reduceMotion": "减少动画"
   }
 }

@@ -1,257 +1,473 @@
 ---
-created: 2025-09-21T07:41:34Z
-last_updated: 2025-09-21T07:41:34Z
+created: 2025-09-21T10:31:04Z
+last_updated: 2025-09-21T10:31:04Z
 version: 1.0
 author: Claude Code PM System
 ---
 
 # Project Style Guide
 
-## Development Philosophy
+## Code Style Standards
 
-### Core Principles from `.claude/CLAUDE.md`
-1. **Think carefully and implement the most concise solution that changes as little code as possible**
-2. **NO PARTIAL IMPLEMENTATION** - Complete all features fully
-3. **NO SIMPLIFICATION** - No placeholder comments or incomplete implementations
-4. **NO CODE DUPLICATION** - Reuse existing functions and constants
-5. **NO DEAD CODE** - Either use or delete completely
-6. **NO OVER-ENGINEERING** - Prefer working solutions over enterprise patterns
+### Java/Spring Boot Backend
 
-## Code Style and Standards
+**Naming Conventions**
+```java
+// Classes: PascalCase
+public class UserRepository {}
+public class MgmtApplication {}
 
-### File and Directory Naming
-- **Configuration Files**: `kebab-case.md` for context and documentation
-- **Command Files**: `category/action.md` or `category/action.sh`
-- **Agent Files**: `agent-type.md` (e.g., `code-analyzer.md`)
-- **Script Files**: `descriptive-name.sh` with clear purpose indication
+// Methods and Variables: camelCase
+public void updateLastLogin() {}
+private String emailAddress;
 
-### Markdown Standards
-- **Frontmatter Required**: All context and configuration files must include YAML frontmatter
-- **Structure**: Use consistent heading hierarchy (H1 for main title, H2 for sections)
-- **Code Blocks**: Use language-specific syntax highlighting
-- **Links**: Use relative paths for internal links, absolute for external
+// Constants: UPPER_SNAKE_CASE
+public static final int MAX_LOGIN_ATTEMPTS = 5;
+public static final String DEFAULT_ROLE = "USER";
 
-### YAML Frontmatter Format
+// Packages: lowercase with dots
+package com.ynet.mgmt.entity;
+package com.ynet.mgmt.repository;
+```
+
+**Class Organization Pattern**
+```java
+public class User extends BaseEntity {
+    // 1. Static constants
+    public static final int MAX_USERNAME_LENGTH = 50;
+
+    // 2. Instance fields (with annotations)
+    @Column(name = "username", unique = true, nullable = false)
+    private String username;
+
+    // 3. Constructors
+    public User() {}
+    public User(String username, String email) {}
+
+    // 4. Business methods
+    public boolean isActive() {}
+    public void lockAccount() {}
+
+    // 5. Getters and setters
+    public String getUsername() {}
+    public void setUsername(String username) {}
+
+    // 6. Object methods (equals, hashCode, toString)
+    @Override
+    public boolean equals(Object o) {}
+}
+```
+
+**Documentation Standards**
+```java
+/**
+ * 用户实体类
+ * 管理系统用户的基本信息、状态和安全相关数据
+ *
+ * @author system
+ * @since 1.0.0
+ */
+@Entity
+public class User extends BaseEntity {
+
+    /**
+     * 检查用户是否处于激活状态
+     * @return true if 用户状态为ACTIVE
+     */
+    public boolean isActive() {
+        return UserStatus.ACTIVE.equals(this.status);
+    }
+}
+```
+
+**Database Conventions**
+```java
+// Table names: snake_case
+@Table(name = "users")
+
+// Column names: snake_case
+@Column(name = "full_name")
+@Column(name = "created_at")
+
+// Index names: descriptive with prefix
+@Index(name = "idx_username", columnList = "username")
+@Index(name = "idx_email", columnList = "email")
+```
+
+### Vue.js/TypeScript Frontend
+
+**Component Naming**
+```typescript
+// Components: PascalCase (single file)
+UserMenu.vue
+LanguageSelector.vue
+DefaultLayout.vue
+
+// Component directories: kebab-case
+dropdown-menu/
+ui/button/
+layout/common/
+```
+
+**File Structure Pattern**
+```vue
+<!-- Template first -->
+<template>
+  <div class="user-menu">
+    <button @click="toggleMenu">
+      {{ user.name }}
+    </button>
+  </div>
+</template>
+
+<!-- Script second -->
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import type { User } from '@/types/auth'
+
+// Props and emits
+interface Props {
+  user: User
+}
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  logout: []
+}>()
+
+// Reactive state
+const isMenuOpen = ref(false)
+
+// Computed properties
+const displayName = computed(() =>
+  props.user.fullName || props.user.username
+)
+
+// Methods
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value
+}
+</script>
+
+<!-- Styles last -->
+<style scoped>
+.user-menu {
+  @apply relative inline-block;
+}
+</style>
+```
+
+**TypeScript Conventions**
+```typescript
+// Interfaces: PascalCase with descriptive names
+interface User {
+  id: number
+  username: string
+  email: string
+}
+
+interface UserSearchCriteria {
+  keyword?: string
+  status?: UserStatus
+  role?: UserRole
+}
+
+// Enums: PascalCase
+enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  LOCKED = 'LOCKED'
+}
+
+// Functions: camelCase
+function validateUser(user: User): boolean {}
+function formatDisplayName(user: User): string {}
+```
+
+**Composable Pattern**
+```typescript
+// Composables: use prefix + descriptive name
+export function useAuth() {
+  const user = ref<User | null>(null)
+  const isLoggedIn = computed(() => !!user.value)
+
+  async function login(credentials: LoginCredentials) {
+    // Implementation
+  }
+
+  function logout() {
+    user.value = null
+  }
+
+  return {
+    user: readonly(user),
+    isLoggedIn,
+    login,
+    logout
+  }
+}
+```
+
+## File Organization Patterns
+
+### Backend Directory Structure
+```
+src/main/java/com/ynet/mgmt/
+├── config/          # Configuration classes
+├── controller/      # REST controllers
+├── dto/            # Data transfer objects
+├── entity/         # JPA entities
+├── exception/      # Custom exceptions
+├── repository/     # Data access layer
+├── service/        # Business logic
+└── util/           # Utility classes
+```
+
+### Frontend Directory Structure
+```
+src/
+├── components/
+│   ├── ui/         # Reusable UI components
+│   ├── layout/     # Layout components
+│   ├── common/     # Common business components
+│   └── icons/      # Icon components
+├── composables/    # Vue composables
+├── layouts/        # Page layouts
+├── pages/          # Route components
+├── stores/         # Pinia stores
+├── types/          # TypeScript definitions
+├── utils/          # Utility functions
+└── assets/         # Static assets
+```
+
+## Comment Style
+
+### Java Comments
+```java
+/**
+ * JavaDoc for public APIs
+ * Include @param, @return, @throws as needed
+ */
+public void updateUser(User user) {
+    // Single line comments for implementation details
+    validateUserData(user);
+
+    /* Multi-line comments for complex logic
+     * that requires detailed explanation
+     */
+    if (user.getStatus() == UserStatus.LOCKED) {
+        // Check if lock period has expired
+        checkLockExpiration(user);
+    }
+}
+```
+
+### TypeScript Comments
+```typescript
+/**
+ * JSDoc for public functions and interfaces
+ * @param user - The user to validate
+ * @returns True if user is valid
+ */
+function validateUser(user: User): boolean {
+  // Inline comments for business logic
+  if (!user.email || !user.email.includes('@')) {
+    return false
+  }
+
+  // TODO: Add more validation rules
+  return true
+}
+```
+
+### Vue Template Comments
+```vue
+<template>
+  <!-- Component description comments -->
+  <div class="user-profile">
+    <!-- Conditional rendering explanation -->
+    <div v-if="user.isVerified" class="verified-badge">
+      Verified
+    </div>
+
+    <!-- Complex template logic explanation -->
+    <UserActions
+      :user="user"
+      @edit="handleEdit"
+      @delete="handleDelete"
+    />
+  </div>
+</template>
+```
+
+## Configuration File Patterns
+
+### Backend Configuration (application.yml)
 ```yaml
----
-created: YYYY-MM-DDTHH:MM:SSZ    # Real UTC datetime
-last_updated: YYYY-MM-DDTHH:MM:SSZ
-version: MAJOR.MINOR
-author: Claude Code PM System
----
+# Environment-specific configuration
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  # Database configuration
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:mgmt_db}
+    username: ${DB_USERNAME:mgmt_user}
+    password: ${DB_PASSWORD:mgmt_password}
+
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:create-drop}
+    show-sql: ${SHOW_SQL:true}
 ```
 
-## Agent Development Standards
-
-### Agent File Structure
-```markdown
----
-agent: agent-name
-capabilities: [tool1, tool2, tool3]
-specialization: "brief description"
----
-
-# Agent Name
-
-## Purpose
-Clear statement of agent responsibility
-
-## Capabilities
-- Specific capability 1
-- Specific capability 2
-
-## Usage Patterns
-When and how to use this agent
-
-## Integration Points
-How agent works with other system components
+### Frontend Configuration (package.json)
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --build"
+  },
+  "dependencies": {
+    "@vueuse/core": "^13.9.0",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "~5.8.0"
+  }
+}
 ```
-
-### Agent Naming Convention
-- Use `kebab-case` for agent names
-- Names should reflect primary function: `code-analyzer`, `test-runner`
-- Avoid generic names like `helper` or `utility`
-
-## Command Development Standards
-
-### Command File Structure
-```markdown
----
-allowed-tools: [Read, Write, Bash, Task]
-category: command-category
----
-
-# Command Title
-
-## Purpose
-Clear statement of command function
-
-## Required Rules
-Reference to any applicable rules from `.claude/rules/`
-
-## Preflight Checklist
-Validation steps before execution
-
-## Instructions
-Step-by-step command implementation
-
-## Error Handling
-How to handle common failure scenarios
-```
-
-### Command Implementation Guidelines
-- **Fail Fast**: Check all prerequisites before starting operations
-- **Clear Error Messages**: Provide actionable error messages with solutions
-- **Atomic Operations**: Complete fully or not at all
-- **Permission Checks**: Verify tool access before attempting operations
-
-## Context Documentation Standards
-
-### Context File Requirements
-- **Frontmatter**: Must include creation date, last update, version, author
-- **Current Information**: All information must be accurate and up-to-date
-- **Structured Content**: Use consistent heading hierarchy and formatting
-- **Actionable Content**: Focus on information that enables development decisions
-
-### Content Guidelines
-- **Be Specific**: Avoid vague or generic statements
-- **Include Examples**: Provide concrete examples where helpful
-- **Reference Files**: Include file paths with line numbers when referencing code
-- **Update Regularly**: Keep information current as project evolves
 
 ## Error Handling Patterns
 
-### Standard Error Response Format
+### Backend Error Handling
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
+            ValidationException ex) {
+        return ResponseEntity
+            .badRequest()
+            .body(new ErrorResponse("VALIDATION_ERROR", ex.getMessage()));
+    }
+}
 ```
-❌ [Error Type]: Brief description
-💡 Solution: Specific steps to resolve
-🔗 Context: Related information or documentation
+
+### Frontend Error Handling
+```typescript
+// Store error handling
+export const useErrorStore = defineStore('error', () => {
+  const errors = ref<string[]>([])
+
+  function addError(message: string) {
+    errors.value.push(message)
+  }
+
+  function clearErrors() {
+    errors.value = []
+  }
+
+  return { errors, addError, clearErrors }
+})
+
+// Component error handling
+try {
+  await userService.updateUser(user)
+  showSuccess('User updated successfully')
+} catch (error) {
+  showError('Failed to update user')
+  console.error('User update error:', error)
+}
 ```
 
-### Error Categories
-- **Configuration Errors**: Missing or invalid configuration
-- **Permission Errors**: Insufficient tool access or file permissions
-- **Dependency Errors**: Missing required tools or dependencies
-- **Validation Errors**: Invalid input or precondition failures
+## Testing Conventions
 
-## Testing Standards
+### Backend Testing
+```java
+@SpringBootTest
+class UserServiceTest {
 
-### Test Implementation Requirements
-- **IMPLEMENT TEST FOR EVERY FUNCTION** - No exceptions
-- **NO CHEATER TESTS** - Tests must accurately reflect real usage
-- **Verbose Tests** - Tests should be designed for debugging
-- **Real Testing** - No mock services, test against real implementations
+    @Test
+    @DisplayName("Should create user with valid data")
+    void shouldCreateUserWithValidData() {
+        // Given
+        User user = new User("testuser", "test@example.com");
 
-### Test Naming and Organization
-- Test files should clearly indicate what they're testing
-- Test names should describe the specific behavior being tested
-- Organize tests to match source code structure
-- Include both positive and negative test cases
+        // When
+        User result = userService.createUser(user);
+
+        // Then
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.getUsername()).isEqualTo("testuser");
+    }
+}
+```
+
+### Frontend Testing (Future)
+```typescript
+describe('UserMenu', () => {
+  it('should display user name', () => {
+    const user = { id: 1, username: 'testuser', email: 'test@example.com' }
+    const wrapper = mount(UserMenu, { props: { user } })
+
+    expect(wrapper.text()).toContain('testuser')
+  })
+})
+```
+
+## Git Commit Conventions
+
+### Commit Message Format
+```
+type(scope): subject
+
+body (optional)
+
+footer (optional)
+```
+
+### Examples
+```bash
+# Feature commits
+feat(user): 添加用户登录功能
+feat(api): 实现用户管理REST API
+
+# Bug fixes
+fix(auth): 修复登录失败次数计算错误
+fix(ui): 解决用户列表分页显示问题
+
+# Documentation
+docs(readme): 更新安装说明
+docs(api): 添加用户API文档
+
+# Refactoring
+refactor(service): 重构用户服务层结构
+refactor(component): 优化用户菜单组件
+
+# Testing
+test(user): 添加用户实体单元测试
+test(integration): 添加用户API集成测试
+```
 
 ## Code Quality Standards
 
-### Linting and Formatting
-- **Python**: Use `ruff` for linting and formatting
-- **JavaScript/Node.js**: Follow npm standard patterns
-- **Java**: Prepare for standard Java formatting tools
-- **Shell Scripts**: Follow bash best practices
+### General Principles
+1. **DRY (Don't Repeat Yourself)** - 避免代码重复
+2. **SOLID Principles** - 遵循面向对象设计原则
+3. **Clean Code** - 编写清晰、可读的代码
+4. **Performance** - 考虑性能影响
+5. **Security** - 遵循安全最佳实践
 
-### Documentation Requirements
-- **API Documentation**: Document all public interfaces
-- **Usage Examples**: Include practical examples in documentation
-- **Architecture Decisions**: Document significant architectural choices
-- **Change Log**: Maintain clear record of changes and rationale
-
-## Git and Version Control Standards
-
-### Commit Message Format
-Based on analysis of existing project (single initial commit):
-```
-Brief description of change
-
-Detailed explanation if needed
-
-No Claude attribution (per user requirements)
-```
-
-### Branch Naming
-- Use descriptive branch names
-- Include issue/feature reference when applicable
-- Use `kebab-case` for branch names
-- Examples: `feature/context-optimization`, `fix/permission-error`
-
-### File Management
-- **Ignore Patterns**: Follow `.gitignore` for Java project patterns
-- **Sensitive Information**: Never commit secrets, keys, or personal information
-- **Binary Files**: Avoid committing large binary files
-- **Generated Files**: Don't commit build artifacts or generated code
-
-## Permission and Security Standards
-
-### Tool Permission Guidelines
-- **Whitelist Approach**: Only explicitly allowed tools are permitted
-- **Minimal Access**: Grant only necessary permissions for each operation
-- **Audit Trail**: Maintain clear record of tool usage
-- **Review Regularly**: Periodically review and update permissions
-
-### Security Considerations
-- **No Secrets in Code**: Never commit API keys, passwords, or tokens
-- **Validate Inputs**: Always validate user inputs before processing
-- **Safe Defaults**: Choose secure defaults for all configuration options
-- **Access Control**: Implement appropriate access controls for sensitive operations
-
-## Performance and Optimization Standards
-
-### Context Optimization
-- **Intelligent Summarization**: Use agents to provide concise summaries
-- **Relevant Information**: Include only information necessary for current tasks
-- **Structured Data**: Organize information for easy consumption
-- **Regular Updates**: Keep context current to maintain relevance
-
-### Resource Management
-- **File Handle Management**: Always close files and clean up resources
-- **Memory Usage**: Be mindful of memory consumption in long-running operations
-- **Network Efficiency**: Minimize unnecessary network requests
-- **Caching**: Use intelligent caching for frequently accessed information
-
-## Integration Standards
-
-### Tool Integration Guidelines
-- **Standard Interfaces**: Use consistent patterns for tool integration
-- **Error Handling**: Implement robust error handling for external tools
-- **Version Compatibility**: Ensure compatibility with common tool versions
-- **Graceful Degradation**: Handle missing or unavailable tools gracefully
-
-### External Service Integration
-- **API Standards**: Follow REST and API best practices
-- **Authentication**: Implement secure authentication patterns
-- **Rate Limiting**: Respect service rate limits and implement backoff
-- **Monitoring**: Include appropriate logging and monitoring
-
-## Maintenance and Evolution
-
-### Code Maintenance Guidelines
-- **Regular Refactoring**: Continuously improve code quality
-- **Technical Debt Management**: Address technical debt systematically
-- **Dependency Updates**: Keep dependencies current and secure
-- **Performance Monitoring**: Monitor and optimize system performance
-
-### Documentation Maintenance
-- **Regular Updates**: Update documentation as system evolves
-- **Accuracy Verification**: Ensure documentation matches implementation
-- **Example Updates**: Keep examples current and relevant
-- **User Feedback**: Incorporate user feedback into documentation improvements
-
-## Quality Assurance
-
-### Review Process
-- **Code Review**: All changes should be reviewed before integration
-- **Testing Requirements**: All code must include appropriate tests
-- **Documentation Review**: Ensure documentation is complete and accurate
-- **Performance Impact**: Consider performance impact of all changes
-
-### Continuous Improvement
-- **Metrics Collection**: Collect metrics on system usage and performance
-- **User Feedback**: Actively seek and incorporate user feedback
-- **Best Practice Evolution**: Continuously evolve best practices based on experience
-- **Community Input**: Engage with community for improvement suggestions
+### Code Review Checklist
+- [ ] 代码符合命名约定
+- [ ] 包含适当的注释和文档
+- [ ] 错误处理完整
+- [ ] 测试覆盖充分
+- [ ] 性能考虑合理
+- [ ] 安全实践正确
+- [ ] 遵循项目架构模式

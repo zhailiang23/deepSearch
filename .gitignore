@@ -63,6 +63,11 @@ replay_pid*
 # =============================================================================
 # Dependencies
 node_modules/
+
+# Testing
+**/tests/
+**/test-results/
+**/playwright-report/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -143,6 +148,7 @@ public
 
 # Vite build output
 dist-ssr/
+examples/
 *.local
 
 # Rollup.js default build output
@@ -303,3 +309,10 @@ screenshot.*
 
 # Health check scripts output
 health-check.log
+
+# Playwright MCP tool files
+.playwright-mcp/
+
+# Monitoring and performance files
+monitoring/
+performance/

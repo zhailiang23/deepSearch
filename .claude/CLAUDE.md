@@ -1,55 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 > Think carefully and implement the most concise solution that changes as little code as possible.
-
-## Project Architecture
-
-This is an AI-driven project management framework built around Claude AI agents. The system uses:
-
-- **Agent-driven architecture**: Specialized agents (`code-analyzer`, `file-analyzer`, `test-runner`, `parallel-worker`) handle specific tasks
-- **Command system**: Markdown-based commands in `.claude/commands/` for project management, testing, and context management
-- **Context optimization**: Agents provide summaries to preserve conversation context
-- **Permission-based security**: Tool access controlled via `.claude/settings.local.json`
-
-## Development Commands
-
-### Project Management
-```bash
-/pm:init           # Initialize project management system
-/pm:status         # Check project status
-/pm:issue-start    # Start working on an issue
-/pm:prd-new        # Create new PRD
-```
-
-### Context Management
-```bash
-/context:create    # Create initial project context
-/context:update    # Update context with recent changes
-/context:prime     # Load context into conversation
-```
-
-### Testing
-```bash
-/testing:prime     # Configure testing setup
-/testing:run       # Execute tests with analysis
-```
-
-### Utilities
-```bash
-/prompt           # Handle complex prompts
-/re-init          # Update CLAUDE.md
-/code-rabbit      # Process CodeRabbit reviews
-```
-
-## Key Directories
-
-- `.claude/agents/` - Agent definitions and capabilities
-- `.claude/commands/` - Command system implementations
-- `.claude/scripts/` - Shell scripts for automation
-- `.claude/context/` - Project context documentation
-- `.claude/rules/` - System rules and constraints
 
 ## USE SUB-AGENTS FOR CONTEXT OPTIMIZATION
 

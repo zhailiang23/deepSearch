@@ -48,7 +48,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
+      dockerfile: ../docker/Dockerfile.backend.prod
     container_name: mgmt-backend-prod
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -84,7 +84,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: ../docker/Dockerfile.frontend.prod
     container_name: mgmt-frontend-prod
     depends_on:
       - backend
@@ -103,9 +103,10 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/default.prod.conf:/etc/nginx/conf.d/default.conf
       - ./ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
     depends_on:
       - frontend
       - backend

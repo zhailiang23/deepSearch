@@ -1,248 +1,211 @@
 ---
-created: 2025-09-21T07:41:34Z
-last_updated: 2025-09-21T07:41:34Z
+created: 2025-09-21T10:31:04Z
+last_updated: 2025-09-21T10:31:04Z
 version: 1.0
 author: Claude Code PM System
 ---
 
-# System Patterns and Architecture
+# System Patterns
 
-## Core Architectural Patterns
+## Architectural Patterns
 
-### 1. Agent-Driven Architecture
-**Pattern**: Specialized AI agents handle distinct responsibilities
-**Implementation**:
-- `code-analyzer`: Code review, bug detection, logic tracing
-- `file-analyzer`: File content summarization and analysis
-- `test-runner`: Test execution with intelligent result analysis
-- `parallel-worker`: Coordinated parallel task execution
+### Overall Architecture
+**Pattern:** Microservices with Containerization
+- **Frontend:** Single Page Application (SPA)
+- **Backend:** RESTful API service
+- **Database:** Relational database with caching layer
+- **Infrastructure:** Docker containerized services
 
-**Benefits**:
-- Context isolation prevents information overload
-- Specialized expertise for different domains
-- Parallel execution capabilities
-- Consistent result formatting
+### Backend Patterns
 
-### 2. Command Pattern System
-**Pattern**: Executable commands defined as markdown files
-**Implementation**:
-- Commands in `.claude/commands/` directory
-- YAML frontmatter for metadata and permissions
-- Markdown content as executable instructions
-- Hierarchical organization by functional area
-
-**Structure**:
+**Layered Architecture**
 ```
-commands/
-├── pm/           # Project management
-├── context/      # Context operations
-└── testing/      # Test operations
+Controller Layer (REST endpoints)
+    ↓
+Service Layer (Business logic)
+    ↓
+Repository Layer (Data access)
+    ↓
+Entity Layer (Domain models)
 ```
 
-### 3. Configuration as Code
-**Pattern**: System behavior defined through declarative files
-**Implementation**:
-- `.claude/CLAUDE.md`: Development rules and practices
-- `.claude/settings.local.json`: Tool permissions
-- Agent definitions in markdown format
-- Context files with structured frontmatter
+**Repository Pattern**
+- **Interface:** `UserRepository` extends `JpaRepository`
+- **Custom Implementation:** `UserRepositoryCustom` with `UserRepositoryImpl`
+- **Query Methods:** Spring Data JPA derived queries
+- **Custom Queries:** Criteria API and native SQL when needed
 
-### 4. Context Optimization Strategy
-**Pattern**: Intelligent context preservation through summarization
-**Implementation**:
-- Agents return concise summaries instead of raw output
-- Essential information preserved in context files
-- Verbose operations shielded from main conversation
-- Structured frontmatter for metadata
+**Entity Design Pattern**
+- **Base Entity:** Common audit fields (BaseEntity)
+- **Domain Logic:** Business methods in entity classes
+- **Validation:** Bean Validation annotations
+- **Optimistic Locking:** `@Version` field
+- **Enum Handling:** `@Enumerated(EnumType.STRING)`
 
-## Design Patterns
+**Configuration Pattern**
+- **Environment-based:** Spring profiles (dev, test, prod)
+- **Externalized:** Environment variables for sensitive data
+- **Type-safe:** `@ConfigurationProperties` classes
+- **Centralized:** Single `application.yml` with profiles
 
-### 1. Mediator Pattern
-**Usage**: Claude Code acts as mediator between user and specialized agents
-**Benefits**:
-- Centralized coordination
-- Reduced coupling between agents
-- Simplified communication flow
+### Frontend Patterns
 
-### 2. Strategy Pattern
-**Usage**: Different agents represent different strategies for task execution
-**Benefits**:
-- Pluggable behavior
-- Task-specific optimization
-- Easy extension with new agents
+**Component Composition**
+- **Atomic Design:** UI components organized by complexity
+- **Single File Components:** `.vue` files with template, script, style
+- **Composition API:** Vue 3 reactive composition patterns
+- **Props/Events:** Parent-child communication
 
-### 3. Template Method Pattern
-**Usage**: Commands follow consistent structure with variable implementations
-**Benefits**:
-- Consistent command interface
-- Reusable command patterns
-- Standardized error handling
+**State Management Pattern**
+- **Centralized Store:** Pinia for global state
+- **Module Pattern:** Feature-based store organization
+- **Reactive State:** Vue 3 reactivity system
+- **Local State:** Component-level ref/reactive
 
-### 4. Facade Pattern
-**Usage**: Command system provides simplified interface to complex operations
-**Benefits**:
-- Simplified user interface
-- Hidden complexity
-- Consistent experience
+**Routing Pattern**
+- **Declarative Routing:** Vue Router configuration
+- **Route Guards:** Authentication and authorization
+- **Lazy Loading:** Dynamic component imports
+- **Nested Routes:** Layout-based routing structure
 
-## Data Flow Patterns
+### Data Flow Patterns
 
-### 1. Request-Response with Summarization
+**Request-Response Cycle**
 ```
-User Request → Claude Code → Agent → [Complex Operation] → Summary → User
-```
-
-### 2. Parallel Execution Flow
-```
-Complex Task → parallel-worker → [Agent 1, Agent 2, Agent N] → Coordinated Results
+Frontend Component
+    ↓ (HTTP Request)
+Backend Controller
+    ↓ (Method Call)
+Service Layer
+    ↓ (Repository Call)
+Database
+    ↑ (Data Return)
+Response DTO
+    ↑ (JSON Response)
+Frontend State Update
 ```
 
-### 3. Context Loading Flow
-```
-Session Start → /context:prime → Load Context Files → Enhanced Awareness
-```
+**Error Handling Pattern**
+- **Global Error Handling:** Vue error boundary
+- **HTTP Error Interceptors:** Axios response interceptors
+- **Validation Errors:** Bean Validation with error messages
+- **User-Friendly Messages:** Internationalized error messages
 
-## Error Handling Patterns
+### Security Patterns
 
-### 1. Fail-Fast Pattern
-**Implementation**: Critical configuration errors immediately terminate operations
-**Examples**:
-- Missing required tools
-- Invalid permissions
-- Corrupted configuration files
+**Authentication Flow** (To be implemented)
+- **Stateless Authentication:** JWT tokens
+- **Secure Storage:** HttpOnly cookies or secure storage
+- **Session Management:** Redis-based session store
+- **CSRF Protection:** Double-submit cookie pattern
 
-### 2. Graceful Degradation
-**Implementation**: Optional features fail silently while core functionality continues
-**Examples**:
-- External service unavailability
-- Optional tool missing
-- Network connectivity issues
+**Authorization Pattern**
+- **Role-Based Access Control (RBAC):** User roles and permissions
+- **Method-Level Security:** Spring Security annotations
+- **Route Protection:** Vue Router guards
+- **API Security:** Endpoint-level authorization
 
-### 3. Resilience Layer
-**Implementation**: User-friendly error messages with actionable solutions
-**Pattern**:
-```
-Operation → Error Check → User-Friendly Message → Recovery Suggestion
-```
+### Database Patterns
 
-## Security Patterns
+**Entity Relationship Patterns**
+- **Single Table Inheritance:** For user types (if needed)
+- **Audit Pattern:** Automatic createdAt/updatedAt timestamps
+- **Soft Delete:** Status-based logical deletion
+- **Optimistic Locking:** Version-based concurrency control
 
-### 1. Permission-Based Access Control
-**Implementation**: Explicit tool permissions in `.claude/settings.local.json`
-**Pattern**:
-- Whitelist approach for tool access
-- Granular permission specifications
-- Tool-specific parameter restrictions
+**Query Patterns**
+- **Repository Pattern:** Spring Data JPA repositories
+- **Criteria Queries:** Type-safe dynamic queries
+- **Native Queries:** Performance-critical operations
+- **Pagination:** Spring Data Pageable interface
 
-### 2. Sandboxed Execution
-**Implementation**: Commands execute within defined permission boundaries
-**Benefits**:
-- Controlled system access
-- Audit trail of operations
-- Risk mitigation
+**Connection Management**
+- **Connection Pooling:** HikariCP configuration
+- **Transaction Management:** Spring `@Transactional`
+- **Read-Write Separation:** (Future consideration)
+- **Database Health Checks:** Docker health checks
 
-## Integration Patterns
+### Caching Patterns
 
-### 1. Git Integration Pattern
-**Pattern**: Git operations managed through consistent interface
-**Implementation**:
-- Standardized git command usage
-- Branch and commit awareness
-- Status tracking and reporting
+**Redis Caching Strategy**
+- **Session Storage:** User session data
+- **Application Cache:** Frequently accessed data
+- **Temporary Storage:** Email verification tokens
+- **Rate Limiting:** API throttling (future implementation)
 
-### 2. GitHub Integration Pattern
-**Pattern**: GitHub operations through CLI tool
-**Implementation**:
-- `gh` tool for repository operations
-- Issue and PR management
-- Release automation
+### Testing Patterns
 
-### 3. Testing Integration Pattern
-**Pattern**: Framework-agnostic test execution
-**Implementation**:
-- Agent-mediated test execution
-- Multi-framework support (pytest, npm test, etc.)
-- Intelligent result analysis
+**Backend Testing**
+- **Unit Tests:** Service and repository layer tests
+- **Integration Tests:** Full Spring context tests
+- **Test Database:** H2 in-memory for testing
+- **Test Profiles:** Separate configuration for tests
 
-## Communication Patterns
+**Frontend Testing** (To be implemented)
+- **Component Tests:** Vue Test Utils
+- **Unit Tests:** Utility function tests
+- **E2E Tests:** Full user flow testing
+- **Mock Services:** API mocking for development
 
-### 1. Async Agent Communication
-**Pattern**: Agents operate independently and report back
-**Benefits**:
-- Non-blocking operations
-- Parallel task execution
-- Context preservation
+### DevOps Patterns
 
-### 2. Structured Response Format
-**Pattern**: Consistent response format from agents
-**Structure**:
-- Status indication
-- Key findings summary
-- Detailed information (when needed)
-- Next steps recommendations
+**Containerization Pattern**
+- **Multi-stage Builds:** Optimized Docker images
+- **Service Orchestration:** Docker Compose
+- **Environment Separation:** dev/test/prod configurations
+- **Health Checks:** Container and application health monitoring
 
-## Extension Patterns
+**Build Patterns**
+- **Frontend Build:** Vite production optimization
+- **Backend Build:** Maven multi-module structure
+- **Asset Management:** Static asset optimization
+- **Dependency Management:** Lock files for reproducible builds
 
-### 1. Plugin Agent Pattern
-**Future Pattern**: New agents can be added through markdown definitions
-**Structure**:
-```yaml
----
-agent: custom-agent
-capabilities: [tool1, tool2]
-specialization: "specific domain"
----
-```
+### Design Patterns in Code
 
-### 2. Command Extension Pattern
-**Pattern**: New commands added through file creation
-**Structure**:
-```yaml
----
-allowed-tools: [Read, Write, Bash]
-category: utility
----
-```
+**Factory Pattern**
+- **Entity Creation:** Builder patterns for complex entities
+- **DTO Mapping:** Factory methods for data transformation
 
-## Anti-Patterns (Avoided)
+**Observer Pattern**
+- **Vue Reactivity:** Reactive data observation
+- **Event Handling:** Component event emission
 
-### 1. Context Overload
-**Problem**: Verbose output overwhelming conversation context
-**Solution**: Agent summarization and context files
+**Singleton Pattern**
+- **Configuration:** Spring beans as singletons
+- **Utility Classes:** Stateless utility singletons
 
-### 2. Monolithic Commands
-**Problem**: Single command trying to do everything
-**Solution**: Specialized agents for different concerns
+**Strategy Pattern**
+- **Authentication:** Multiple auth provider support
+- **Validation:** Pluggable validation strategies
 
-### 3. Implicit Dependencies
-**Problem**: Commands assuming tools or permissions
-**Solution**: Explicit permission declarations
+### Error Handling Patterns
 
-### 4. State Pollution
-**Problem**: Commands leaving partial or corrupted state
-**Solution**: Fail-fast with cleanup requirements
+**Graceful Degradation**
+- **Service Unavailability:** Fallback mechanisms
+- **Database Failures:** Connection retry logic
+- **Frontend Errors:** User-friendly error pages
+- **API Failures:** Offline capability considerations
 
-## Quality Assurance Patterns
+**Logging Patterns**
+- **Structured Logging:** Consistent log format
+- **Correlation IDs:** Request tracing
+- **Log Levels:** Environment-appropriate logging
+- **Security Logging:** Audit trail for sensitive operations
 
-### 1. Validation Pipeline
-**Pattern**: Multi-stage validation for operations
-**Stages**:
-1. Preflight checks
-2. Permission validation
-3. Operation execution
-4. Result verification
-5. Cleanup confirmation
+### Performance Patterns
 
-### 2. Atomic Operations
-**Pattern**: Operations complete fully or not at all
-**Implementation**:
-- Transaction-like behavior
-- Rollback capabilities where possible
-- Clear success/failure indication
+**Frontend Optimization**
+- **Code Splitting:** Route-based lazy loading
+- **Asset Optimization:** Vite build optimizations
+- **Component Optimization:** Vue 3 performance features
 
-### 3. Idempotent Operations
-**Pattern**: Safe to repeat operations
-**Implementation**:
-- State checking before operations
-- Conditional execution based on current state
-- Safe re-execution guarantees
+**Backend Optimization**
+- **Query Optimization:** Efficient database queries
+- **Connection Pooling:** Database connection management
+- **Caching Strategy:** Redis for performance improvements
+
+**Resource Management**
+- **Memory Management:** Proper object lifecycle
+- **Connection Cleanup:** Database connection disposal
+- **Asset Delivery:** Optimized static asset serving

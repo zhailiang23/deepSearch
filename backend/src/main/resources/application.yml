@@ -35,6 +35,19 @@ spring:
     jpa:
       repositories:
         bootstrap-mode: deferred
+    # Redis配置
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
 
 # Actuator健康检查配置
 management:
@@ -59,3 +72,13 @@ server:
   port: 8080
   servlet:
     context-path: /api
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:your-very-secure-secret-key-here-at-least-256-bits-long-for-hs256-algorithm}
+  access-token-expiration: 3600000  # 1 hour in milliseconds
+  refresh-token-expiration: 2592000000  # 30 days in milliseconds
+  issuer: deepSearch
+  audience: deepSearch-users
+  algorithm: HS256
+
