@@ -49,6 +49,13 @@ spring:
           min-idle: 0
           max-wait: -1ms
 
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+      enabled: true
+
 # Elasticsearch配置
 elasticsearch:
   uris:
@@ -80,9 +87,27 @@ management:
 logging:
   level:
     com.ynet.mgmt: DEBUG
+    com.ynet.mgmt.jsonimport: DEBUG  # JSON导入服务详细日志
+    com.ynet.mgmt.searchspace.service: DEBUG  # 搜索空间服务日志
+    co.elastic.clients: DEBUG  # Elasticsearch客户端日志
+    org.elasticsearch: DEBUG  # Elasticsearch相关日志
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.data.jpa: DEBUG
+  file:
+    # 输出日志到指定文件
+    name: /Users/zhailiang/Documents/code/deepSearch/backend/logs/application.log
+  pattern:
+    # 控制台日志格式
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %pid --- [%15.15t] %-40.40logger{39} : %m%n"
+    # 文件日志格式
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      # 日志文件滚动策略
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 1GB
 
 # 服务器配置
 server:
@@ -93,9 +118,16 @@ server:
 # JWT配置
 jwt:
   secret: ${JWT_SECRET:your-very-secure-secret-key-here-at-least-256-bits-long-for-hs256-algorithm}
-  access-token-expiration: 3600000  # 1 hour in milliseconds
+  access-token-expiration: 36000000  # 1 hour in milliseconds
   refresh-token-expiration: 2592000000  # 30 days in milliseconds
   issuer: deepSearch
   audience: deepSearch-users
   algorithm: HS256
 
+# 应用自定义配置
+app:
+  import:
+    temp-dir: ${TEMP_DIR:${java.io.tmpdir}/deepsearch/imports}
+    file-expiry-hours: ${FILE_EXPIRY_HOURS:24}
+    max-file-size: 20971520  # 20MB in bytes
+    allowed-extensions: json

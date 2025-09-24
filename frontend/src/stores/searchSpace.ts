@@ -69,7 +69,7 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
     error.value = null
 
     try {
-      const response = await searchSpaceApi.getAll(queryParams.value)
+      const response = await searchSpaceApi.list(queryParams.value)
       if (response.data) {
         searchSpaces.value = response.data.content
         pagination.value = {

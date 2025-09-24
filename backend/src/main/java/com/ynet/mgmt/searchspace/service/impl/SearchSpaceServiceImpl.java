@@ -296,13 +296,13 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
      */
     private IndexStatus getElasticsearchIndexStatus(String indexName) {
         try {
-            return elasticsearchManager.getIndexStatus(indexName);
+            return elasticsearchManager.getSearchSpaceIndexStatus(indexName);
         } catch (Exception e) {
             log.warn("获取ES索引状态失败: {}", indexName, e);
             return IndexStatus.builder()
                 .name(indexName)
                 .exists(false)
-                .health("unknown")
+                .health("error")
                 .error(e.getMessage())
                 .build();
         }

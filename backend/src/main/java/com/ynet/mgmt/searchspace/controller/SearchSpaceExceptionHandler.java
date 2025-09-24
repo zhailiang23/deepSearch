@@ -10,7 +10,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +45,69 @@ public class SearchSpaceExceptionHandler {
         }
 
         return ResponseEntity.badRequest().body(ApiResponse.validationError("参数验证失败", fieldErrors));
+    }
+
+    /**
+     * 处理文件大小超限异常
+     *
+     * @param ex 文件大小超限异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
+        logger.warn("文件大小超限: maxSize={}, error={}", ex.getMaxUploadSize(), ex.getMessage());
+
+        String message = "文件大小不能超过 " + (ex.getMaxUploadSize() / 1024 / 1024) + "MB";
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.error(message, "413"));
+    }
+
+    /**
+     * 处理文件上传异常
+     *
+     * @param ex 文件上传异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMultipartException(MultipartException ex) {
+        logger.warn("文件上传异常: {}", ex.getMessage());
+
+        String message = "文件上传失败";
+        if (ex.getCause() instanceof MaxUploadSizeExceededException) {
+            MaxUploadSizeExceededException sizeEx = (MaxUploadSizeExceededException) ex.getCause();
+            message = "文件大小不能超过 " + (sizeEx.getMaxUploadSize() / 1024 / 1024) + "MB";
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(ApiResponse.error(message, "413"));
+        }
+
+        return ResponseEntity.badRequest().body(ApiResponse.badRequest(message + ": " + ex.getMessage()));
+    }
+
+    /**
+     * 处理IO异常
+     *
+     * @param ex IO异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIOException(IOException ex) {
+        logger.error("IO操作失败: {}", ex.getMessage(), ex);
+
+        String message = "文件操作失败";
+        if (ex.getMessage() != null) {
+            if (ex.getMessage().contains("No space left")) {
+                message = "服务器存储空间不足";
+            } else if (ex.getMessage().contains("Permission denied")) {
+                message = "文件权限不足";
+            } else if (ex.getMessage().contains("File not found")) {
+                message = "文件不存在";
+            } else {
+                message = "文件操作失败: " + ex.getMessage();
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(message, "500"));
     }
 
     /**

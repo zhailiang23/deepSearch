@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -457,5 +460,105 @@ public class ElasticsearchManager {
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
         }
+    }
+
+    /**
+     * 查找搜索空间的实际索引名称
+     * 优先返回包含数据的索引，如果有多个则返回最新的
+     *
+     * @param searchSpaceCode 搜索空间代码
+     * @return 实际的索引名称，如果没有找到则返回基础索引名
+     */
+    public String findActualIndexName(String searchSpaceCode) {
+        try {
+            // 搜索模式：searchspace_{code}_* 或者直接是 code
+            String pattern = "searchspace_" + searchSpaceCode + "_*";
+            
+            // 使用 _cat/indices API 查找匹配的索引
+            // 注意：这里我们直接构造请求，因为 Java client 可能不直接支持 _cat API
+            String catIndicesUrl = "/_cat/indices/" + pattern + "?h=index,docs.count&format=json";
+            
+            // 先尝试查找带时间戳的索引
+            var indicesWithPattern = getIndicesMatching("searchspace_" + searchSpaceCode + "_*");
+            if (!indicesWithPattern.isEmpty()) {
+                // 如果有多个索引，选择文档数量最多的，如果文档数量相同则选择最新的（按名称排序）
+                String bestIndex = indicesWithPattern.stream()
+                    .filter(indexName -> getDocumentCount(indexName) > 0) // 优先选择有数据的索引
+                    .findFirst() // 如果有数据的索引，取第一个
+                    .orElse(indicesWithPattern.get(indicesWithPattern.size() - 1)); // 否则取最新的
+                log.debug("为搜索空间 {} 找到实际索引: {}", searchSpaceCode, bestIndex);
+                return bestIndex;
+            }
+            
+            // 如果没有找到带时间戳的索引，检查基础索引是否存在
+            if (indexExists(searchSpaceCode)) {
+                log.debug("为搜索空间 {} 使用基础索引: {}", searchSpaceCode, searchSpaceCode);
+                return searchSpaceCode;
+            }
+            
+            // 都没有找到，返回基础索引名（让调用方处理不存在的情况）
+            log.debug("为搜索空间 {} 未找到实际索引，返回基础索引名: {}", searchSpaceCode, searchSpaceCode);
+            return searchSpaceCode;
+            
+        } catch (Exception e) {
+            log.error("查找搜索空间 {} 的实际索引时发生错误", searchSpaceCode, e);
+            return searchSpaceCode; // 发生错误时返回基础索引名
+        }
+    }
+
+    /**
+     * 获取匹配模式的索引列表
+     *
+     * @param pattern 索引模式 (支持通配符 *)
+     * @return 匹配的索引名称列表，按时间戳倒序排列（最新的在前）
+     */
+    private List<String> getIndicesMatching(String pattern) {
+        try {
+            // 使用 GetIndex API 查找匹配的索引
+            GetIndexRequest request = GetIndexRequest.of(builder -> builder
+                .index(pattern)
+            );
+            
+            GetIndexResponse response = client.indices().get(request);
+            
+            // 获取所有匹配的索引名并按时间戳排序（最新的在前）
+            return response.result().keySet().stream()
+                .sorted((a, b) -> {
+                    // 提取时间戳进行比较，如果无法提取则按字典序
+                    try {
+                        String timestampA = a.substring(a.lastIndexOf('_') + 1);
+                        String timestampB = b.substring(b.lastIndexOf('_') + 1);
+                        return Long.compare(Long.parseLong(timestampB), Long.parseLong(timestampA)); // 降序
+                    } catch (Exception e) {
+                        return b.compareTo(a); // 降序字典排序
+                    }
+                })
+                .collect(Collectors.toList());
+                
+        } catch (Exception e) {
+            log.debug("获取匹配索引时发生错误: {}", pattern, e);
+            return new ArrayList<>();
+        }
+    }
+
+    // 在现有的getIndexStatus方法前添加重载方法
+    /**
+     * 获取搜索空间的实际索引状态
+     * 会自动查找搜索空间对应的实际索引（包括带时间戳的索引）
+     *
+     * @param searchSpaceCode 搜索空间代码
+     * @return 索引状态信息
+     */
+    public IndexStatus getSearchSpaceIndexStatus(String searchSpaceCode) {
+        String actualIndexName = findActualIndexName(searchSpaceCode);
+        IndexStatus status = getIndexStatus(actualIndexName);
+        
+        // 如果查询的是实际索引而不是基础索引，更新显示名称以反映这一点
+        if (!actualIndexName.equals(searchSpaceCode)) {
+            log.debug("搜索空间 {} 使用实际索引 {} (包含 {} 个文档)", 
+                searchSpaceCode, actualIndexName, status.getDocsCount());
+        }
+        
+        return status;
     }
 }
