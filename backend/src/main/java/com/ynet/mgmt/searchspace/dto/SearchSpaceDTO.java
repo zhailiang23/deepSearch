@@ -63,6 +63,16 @@ public class SearchSpaceDTO {
         return documentCount != null && documentCount > 0;
     }
 
+    /**
+     * 获取ES索引名称
+     * 基于搜索空间代码生成索引名称
+     *
+     * @return 索引名称
+     */
+    public String getIndexName() {
+        return this.code != null ? "ss_" + this.code.toLowerCase() : null;
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;

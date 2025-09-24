@@ -239,6 +239,15 @@
         @change="handlePaginationChange"
       />
     </div>
+
+    <!-- 编辑对话框 -->
+    <DocumentEditDialog
+      v-model:open="editDialogOpen"
+      :document="editingDocument"
+      :mapping="mapping"
+      @save-success="handleEditSuccess"
+      @save-error="handleEditError"
+    />
   </div>
 </template>
 
@@ -251,6 +260,7 @@ import FieldManager from './FieldManager.vue'
 import PaginationControl from './PaginationControl.vue'
 import TableRowDesktop from './table/TableRowDesktop.vue'
 import TableRowCard from './table/TableRowCard.vue'
+import DocumentEditDialog from './DocumentEditDialog.vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { debounce, throttle } from '@/utils/performance'
 import type {
@@ -280,6 +290,7 @@ interface Emits {
   (e: 'edit', row: TableRow): void
   (e: 'view', row: TableRow): void
   (e: 'load-more'): void
+  (e: 'update-document', document: TableRow): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -307,6 +318,10 @@ const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)')
 
 // 视图模式
 const viewMode = ref<'table' | 'card'>('table')
+
+// 编辑对话框状态
+const editDialogOpen = ref(false)
+const editingDocument = ref<TableRow | null>(null)
 
 // 计算属性
 const tableRows = computed(() => props.data)
@@ -444,11 +459,55 @@ function handleReachBottom() {
 
 // 行操作
 function handleEdit(row: TableRow) {
+  editingDocument.value = row
+  editDialogOpen.value = true
   emit('edit', row)
 }
 
 function handleView(row: TableRow) {
   emit('view', row)
+}
+
+// 编辑处理方法
+function handleEditSuccess(updatedDocument: TableRow) {
+  // 更新本地数据
+  const index = tableRows.value.findIndex(row => row._id === updatedDocument._id)
+  if (index !== -1) {
+    // 直接更新props.data需要通过emit通知父组件
+    emit('update-document', updatedDocument)
+  }
+
+  // 重置编辑状态
+  editingDocument.value = null
+  editDialogOpen.value = false
+
+  // 显示成功提示
+  showSuccessMessage('数据保存成功')
+}
+
+function handleEditError(error: string) {
+  // 显示错误提示
+  showErrorMessage(error)
+}
+
+function showSuccessMessage(message: string) {
+  // 创建自定义事件显示成功消息
+  window.dispatchEvent(new CustomEvent('show-notification', {
+    detail: {
+      type: 'success',
+      message
+    }
+  }))
+}
+
+function showErrorMessage(message: string) {
+  // 创建自定义事件显示错误消息
+  window.dispatchEvent(new CustomEvent('show-notification', {
+    detail: {
+      type: 'error',
+      message
+    }
+  }))
 }
 
 // 响应式视图模式切换

@@ -24,6 +24,7 @@ export interface TableRow {
   _source: Record<string, any>
   _index: string
   _type?: string
+  _version?: number
 }
 
 export interface TableData {
