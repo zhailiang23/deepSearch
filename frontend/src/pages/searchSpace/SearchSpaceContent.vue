@@ -8,6 +8,7 @@
       @delete="handleDelete"
       @enable="handleEnable"
       @disable="handleDisable"
+      @import="handleImport"
     />
 
     <!-- 创建/编辑对话框 -->
@@ -221,6 +222,16 @@ const handleDisable = async (searchSpace: SearchSpace) => {
     showMessage('success', '搜索空间已禁用')
   } catch (error) {
     showMessage('error', '禁用失败：' + (error as Error).message)
+  }
+}
+
+const handleImport = async (searchSpace: SearchSpace) => {
+  try {
+    // 这里暂时只显示一个消息，实际的文件处理逻辑将在后续实现
+    showMessage('success', `准备导入数据到搜索空间: ${searchSpace.name}`)
+    console.log('导入功能触发，搜索空间:', searchSpace)
+  } catch (error) {
+    showMessage('error', '导入失败：' + (error as Error).message)
   }
 }
 

@@ -1,5 +1,6 @@
 package com.ynet.mgmt.searchspace.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -17,11 +18,7 @@ import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.common.exception.BusinessException;
 import com.ynet.mgmt.common.exception.EntityNotFoundException;
 import com.ynet.mgmt.searchspace.constants.ErrorCode;
-import com.ynet.mgmt.searchspace.dto.CreateSearchSpaceRequest;
-import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
-import com.ynet.mgmt.searchspace.dto.SearchSpaceQueryRequest;
-import com.ynet.mgmt.searchspace.dto.SearchSpaceStatistics;
-import com.ynet.mgmt.searchspace.dto.UpdateSearchSpaceRequest;
+import com.ynet.mgmt.searchspace.dto.*;
 import com.ynet.mgmt.searchspace.entity.SearchSpace;
 import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
 import com.ynet.mgmt.searchspace.mapper.SearchSpaceMapper;
@@ -319,5 +316,126 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         // 暂时返回false，待文档模块实现后更新
         log.debug("检查搜索空间 {} 中是否有文档 - 暂时返回false", spaceCode);
         return false;
+    }
+
+    // ========== 新增的JSON导入相关业务方法实现 ==========
+
+    @Override
+    @Transactional
+    public SearchSpaceDTO updateIndexMapping(Long id, String indexMapping) {
+        log.info("更新搜索空间索引映射: {}", id);
+        
+        SearchSpace searchSpace = searchSpaceRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
+        
+        // 使用实体的业务方法设置映射配置
+        searchSpace.setIndexMapping(indexMapping);
+        searchSpace = searchSpaceRepository.save(searchSpace);
+        
+        log.info("搜索空间索引映射更新成功: {} (ID: {})", searchSpace.getCode(), id);
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
+    }
+
+    @Override
+    @Transactional
+    public SearchSpaceDTO updateImportStats(Long id, long additionalCount) {
+        log.info("更新搜索空间导入统计: {} (+{})", id, additionalCount);
+        
+        if (additionalCount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_PARAMETER, "导入数量不能为负数");
+        }
+        
+        SearchSpace searchSpace = searchSpaceRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
+        
+        // 使用实体的业务方法更新统计
+        searchSpace.updateImportStats(additionalCount);
+        searchSpace = searchSpaceRepository.save(searchSpace);
+        
+        log.info("搜索空间导入统计更新成功: {} (ID: {}) - 文档总数: {}", 
+                searchSpace.getCode(), id, searchSpace.getDocumentCount());
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SearchSpaceDTO> listSearchSpacesWithMapping() {
+        log.debug("查询有索引映射配置的搜索空间列表");
+        
+        List<SearchSpace> searchSpaces = searchSpaceRepository.findAllWithIndexMapping();
+        return searchSpaces.stream()
+            .map(space -> mapper.toDTO(space, getElasticsearchIndexStatus(space.getCode())))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SearchSpaceDTO> listSearchSpacesWithDocuments() {
+        log.debug("查询有导入文档的搜索空间列表");
+        
+        List<SearchSpace> searchSpaces = searchSpaceRepository.findAllWithImportedDocuments();
+        return searchSpaces.stream()
+            .map(space -> mapper.toDTO(space, getElasticsearchIndexStatus(space.getCode())))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ImportStatistics getImportStatistics() {
+        log.debug("获取导入统计信息");
+        
+        Long totalSpacesWithMapping = searchSpaceRepository.countSpacesWithIndexMapping();
+        Long totalSpacesWithDocuments = searchSpaceRepository.countSpacesWithImportedDocuments();
+        Long totalImportedDocuments = searchSpaceRepository.countTotalImportedDocuments();
+        LocalDateTime lastImportTime = searchSpaceRepository.findLastImportTime().orElse(null);
+        
+        return new ImportStatistics(totalSpacesWithMapping, totalSpacesWithDocuments,
+                totalImportedDocuments, lastImportTime);
+    }
+
+    @Override
+    @Transactional
+    public SearchSpaceDTO resetImportStats(Long id) {
+        log.info("重置搜索空间导入统计: {}", id);
+        
+        SearchSpace searchSpace = searchSpaceRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
+        
+        searchSpace.setDocumentCount(0L);
+        searchSpace.setLastImportTime(null);
+        searchSpace = searchSpaceRepository.save(searchSpace);
+        
+        log.info("搜索空间导入统计重置成功: {} (ID: {})", searchSpace.getCode(), id);
+        return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
+    }
+
+    @Override
+    @Transactional
+    public List<SearchSpaceDTO> batchUpdateImportStats(List<ImportStatsUpdate> importUpdates) {
+        log.info("批量更新搜索空间导入统计: {} 个更新", importUpdates.size());
+        
+        if (importUpdates == null || importUpdates.isEmpty()) {
+            return List.of();
+        }
+        
+        List<SearchSpaceDTO> results = importUpdates.stream()
+            .map(update -> {
+                if (update.getAdditionalCount() < 0) {
+                    throw new BusinessException(ErrorCode.INVALID_PARAMETER, 
+                        "搜索空间 " + update.getSearchSpaceId() + " 的导入数量不能为负数");
+                }
+                
+                SearchSpace searchSpace = searchSpaceRepository.findById(update.getSearchSpaceId())
+                    .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + update.getSearchSpaceId()));
+                
+                searchSpace.updateImportStats(update.getAdditionalCount());
+                searchSpace = searchSpaceRepository.save(searchSpace);
+                
+                return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
+            })
+            .collect(Collectors.toList());
+        
+        log.info("批量更新搜索空间导入统计完成: {} 个成功", results.size());
+        return results;
     }
 }

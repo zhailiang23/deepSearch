@@ -64,14 +64,12 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
   /**
    * 获取搜索空间列表
    */
-  const fetchSearchSpaces = async (params?: Partial<SearchSpaceQueryRequest>) => {
+  const fetchSearchSpaces = async () => {
+    loading.value = true
+    error.value = null
+
     try {
-      setLoading(true)
-      clearError()
-
-      const searchParams = { ...queryParams.value, ...params }
-      const response = await searchSpaceApi.list(searchParams)
-
+      const response = await searchSpaceApi.getAll(queryParams.value)
       if (response.data) {
         searchSpaces.value = response.data.content
         pagination.value = {
@@ -83,11 +81,11 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
           last: response.data.last
         }
       }
-    } catch (err: any) {
-      setError(err.message || '获取搜索空间列表失败')
-      throw err
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '获取搜索空间列表失败'
+      console.error('Failed to fetch search spaces:', err)
     } finally {
-      setLoading(false)
+      loading.value = false
     }
   }
 

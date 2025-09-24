@@ -4,6 +4,8 @@ import com.ynet.mgmt.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
+import java.time.LocalDateTime;
+
 /**
  * 搜索空间实体类
  * 管理搜索空间的基本信息、状态和向量检索配置
@@ -17,7 +19,9 @@ import jakarta.validation.constraints.*;
            @Index(name = "idx_search_space_code", columnList = "code", unique = true),
            @Index(name = "idx_search_space_name", columnList = "name"),
            @Index(name = "idx_search_space_status", columnList = "status"),
-           @Index(name = "idx_search_space_created_at", columnList = "created_at")
+           @Index(name = "idx_search_space_created_at", columnList = "created_at"),
+           @Index(name = "idx_search_space_document_count", columnList = "document_count"),
+           @Index(name = "idx_search_space_last_import", columnList = "last_import_time")
        })
 public class SearchSpace extends BaseEntity {
 
@@ -40,6 +44,26 @@ public class SearchSpace extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    /**
+     * Elasticsearch索引映射配置
+     * 存储JSON格式的映射配置，用于创建ES索引
+     */
+    @Column(name = "index_mapping", columnDefinition = "TEXT")
+    private String indexMapping;
+
+    /**
+     * 已导入文档数量
+     * 记录通过JSON导入功能导入的文档总数
+     */
+    @Column(name = "document_count", columnDefinition = "BIGINT DEFAULT 0")
+    private Long documentCount = 0L;
+
+    /**
+     * 最后导入时间
+     * 记录最近一次JSON数据导入的时间
+     */
+    @Column(name = "last_import_time")
+    private LocalDateTime lastImportTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "VARCHAR(20) DEFAULT 'ACTIVE'")
@@ -80,6 +104,42 @@ public class SearchSpace extends BaseEntity {
         return this.status != null && this.status.isSearchable();
     }
 
+    /**
+     * 检查是否有索引映射配置
+     * @return true if indexMapping不为空
+     */
+    public boolean hasIndexMapping() {
+        return indexMapping != null && !indexMapping.trim().isEmpty();
+    }
+
+    /**
+     * 检查是否有导入的文档
+     * @return true if documentCount > 0
+     */
+    public boolean hasImportedDocuments() {
+        return documentCount != null && documentCount > 0;
+    }
+
+    /**
+     * 更新导入统计信息
+     * @param count 新导入的文档数量
+     */
+    public void updateImportStats(long count) {
+        this.documentCount = (this.documentCount == null ? 0 : this.documentCount) + count;
+        this.lastImportTime = LocalDateTime.now();
+    }
+
+    /**
+     * 设置索引映射配置
+     * @param mapping JSON格式的映射配置
+     */
+    public void setIndexMapping(String mapping) {
+        if (mapping != null && !mapping.trim().isEmpty()) {
+            this.indexMapping = mapping.trim();
+        } else {
+            this.indexMapping = null;
+        }
+    }
 
     /**
      * 获取Elasticsearch索引名称
@@ -88,8 +148,6 @@ public class SearchSpace extends BaseEntity {
     public String getIndexName() {
         return this.code;
     }
-
-
 
     /**
      * 激活搜索空间
@@ -153,6 +211,25 @@ public class SearchSpace extends BaseEntity {
         this.description = description;
     }
 
+    public String getIndexMapping() {
+        return indexMapping;
+    }
+
+    public Long getDocumentCount() {
+        return documentCount;
+    }
+
+    public void setDocumentCount(Long documentCount) {
+        this.documentCount = documentCount;
+    }
+
+    public LocalDateTime getLastImportTime() {
+        return lastImportTime;
+    }
+
+    public void setLastImportTime(LocalDateTime lastImportTime) {
+        this.lastImportTime = lastImportTime;
+    }
 
     public SearchSpaceStatus getStatus() {
         return status;
@@ -203,6 +280,7 @@ public class SearchSpace extends BaseEntity {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", status=" + status +
+                ", documentCount=" + documentCount +
                 '}';
     }
 }

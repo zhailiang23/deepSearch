@@ -18,6 +18,9 @@ public class SearchSpaceDTO {
     private String name;
     private String code;
     private String description;
+    private String indexMapping;
+    private Long documentCount;
+    private LocalDateTime lastImportTime;
     private SearchSpaceStatus status;
     private Long version;
     private LocalDateTime createdAt;
@@ -44,6 +47,21 @@ public class SearchSpaceDTO {
         return this.status != null && this.status.isSearchable();
     }
 
+    /**
+     * 检查是否有索引映射配置
+     * @return true if indexMapping不为空
+     */
+    public boolean hasIndexMapping() {
+        return indexMapping != null && !indexMapping.trim().isEmpty();
+    }
+
+    /**
+     * 检查是否有导入的文档
+     * @return true if documentCount > 0
+     */
+    public boolean hasImportedDocuments() {
+        return documentCount != null && documentCount > 0;
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -78,6 +96,29 @@ public class SearchSpaceDTO {
         this.description = description;
     }
 
+    public String getIndexMapping() {
+        return indexMapping;
+    }
+
+    public void setIndexMapping(String indexMapping) {
+        this.indexMapping = indexMapping;
+    }
+
+    public Long getDocumentCount() {
+        return documentCount;
+    }
+
+    public void setDocumentCount(Long documentCount) {
+        this.documentCount = documentCount;
+    }
+
+    public LocalDateTime getLastImportTime() {
+        return lastImportTime;
+    }
+
+    public void setLastImportTime(LocalDateTime lastImportTime) {
+        this.lastImportTime = lastImportTime;
+    }
 
     public SearchSpaceStatus getStatus() {
         return status;
@@ -126,6 +167,7 @@ public class SearchSpaceDTO {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", status=" + status +
+                ", documentCount=" + documentCount +
                 '}';
     }
 }

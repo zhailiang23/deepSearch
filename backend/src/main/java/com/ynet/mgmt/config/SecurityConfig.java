@@ -62,8 +62,6 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                // 搜索空间管理需要认证
-                .requestMatchers("/search-spaces/**").authenticated()
 
                 // 其他所有请求都需要认证
                 .anyRequest().authenticated()

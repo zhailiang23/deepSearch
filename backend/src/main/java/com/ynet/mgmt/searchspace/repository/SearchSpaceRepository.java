@@ -160,4 +160,56 @@ public interface SearchSpaceRepository extends JpaRepository<SearchSpace, Long> 
      */
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM SearchSpace s WHERE s.name = :name AND s.id != :excludeId")
     boolean existsByNameExcludingId(@Param("name") String name, @Param("excludeId") Long excludeId);
+
+    // ========== 新增的JSON导入相关查询方法 ==========
+
+    /**
+     * 查找有索引映射配置的搜索空间
+     * @return 有映射配置的搜索空间列表
+     */
+    @Query("SELECT s FROM SearchSpace s WHERE s.indexMapping IS NOT NULL AND s.indexMapping != ''")
+    List<SearchSpace> findAllWithIndexMapping();
+
+    /**
+     * 查找有导入文档的搜索空间
+     * @return 有导入文档的搜索空间列表
+     */
+    @Query("SELECT s FROM SearchSpace s WHERE s.documentCount > 0")
+    List<SearchSpace> findAllWithImportedDocuments();
+
+    /**
+     * 统计总导入文档数量
+     * @return 所有搜索空间的文档总数
+     */
+    @Query("SELECT COALESCE(SUM(s.documentCount), 0) FROM SearchSpace s")
+    Long countTotalImportedDocuments();
+
+    /**
+     * 查找最近导入的搜索空间
+     * @param pageable 分页参数
+     * @return 最近导入的搜索空间列表
+     */
+    @Query("SELECT s FROM SearchSpace s WHERE s.lastImportTime IS NOT NULL ORDER BY s.lastImportTime DESC")
+    List<SearchSpace> findRecentlyImported(Pageable pageable);
+
+    /**
+     * 统计有索引映射配置的搜索空间数量
+     * @return 有映射配置的搜索空间数量
+     */
+    @Query("SELECT COUNT(s) FROM SearchSpace s WHERE s.indexMapping IS NOT NULL AND s.indexMapping != ''")
+    Long countSpacesWithIndexMapping();
+
+    /**
+     * 统计有导入文档的搜索空间数量
+     * @return 有导入文档的搜索空间数量
+     */
+    @Query("SELECT COUNT(s) FROM SearchSpace s WHERE s.documentCount > 0")
+    Long countSpacesWithImportedDocuments();
+
+    /**
+     * 查找最后一次导入时间
+     * @return 最后一次导入时间
+     */
+    @Query("SELECT MAX(s.lastImportTime) FROM SearchSpace s WHERE s.lastImportTime IS NOT NULL")
+    Optional<java.time.LocalDateTime> findLastImportTime();
 }

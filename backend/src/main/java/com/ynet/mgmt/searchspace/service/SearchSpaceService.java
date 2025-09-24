@@ -3,6 +3,8 @@ package com.ynet.mgmt.searchspace.service;
 import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.searchspace.dto.*;
 
+import java.util.List;
+
 /**
  * 搜索空间业务服务接口
  * 提供搜索空间管理的核心业务功能
@@ -80,4 +82,85 @@ public interface SearchSpaceService {
      * @return 是否可用
      */
     boolean isCodeAvailable(String code);
+
+    // ========== 新增的JSON导入相关业务方法 ==========
+
+    /**
+     * 更新搜索空间的索引映射配置
+     * @param id 搜索空间ID
+     * @param indexMapping 索引映射配置（JSON字符串）
+     * @return 更新后的搜索空间DTO
+     */
+    SearchSpaceDTO updateIndexMapping(Long id, String indexMapping);
+
+    /**
+     * 更新搜索空间的导入统计
+     * @param id 搜索空间ID
+     * @param additionalCount 新增文档数量
+     * @return 更新后的搜索空间DTO
+     */
+    SearchSpaceDTO updateImportStats(Long id, long additionalCount);
+
+    /**
+     * 获取有索引映射的搜索空间列表
+     * @return 搜索空间DTO列表
+     */
+    List<SearchSpaceDTO> listSearchSpacesWithMapping();
+
+    /**
+     * 获取有导入文档的搜索空间列表
+     * @return 搜索空间DTO列表
+     */
+    List<SearchSpaceDTO> listSearchSpacesWithDocuments();
+
+    /**
+     * 获取导入统计信息
+     * @return 导入相关统计数据
+     */
+    ImportStatistics getImportStatistics();
+
+    /**
+     * 重置搜索空间的导入统计
+     * @param id 搜索空间ID
+     * @return 更新后的搜索空间DTO
+     */
+    SearchSpaceDTO resetImportStats(Long id);
+
+    /**
+     * 批量更新搜索空间的导入统计
+     * @param importUpdates 批量更新列表，包含ID和新增数量
+     * @return 更新后的搜索空间DTO列表
+     */
+    List<SearchSpaceDTO> batchUpdateImportStats(List<ImportStatsUpdate> importUpdates);
+
+    /**
+     * 导入统计更新DTO
+     */
+    class ImportStatsUpdate {
+        private Long searchSpaceId;
+        private long additionalCount;
+
+        public ImportStatsUpdate() {}
+
+        public ImportStatsUpdate(Long searchSpaceId, long additionalCount) {
+            this.searchSpaceId = searchSpaceId;
+            this.additionalCount = additionalCount;
+        }
+
+        public Long getSearchSpaceId() {
+            return searchSpaceId;
+        }
+
+        public void setSearchSpaceId(Long searchSpaceId) {
+            this.searchSpaceId = searchSpaceId;
+        }
+
+        public long getAdditionalCount() {
+            return additionalCount;
+        }
+
+        public void setAdditionalCount(long additionalCount) {
+            this.additionalCount = additionalCount;
+        }
+    }
 }

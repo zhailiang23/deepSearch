@@ -169,13 +169,117 @@
                 >
                   <PlayCircle class="h-4 w-4" />
                 </button>
-                <button
-                  @click="$emit('import', space)"
-                  class="p-2 text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
-                  title="导入数据"
-                >
-                  <Upload class="h-4 w-4" />
-                </button>
+                
+                <!-- 文件导入对话框 -->
+                <DialogRoot v-model:open="importDialogOpen">
+                  <DialogTrigger as-child>
+                    <button
+                      class="p-2 text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-md transition-colors"
+                      title="导入数据"
+                      @click="selectedSpace = space"
+                    >
+                      <Upload class="h-4 w-4" />
+                    </button>
+                  </DialogTrigger>
+                  
+                  <DialogPortal>
+                    <DialogOverlay class="fixed inset-0 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+                    <DialogContent class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg dark:bg-gray-800 dark:border-gray-700">
+                      <div class="flex flex-col space-y-1.5 text-center sm:text-left">
+                        <DialogTitle class="text-lg font-semibold leading-none tracking-tight text-gray-900 dark:text-white">
+                          导入数据到 "{{ selectedSpace?.name }}"
+                        </DialogTitle>
+                        <DialogDescription class="text-sm text-gray-500 dark:text-gray-400">
+                          选择JSON文件上传数据到搜索空间。文件大小限制为20MB。
+                        </DialogDescription>
+                      </div>
+                      
+                      <!-- 文件选择区域 -->
+                      <div class="grid gap-4 py-4">
+                        <div class="space-y-4">
+                          <!-- 文件输入 -->
+                          <div class="flex flex-col space-y-2">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              选择文件
+                            </label>
+                            <div class="relative">
+                              <input
+                                ref="fileInput"
+                                type="file"
+                                accept=".json,application/json"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:text-gray-400 dark:file:bg-green-900/20 dark:file:text-green-400 dark:hover:file:bg-green-900/30"
+                                @change="handleFileSelect"
+                              />
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                              支持JSON格式，最大20MB
+                            </p>
+                          </div>
+                          
+                          <!-- 文件信息预览 -->
+                          <div v-if="selectedFile" class="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                            <div class="flex items-start justify-between">
+                              <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {{ selectedFile.name }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                  {{ formatFileSize(selectedFile.size) }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                  修改时间: {{ formatDate(new Date(selectedFile.lastModified).toISOString()) }}
+                                </p>
+                              </div>
+                              <button
+                                @click="clearFileSelection"
+                                class="ml-2 p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                                title="清除选择"
+                              >
+                                <X class="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <!-- 错误信息 -->
+                          <div v-if="fileError" class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                            <div class="flex">
+                              <AlertCircle class="h-4 w-4 text-red-400" />
+                              <div class="ml-2">
+                                <p class="text-sm text-red-800 dark:text-red-400">
+                                  {{ fileError }}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- 底部按钮 -->
+                      <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                        <DialogClose as-child>
+                          <button
+                            class="mt-3 sm:mt-0 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:w-auto dark:bg-gray-700 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-600"
+                            @click="closeImportDialog"
+                          >
+                            取消
+                          </button>
+                        </DialogClose>
+                        <button
+                          :disabled="!selectedFile || uploadLoading"
+                          @click="handleImportFile"
+                          class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed dark:bg-green-700 dark:hover:bg-green-600"
+                        >
+                          <span v-if="uploadLoading" class="flex items-center">
+                            <RefreshCw class="h-4 w-4 mr-2 animate-spin" />
+                            上传中...
+                          </span>
+                          <span v-else>继续</span>
+                        </button>
+                      </div>
+                    </DialogContent>
+                  </DialogPortal>
+                </DialogRoot>
+
                 <button
                   @click="$emit('edit', space)"
                   class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
@@ -238,8 +342,20 @@ import {
   Eye,
   PlayCircle,
   PauseCircle,
-  Upload
+  Upload,
+  X,
+  AlertCircle
 } from 'lucide-vue-next'
+import {
+  DialogRoot,
+  DialogTrigger,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogClose
+} from 'reka-ui'
 import { useSearchSpaceStore } from '@/stores/searchSpace'
 import SearchSpaceStatusBadge from './SearchSpaceStatusBadge.vue'
 import type { SearchSpace, SearchSpaceStatistics } from '@/types/searchSpace'
@@ -261,6 +377,14 @@ const searchSpaceStore = useSearchSpaceStore()
 const searchKeyword = ref('')
 const debounceTimer = ref<number | null>(null)
 
+// 文件上传相关状态
+const importDialogOpen = ref(false)
+const selectedSpace = ref<SearchSpace | null>(null)
+const selectedFile = ref<File | null>(null)
+const fileError = ref('')
+const uploadLoading = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
 // 计算属性
 const loading = computed(() => searchSpaceStore.loading)
 const searchSpaces = computed(() => searchSpaceStore.searchSpaces)
@@ -277,6 +401,118 @@ const formatDate = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// 格式化文件大小
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B'
+  
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+}
+
+// 文件选择处理
+const handleFileSelect = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  
+  // 清除之前的错误
+  fileError.value = ''
+  
+  if (!file) {
+    selectedFile.value = null
+    return
+  }
+  
+  // 文件类型验证
+  if (!file.type.includes('json') && !file.name.toLowerCase().endsWith('.json')) {
+    fileError.value = '请选择JSON格式的文件'
+    selectedFile.value = null
+    input.value = ''
+    return
+  }
+  
+  // 文件大小验证 (20MB = 20 * 1024 * 1024 bytes)
+  const maxSize = 20 * 1024 * 1024
+  if (file.size > maxSize) {
+    fileError.value = '文件大小不能超过20MB'
+    selectedFile.value = null
+    input.value = ''
+    return
+  }
+  
+  selectedFile.value = file
+}
+
+// 清除文件选择
+const clearFileSelection = () => {
+  selectedFile.value = null
+  fileError.value = ''
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+// 处理文件导入
+const handleImportFile = async () => {
+  if (!selectedFile.value || !selectedSpace.value) return
+  
+  try {
+    uploadLoading.value = true
+    
+    // 首先读取文件内容进行JSON验证
+    const fileContent = await readFileAsText(selectedFile.value)
+    
+    try {
+      JSON.parse(fileContent)
+    } catch (error) {
+      fileError.value = '文件内容不是有效的JSON格式'
+      return
+    }
+    
+    // 触发导入事件，传递选定的空间和文件
+    emit('import', selectedSpace.value)
+    
+    // 关闭对话框并重置状态
+    closeImportDialog()
+    
+    // 这里暂时只是演示，实际的文件上传逻辑应该在父组件中处理
+    // 或者集成到store中
+    
+  } catch (error) {
+    console.error('文件导入失败:', error)
+    fileError.value = '文件读取失败，请重试'
+  } finally {
+    uploadLoading.value = false
+  }
+}
+
+// 读取文件内容
+const readFileAsText = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result
+      if (typeof result === 'string') {
+        resolve(result)
+      } else {
+        reject(new Error('Failed to read file as text'))
+      }
+    }
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
+}
+
+// 关闭导入对话框
+const closeImportDialog = () => {
+  importDialogOpen.value = false
+  selectedSpace.value = null
+  clearFileSelection()
+  uploadLoading.value = false
 }
 
 // 防抖搜索
