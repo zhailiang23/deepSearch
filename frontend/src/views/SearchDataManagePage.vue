@@ -206,11 +206,13 @@
       <Card>
         <CardContent class="p-0">
           <DynamicResultsTable
+            ref="tableRef"
             v-if="currentIndex && indexMapping"
             :data="searchResults.hits"
             :mapping="indexMapping"
             :loading="loading"
-            :total="searchResults.total"
+            :total-count="totalCount"
+            :enable-virtual-scroll="false"
             :page-size="pageSize"
             :current-page="currentPage"
             :selected-rows="selectedRows"
@@ -218,11 +220,13 @@
             @update:selectedRows="selectedRows = $event"
             @update:currentPage="currentPage = $event"
             @update:pageSize="handlePageSizeChange"
-            @row-edit="handleRowEdit"
-            @row-view="handleRowView"
-            @row-delete="handleRowDelete"
+            @edit="handleRowEdit"
+            @view="handleRowView"
+            @delete="handleRowDelete"
+            @batch-delete="handleBatchDelete"
             @sort-change="handleSortChange"
             @page-change="handlePageChange"
+            @update-document="handleDocumentUpdate"
           />
           
           <!-- 空状态 -->
@@ -310,6 +314,9 @@ import {
 import DynamicResultsTable from '@/components/searchData/DynamicResultsTable.vue'
 import FieldManager from '@/components/searchData/FieldManager.vue'
 
+// 服务导入
+import { searchDataService } from '@/services/searchDataService'
+
 // 类型导入
 import type { 
   TableColumn, 
@@ -322,6 +329,9 @@ import type {
 // 响应式数据
 const router = useRouter()
 const { toast } = useToast()
+
+// 表格引用
+const tableRef = ref()
 
 // 界面状态
 const loading = ref(false)
@@ -344,6 +354,7 @@ const searchResults = ref<SearchResults>({
   total: 0,
   took: 0
 })
+const totalCount = computed(() => searchResults.value.total)
 const currentPage = ref(1)
 const pageSize = ref(20)
 const selectedRows = ref<string[]>([])
@@ -692,10 +703,160 @@ function handleRowView(row: TableRow) {
 }
 
 function handleRowDelete(row: TableRow) {
-  // TODO: Issue #41 - 删除功能
+  handleDeleteDocument(row)
+}
+
+function handleBatchDelete(rows: TableRow[]) {
+  handleDeleteDocuments(rows)
+}
+
+async function executeSearch() {
+  await handleSearch()
+}
+
+async function handleDeleteDocument(document: TableRow) {
+  if (!currentIndex.value) {
+    showErrorToast('请先选择索引')
+    return
+  }
+
+  try {
+    const response = await searchDataService.deleteDocument({
+      id: document._id,
+      index: currentIndex.value,
+      version: document._version
+    })
+
+    if (response.result === 'deleted') {
+      showSuccessToast('文档删除成功')
+      // 移除本地数据
+      const index = searchResults.value.hits.findIndex(item => item._id === document._id)
+      if (index !== -1) {
+        searchResults.value.hits.splice(index, 1)
+        searchResults.value.total = Math.max(0, searchResults.value.total - 1)
+      }
+      // 通知表格组件删除成功
+      tableRef.value?.handleDeleteSuccess()
+    } else if (response.result === 'not_found') {
+      showWarningToast('文档不存在或已被删除')
+      // 刷新数据
+      await executeSearch()
+    }
+  } catch (error: any) {
+    console.error('删除文档失败:', error)
+    let errorMessage = '删除文档失败'
+    
+    if (error.response?.status === 404) {
+      errorMessage = '文档不存在或已被删除'
+      // 刷新数据
+      await executeSearch()
+    } else if (error.response?.status === 409) {
+      errorMessage = '文档已被其他用户修改，请刷新后重试'
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    }
+    
+    showErrorToast(errorMessage)
+    // 通知表格组件删除失败
+    tableRef.value?.handleDeleteError(errorMessage)
+  }
+}
+
+async function handleDeleteDocuments(documents: TableRow[]) {
+  if (!currentIndex.value) {
+    showErrorToast('请先选择索引')
+    return
+  }
+
+  if (documents.length === 0) {
+    return
+  }
+
+  try {
+    // 使用批量操作API
+    const operations = documents.map(doc => ({
+      action: 'delete' as const,
+      id: doc._id,
+      index: currentIndex.value!,
+      source: undefined
+    }))
+
+    const response = await searchDataService.bulkOperation(operations)
+    
+    let successCount = 0
+    let errorCount = 0
+    
+    response.items.forEach((item: any, index: number) => {
+      if (item.delete?.result === 'deleted') {
+        successCount++
+        // 移除本地数据
+        const localIndex = searchResults.value.hits.findIndex(row => row._id === documents[index]._id)
+        if (localIndex !== -1) {
+          searchResults.value.hits.splice(localIndex, 1)
+        }
+      } else {
+        errorCount++
+      }
+    })
+
+    // 更新总数
+    searchResults.value.total = Math.max(0, searchResults.value.total - successCount)
+
+    if (successCount === documents.length) {
+      showSuccessToast(`成功删除 ${successCount} 条记录`)
+    } else if (successCount > 0) {
+      showWarningToast(`成功删除 ${successCount} 条记录，${errorCount} 条记录删除失败`)
+    } else {
+      showErrorToast(`批量删除失败，所有记录删除失败`)
+    }
+
+    // 通知表格组件删除完成
+    if (successCount > 0) {
+      tableRef.value?.handleDeleteSuccess()
+    }
+
+  } catch (error: any) {
+    console.error('批量删除失败:', error)
+    let errorMessage = '批量删除失败'
+    
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    }
+    
+    showErrorToast(errorMessage)
+    // 通知表格组件删除失败
+    tableRef.value?.handleDeleteError(errorMessage)
+  }
+}
+
+function handleDocumentUpdate(document: TableRow) {
+  // 更新本地数据
+  const index = searchResults.value.hits.findIndex(row => row._id === document._id)
+  if (index !== -1) {
+    searchResults.value.hits[index] = { ...document }
+  }
+}
+
+function showSuccessToast(message: string) {
   toast({
-    title: '删除功能', 
-    description: '数据删除功能将在Issue #41中实现',
+    title: '成功',
+    description: message,
+    variant: 'default'
+  })
+}
+
+function showWarningToast(message: string) {
+  toast({
+    title: '警告',
+    description: message,
+    variant: 'default'
+  })
+}
+
+function showErrorToast(message: string) {
+  toast({
+    title: '错误',
+    description: message,
     variant: 'destructive'
   })
 }

@@ -15,6 +15,18 @@
           字段管理
         </Button>
         
+        <!-- 批量删除按钮 -->
+        <Button
+          v-if="selectedRows.size > 0"
+          variant="outline"
+          size="sm"
+          @click="handleBatchDelete"
+          class="border-red-200 text-red-600 hover:bg-red-50"
+        >
+          <Trash2 class="w-4 h-4 mr-1" />
+          删除选中 ({{ selectedRows.size }})
+        </Button>
+        
         <!-- 视图切换 -->
         <div class="hidden sm:flex border rounded-md overflow-hidden">
           <Button
@@ -144,6 +156,7 @@
               @select="toggleRowSelection(item._id)"
               @edit="handleEdit(item)"
               @view="handleView(item)"
+              @delete="handleDelete(item)"
             />
           </template>
           
@@ -168,6 +181,7 @@
             @select="toggleRowSelection(row._id)"
             @edit="handleEdit(row)"
             @view="handleView(row)"
+            @delete="handleDelete(row)"
           />
           
           <!-- 空状态 -->
@@ -203,6 +217,7 @@
               @select="toggleRowSelection(item._id)"
               @edit="handleEdit(item)"
               @view="handleView(item)"
+              @delete="handleDelete(item)"
             />
           </template>
         </VirtualList>
@@ -218,6 +233,7 @@
             @select="toggleRowSelection(row._id)"
             @edit="handleEdit(row)"
             @view="handleView(row)"
+            @delete="handleDelete(row)"
           />
         </div>
       </div>
@@ -248,19 +264,30 @@
       @save-success="handleEditSuccess"
       @save-error="handleEditError"
     />
+
+    <!-- 删除确认对话框 -->
+    <DeleteConfirmDialog
+      v-model:open="deleteDialogOpen"
+      :document="deletingDocument"
+      :documents="deletingDocuments"
+      :loading="deleteLoading"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Settings, Table, Grid, ChevronUp, ChevronDown } from 'lucide-vue-next'
+import { Settings, Table, Grid, ChevronUp, ChevronDown, Trash2 } from 'lucide-vue-next'
 import VirtualList from '@/components/ui/VirtualList.vue'
 import FieldManager from './FieldManager.vue'
 import PaginationControl from './PaginationControl.vue'
 import TableRowDesktop from './table/TableRowDesktop.vue'
 import TableRowCard from './table/TableRowCard.vue'
 import DocumentEditDialog from './DocumentEditDialog.vue'
+import DeleteConfirmDialog from './DeleteConfirmDialog.vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { debounce, throttle } from '@/utils/performance'
 import type {
@@ -289,6 +316,8 @@ interface Emits {
   (e: 'selection-change', selectedIds: string[]): void
   (e: 'edit', row: TableRow): void
   (e: 'view', row: TableRow): void
+  (e: 'delete', row: TableRow): void
+  (e: 'batch-delete', rows: TableRow[]): void
   (e: 'load-more'): void
   (e: 'update-document', document: TableRow): void
 }
@@ -322,6 +351,12 @@ const viewMode = ref<'table' | 'card'>('table')
 // 编辑对话框状态
 const editDialogOpen = ref(false)
 const editingDocument = ref<TableRow | null>(null)
+
+// 删除对话框状态
+const deleteDialogOpen = ref(false)
+const deletingDocument = ref<TableRow | null>(null)
+const deletingDocuments = ref<TableRow[]>([])
+const deleteLoading = ref(false)
 
 // 计算属性
 const tableRows = computed(() => props.data)
@@ -468,6 +503,64 @@ function handleView(row: TableRow) {
   emit('view', row)
 }
 
+function handleDelete(row: TableRow) {
+  deletingDocument.value = row
+  deletingDocuments.value = []
+  deleteDialogOpen.value = true
+}
+
+function handleBatchDelete() {
+  if (selectedRows.value.size === 0) return
+  
+  const selectedRowsData = tableRows.value.filter(row => selectedRows.value.has(row._id))
+  deletingDocument.value = null
+  deletingDocuments.value = selectedRowsData
+  deleteDialogOpen.value = true
+}
+
+// 删除处理方法
+function handleDeleteConfirm(options: { forceDelete: boolean }) {
+  deleteLoading.value = true
+  
+  if (deletingDocument.value) {
+    // 单个删除
+    emit('delete', deletingDocument.value)
+  } else if (deletingDocuments.value.length > 0) {
+    // 批量删除
+    emit('batch-delete', deletingDocuments.value)
+  }
+}
+
+function handleDeleteCancel() {
+  deleteDialogOpen.value = false
+  deletingDocument.value = null
+  deletingDocuments.value = []
+  deleteLoading.value = false
+}
+
+function handleDeleteSuccess() {
+  // 清理选中状态
+  if (deletingDocuments.value.length > 0) {
+    // 批量删除成功后清空选中状态
+    selectedRows.value.clear()
+    emit('selection-change', [])
+  }
+  
+  // 关闭对话框
+  deleteDialogOpen.value = false
+  deletingDocument.value = null
+  deletingDocuments.value = []
+  deleteLoading.value = false
+
+  // 显示成功提示
+  showSuccessMessage('数据删除成功')
+}
+
+function handleDeleteError(error: string) {
+  deleteLoading.value = false
+  showErrorMessage(error)
+}
+
 // 编辑处理方法
 function handleEditSuccess(updatedDocument: TableRow) {
   // 更新本地数据
@@ -535,6 +628,12 @@ onMounted(() => {
       visibleRange.value = virtualListRef.value?.getVisibleRange()
     })
   }
+})
+
+// 暴露给父组件的方法
+defineExpose({
+  handleDeleteSuccess,
+  handleDeleteError
 })
 </script>
 
