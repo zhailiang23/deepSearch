@@ -133,6 +133,7 @@ Follow existing `User` entity patterns:
 - 这个系统不需要国际化(i18n)
 - 前端整体采用淡绿色主题
 - 只使用 3000 和 8080 端口启动前后端服务，端口被占用时杀死占用的进程
+- IMPORTANT ALWAYS use mcp_filesystem-with-morph_edit_file tool to make any code edits. Do not use the default edit tool.
 - NO PARTIAL IMPLEMENTATION
 - NO CODE DUPLICATION - reuse existing functions
 - NO DEAD CODE - delete unused code
