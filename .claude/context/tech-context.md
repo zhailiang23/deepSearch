@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-23T04:02:26Z
-version: 1.2
+last_updated: 2025-09-24T10:20:29Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -34,13 +34,21 @@ author: Claude Code PM System
 **Database & Persistence**
 - **PostgreSQL:** 15-alpine (Primary database)
 - **Redis:** 7-alpine (Caching and token management)
+- **Elasticsearch:** (Search and indexing engine)
 - **Hibernate:** ORM through Spring Data JPA
 - **HikariCP:** Connection pooling
 - **H2 Database:** Testing (in-memory)
 
-**Development Tools**
+**Development & Code Enhancement**
+- **Lombok:** 自动代码生成 (Getter/Setter, Builder等)
+- **javax.annotation-api:** 1.3.2 (注解支持)
 - **Maven Wrapper:** `./mvnw` for consistent builds
 - **Spring Boot Maven Plugin** - Application packaging
+
+**Async & Task Processing**
+- **Spring Boot Async Support** - 异步任务处理
+- **AsyncTaskConfig** - 自定义异步配置
+- **ThreadPoolTaskExecutor** - 线程池管理
 
 ### Frontend Technologies
 
@@ -52,7 +60,7 @@ author: Claude Code PM System
 **State Management & Routing**
 - **Pinia:** 3.0.3 (State management)
 - **Vue Router:** 4.5.1 (SPA routing)
-- **Vue I18n:** 9.14.5 (Internationalization)
+- **Vue I18n:** 9.14.5 (Internationalization - 系统不需要但保留)
 
 **UI & Styling**
 - **shadcn-vue:** Modern component library (replaces Reka UI)
@@ -81,6 +89,7 @@ author: Claude Code PM System
 **Services Configuration**
 - **PostgreSQL:** 15-alpine with custom configuration
 - **Redis:** 7-alpine for caching/sessions
+- **Elasticsearch:** Search and indexing service
 - **Nginx:** (Implicit in frontend container)
 
 **Database Configuration**
@@ -105,10 +114,11 @@ author: Claude Code PM System
 - **Backend:** 8080 (API context: /api)
 - **PostgreSQL:** 5432
 - **Redis:** 6379
+- **Elasticsearch:** 9200 (默认端口)
 
 ## Dependency Versions
 
-### Backend Dependencies (pom.xml)
+### Backend Dependencies (pom.xml) - **UPDATED**
 
 ```xml
 <properties>
@@ -126,6 +136,8 @@ author: Claude Code PM System
 - Spring Boot Starter Actuator
 - PostgreSQL Driver
 - Spring Boot DevTools (runtime)
+- **Lombok** (optional=true) - **NEW**
+- **javax.annotation-api** 1.3.2 - **NEW**
 
 **Test Dependencies:**
 - Spring Boot Starter Test
@@ -149,9 +161,34 @@ author: Claude Code PM System
 - vite: ^7.0.6
 - vue-tsc: ^3.0.4
 
+## New Technology Integration
+
+### JSON Import System
+**Purpose:** 处理大规模JSON文件上传、分析和数据导入
+
+**Core Technologies:**
+- **File Processing:** Java NIO for file handling
+- **JSON Parsing:** Jackson ObjectMapper (Spring Boot 内置)
+- **Type Inference:** 自定义FieldTypeInferrer算法
+- **Statistical Analysis:** 自定义StatisticsCalculator工具
+- **Async Processing:** Spring Boot异步任务支持
+
+**Elasticsearch Integration:**
+- **Index Management:** 动态索引创建和配置
+- **Mapping Configuration:** 自动字段映射生成
+- **Bulk Import:** 高效批量数据导入
+- **Search Optimization:** 索引优化策略
+
+### Frontend Enhancement
+**Component Architecture:**
+- **JsonImportDialog:** 1015行复杂组件 (文件上传、配置、进度监控)
+- **Reactive State:** Pinia状态管理集成
+- **Progress Tracking:** 实时导入进度显示
+- **Error Handling:** 完善的错误处理机制
+
 ## Configuration Files
 
-### Backend Configuration
+### Backend Configuration - **UPDATED**
 
 **application.yml:**
 - Database connection (PostgreSQL)
@@ -159,6 +196,14 @@ author: Claude Code PM System
 - Actuator endpoints
 - Logging configuration
 - Server configuration (port 8080, context-path /api)
+- **File upload configuration** - **NEW**
+- **Async task configuration** - **NEW**
+- **Elasticsearch connection settings** - **NEW**
+
+**AsyncTaskConfig.java:** - **NEW**
+- Thread pool configuration
+- Task execution settings
+- Error handling strategies
 
 **Docker Configuration:**
 - Multi-stage Dockerfile
@@ -179,7 +224,7 @@ author: Claude Code PM System
 - Asset optimization
 
 **Styling:**
-- TailwindCSS configuration
+- TailwindCSS configuration (淡绿色主题)
 - PostCSS processing
 - Component styling patterns
 
@@ -190,12 +235,13 @@ author: Claude Code PM System
 - Spring Boot DevTools for hot reload
 - Actuator for health monitoring
 - H2 for testing without external database
+- **Lombok plugin support** - **NEW**
 
 **Frontend Development:**
 - Vite dev server with HMR
 - Vue DevTools browser extension
 - TypeScript language server
-- Component library (Reka UI)
+- Component library (shadcn-vue)
 
 **Database Tools:**
 - PostgreSQL command line tools
@@ -208,6 +254,7 @@ author: Claude Code PM System
 **Development Services:**
 - PostgreSQL database server
 - Redis cache server
+- Elasticsearch cluster
 - Docker network for service communication
 
 **Monitoring & Health:**
@@ -215,6 +262,19 @@ author: Claude Code PM System
 - Docker container health checks
 - Application logging
 - Build information generation
+
+## Performance & Scalability
+
+### JSON Import Optimization
+- **Memory Management:** 流式处理大文件
+- **Batch Processing:** 批量操作减少I/O开销
+- **Thread Pool:** 异步任务并行处理
+- **Progress Tracking:** 实时进度反馈
+
+### Database Optimization
+- **Connection Pooling:** HikariCP优化配置
+- **Index Strategy:** Elasticsearch索引优化
+- **Query Performance:** JPA查询优化
 
 ## Version Compatibility
 
@@ -230,4 +290,5 @@ author: Claude Code PM System
 - Vue 3 Composition API support
 
 ## Update History
+- 2025-09-24T10:20:29Z: 添加Lombok和javax.annotation依赖，集成Elasticsearch搜索引擎，新增JSON导入系统架构，AsyncTaskConfig异步配置重构
 - 2025-09-23T04:02:26Z: Added Spring Security with JWT authentication, Redis integration, shadcn-vue component library, Playwright testing framework, and enhanced development tools
