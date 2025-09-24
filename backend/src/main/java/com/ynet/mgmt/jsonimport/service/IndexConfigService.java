@@ -74,9 +74,8 @@ public class IndexConfigService {
      * 生成索引名称
      */
     private String generateIndexName(String searchSpaceCode) {
-        // 格式: searchspace_{code}_{timestamp}
-        long timestamp = System.currentTimeMillis();
-        return String.format("searchspace_%s_%d", searchSpaceCode, timestamp);
+        // 直接使用搜索空间的code作为索引名
+        return searchSpaceCode;
     }
 
     /**

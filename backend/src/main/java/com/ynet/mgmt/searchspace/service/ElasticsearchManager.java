@@ -322,7 +322,7 @@ public class ElasticsearchManager {
     /**
      * 获取索引文档数量
      */
-    private long getDocumentCount(String indexName) {
+    public long getDocumentCount(String indexName) {
         try {
             CountRequest request = CountRequest.of(builder -> builder
                 .index(indexName)

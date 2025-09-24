@@ -94,7 +94,7 @@ public class DataImportService {
             updateTaskStatus(status);
 
             IndexMappingConfig indexConfig = generateIndexConfig(searchSpace.getCode(), analysis);
-            createElasticsearchIndex(indexConfig);
+            createElasticsearchIndex(indexConfig, request.getMode());
 
             // 检查是否被取消
             checkCancellation(taskId);
@@ -241,7 +241,7 @@ public class DataImportService {
             updateTaskStatus(status);
 
             IndexMappingConfig indexConfig = generateIndexConfig(searchSpace.getCode(), analysis);
-            createElasticsearchIndex(indexConfig);
+            createElasticsearchIndex(indexConfig, request.getMode());
 
             // 检查是否被取消
             checkCancellation(taskId);
@@ -446,16 +446,26 @@ public class DataImportService {
     /**
      * 创建Elasticsearch索引
      */
-    private void createElasticsearchIndex(IndexMappingConfig config) throws IOException {
+    private void createElasticsearchIndex(IndexMappingConfig config, ImportExecuteRequest.ImportMode mode) throws IOException {
         String indexName = config.getIndexName();
+        boolean indexExists = elasticsearchManager.indexExists(indexName);
 
-        // 检查索引是否已存在
-        if (elasticsearchManager.indexExists(indexName)) {
-            log.warn("索引已存在，将删除后重新创建: {}", indexName);
-            elasticsearchManager.deleteIndex(indexName);
+        log.info("处理索引创建: indexName={}, mode={}, exists={}", indexName, mode, indexExists);
+
+        if (indexExists) {
+            if (mode == ImportExecuteRequest.ImportMode.REPLACE) {
+                // 替换模式：删除现有索引后重新创建
+                log.info("替换模式：删除现有索引 {}", indexName);
+                elasticsearchManager.deleteIndex(indexName);
+            } else if (mode == ImportExecuteRequest.ImportMode.APPEND) {
+                // 追加模式：直接使用现有索引
+                log.info("追加模式：使用现有索引 {}", indexName);
+                return;
+            }
         }
 
-        // 创建索引请求
+        // 创建新索引（索引不存在或者是替换模式）
+        log.info("创建新索引: {}", indexName);
         Map<String, Object> mappingConfig = config.toElasticsearchMapping();
 
         CreateIndexRequest request = CreateIndexRequest.of(builder -> builder

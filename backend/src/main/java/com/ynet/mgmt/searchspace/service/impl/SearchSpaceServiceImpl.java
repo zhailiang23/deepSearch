@@ -296,7 +296,7 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
      */
     private IndexStatus getElasticsearchIndexStatus(String indexName) {
         try {
-            return elasticsearchManager.getSearchSpaceIndexStatus(indexName);
+            return elasticsearchManager.getIndexStatus(indexName);
         } catch (Exception e) {
             log.warn("获取ES索引状态失败: {}", indexName, e);
             return IndexStatus.builder()
