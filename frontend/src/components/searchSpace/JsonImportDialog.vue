@@ -1,7 +1,7 @@
 <template>
   <DialogRoot v-model:open="isOpen">
     <DialogPortal>
-      <DialogOverlay class="fixed inset-0 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogOverlay class="fixed inset-0 z-50 bg-black/20 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
       <DialogContent class="fixed left-[50%] top-[50%] z-50 w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg dark:bg-gray-800 dark:border-gray-700 max-h-[90vh] flex flex-col">
 
         <!-- 对话框头部 -->
@@ -65,7 +65,7 @@
         <div class="flex-1 min-h-[400px] overflow-hidden">
           <!-- 步骤1: 文件选择 -->
           <div v-if="currentStep === 0" class="h-full overflow-y-auto space-y-6">
-            <div class="text-center">
+            <div class="text-center mt-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 选择JSON文件
               </h3>
@@ -154,7 +154,7 @@
 
           <!-- 步骤2: JSON预览 -->
           <div v-if="currentStep === 1" class="h-full flex flex-col space-y-6">
-            <div class="text-center flex-shrink-0">
+            <div class="text-center flex-shrink-0 mt-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 JSON数据预览
               </h3>
@@ -221,7 +221,7 @@
                   数据预览 (前{{ Math.min(jsonPreview.length, 5) }}条记录)
                 </h4>
                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <pre class="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto whitespace-pre-wrap">{{ JSON.stringify(jsonPreview.slice(0, 5), null, 2) }}</pre>
+                  <pre class="text-xs text-gray-700 dark:text-gray-300 overflow-auto whitespace-pre-wrap max-h-80">{{ JSON.stringify(jsonPreview.slice(0, 5), null, 2) }}</pre>
                 </div>
               </div>
             </div>
@@ -229,7 +229,7 @@
 
           <!-- 步骤3: 导入配置 -->
           <div v-if="currentStep === 2" class="h-full overflow-y-auto space-y-6">
-            <div class="text-center">
+            <div class="text-center mt-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 导入配置
               </h3>
@@ -324,7 +324,7 @@
 
           <!-- 步骤4: 导入结果 -->
           <div v-if="currentStep === 3" class="h-full overflow-y-auto space-y-6">
-            <div class="text-center mt-8">
+            <div class="text-center mt-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 导入结果
               </h3>
