@@ -4,7 +4,7 @@ status: backlog
 created: 2025-09-25T11:28:25Z
 progress: 0%
 prd: .claude/prds/channel-manage.md
-github: 待GitHub同步时更新
+github: https://github.com/zhailiang23/deepSearch/issues/49
 ---
 
 # Epic: 渠道管理模块
@@ -117,6 +117,24 @@ CREATE INDEX idx_channel_name ON channel(name);
 - [ ] **前端组件层**: ChannelManage页面、ChannelForm表单、ChannelList列表
 - [ ] **前端集成**: 路由配置、导航菜单、样式适配
 - [ ] **测试验收**: 单元测试、集成测试、E2E验收
+
+## GitHub同步完成
+
+- [ ] #50 - 数据库设计和迁移脚本 (parallel: false, 4小时)
+- [ ] #51 - Channel实体层开发 (parallel: false, 6小时)
+- [ ] #52 - Channel服务层开发 (parallel: false, 8小时)
+- [ ] #53 - Channel API控制层 (parallel: false, 6小时)
+- [ ] #54 - 前端数据层开发 (parallel: false, 4小时)
+- [ ] #55 - 前端组件层开发 (parallel: false, 10小时)
+- [ ] #56 - 前端集成和路由 (parallel: false, 4小时)
+- [ ] #57 - 测试和验收 (parallel: false, 6小时)
+
+**任务统计**：
+- 总任务数: 8
+- 并行任务: 0 (存在依赖关系，需顺序执行)
+- 顺序任务: 8
+- 总预估工时: 48小时 (约6个开发日)
+- **GitHub Epic**: [#49](https://github.com/zhailiang23/deepSearch/issues/49)
 
 ## 依赖项
 
