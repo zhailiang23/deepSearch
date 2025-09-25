@@ -70,28 +70,28 @@ public class ElasticsearchManager {
                         .time(properties.getIndex().getDefaultSettings().getRefreshInterval().getSeconds() + "s")
                     ))
                 )
-                .mappings(typeMapping -> typeMapping
-                    .properties("title", property -> property
-                        .text(textProperty -> textProperty
-                            .analyzer("standard")
-                            .fields("keyword", keywordField -> keywordField
-                                .keyword(keywordProperty -> keywordProperty)
-                            )
-                        )
-                    )
-                    .properties("content", property -> property
-                        .text(textProperty -> textProperty.analyzer("standard"))
-                    )
-                    .properties("timestamp", property -> property
-                        .date(dateProperty -> dateProperty.format("strict_date_time"))
-                    )
-                    .properties("searchSpaceCode", property -> property
-                        .keyword(keywordProperty -> keywordProperty)
-                    )
-                    .properties("documentId", property -> property
-                        .keyword(keywordProperty -> keywordProperty)
-                    )
-                )
+                // .mappings(typeMapping -> typeMapping
+                //     .properties("title", property -> property
+                //         .text(textProperty -> textProperty
+                //             .analyzer("standard")
+                //             .fields("keyword", keywordField -> keywordField
+                //                 .keyword(keywordProperty -> keywordProperty)
+                //             )
+                //         )
+                //     )
+                //     .properties("content", property -> property
+                //         .text(textProperty -> textProperty.analyzer("standard"))
+                //     )
+                //     .properties("timestamp", property -> property
+                //         .date(dateProperty -> dateProperty.format("strict_date_time"))
+                //     )
+                //     .properties("searchSpaceCode", property -> property
+                //         .keyword(keywordProperty -> keywordProperty)
+                //     )
+                //     .properties("documentId", property -> property
+                //         .keyword(keywordProperty -> keywordProperty)
+                //     )
+                // )
             );
 
             CreateIndexResponse response = client.indices().create(request);

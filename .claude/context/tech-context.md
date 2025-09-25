@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-24T10:20:29Z
-version: 1.3
+last_updated: 2025-09-24T23:02:23Z
+version: 1.4
 author: Claude Code PM System
 ---
 
@@ -24,6 +24,13 @@ author: Claude Code PM System
 - **Spring Boot Starter Validation** - Bean validation
 - **Spring Boot Starter Actuator** - Health checks and monitoring
 - **Spring Boot DevTools** - Development utilities
+
+**搜索数据管理服务架构** ⭐ **NEW**
+- **ElasticsearchDataController** - 数据CRUD操作控制器
+- **ElasticsearchDataService** - 数据服务层实现
+- **搜索DTO体系** - 10+个数据传输对象
+- **批量操作支持** - BulkOperationRequest/Response
+- **文档管理** - DocumentDetail CRUD operations
 
 **Security & Authentication**
 - **Spring Security:** JWT-based authentication
@@ -57,6 +64,20 @@ author: Claude Code PM System
 - **TypeScript:** 5.8.0 (Strict mode)
 - **Vite:** 7.0.6 (Build tool and dev server)
 
+**搜索数据管理组件系统** ⭐ **NEW**
+- **DynamicResultsTable:** 725行响应式表格组件
+- **DocumentEditDialog:** 532行文档编辑对话框
+- **DeleteConfirmDialog:** 420行删除确认对话框
+- **FieldEditor/FieldManager:** 字段编辑器组件系统
+- **SearchDataManagePage:** 936行主管理页面
+
+**性能优化组件** ⭐ **NEW**
+- **VirtualList:** 249行虚拟化列表组件
+- **useMediaQuery:** 318行媒体查询Composable
+- **performance utils:** 422行性能优化工具类
+- **CellRenderer:** 动态单元格渲染组件
+- **TableRowCard/Desktop:** 响应式表格行组件
+
 **State Management & Routing**
 - **Pinia:** 3.0.3 (State management)
 - **Vue Router:** 4.5.1 (SPA routing)
@@ -78,6 +99,28 @@ author: Claude Code PM System
 - **Vue DevTools:** 8.0.0 (Development tools)
 - **PostCSS:** 8.5.6 (CSS processing)
 - **Autoprefixer:** 10.4.21 (CSS vendor prefixes)
+
+### 搜索数据管理服务层 ⭐ **NEW**
+
+**TypeScript服务**
+- **searchDataService.ts:** 129行Elasticsearch数据服务
+  - 搜索和查询API封装
+  - 文档CRUD操作
+  - 批量操作支持
+  - 错误处理和验证
+
+**类型定义系统**
+- **tableData.ts:** 110行表格数据类型定义
+  - SearchData类型接口
+  - 字段类型定义
+  - 表格配置类型
+  - API响应类型
+
+**Composables**
+- **useMediaQuery.ts:** 318行媒体查询钩子
+  - 响应式设计适配
+  - 断点检测
+  - 设备类型判断
 
 ### Infrastructure & DevOps
 
@@ -163,6 +206,29 @@ author: Claude Code PM System
 
 ## New Technology Integration
 
+### 搜索数据管理系统 ⭐ **NEW**
+**Purpose:** 完整的Elasticsearch数据管理和CRUD操作系统
+
+**核心技术栈:**
+- **Elasticsearch集成:** 高性能搜索和数据检索
+- **响应式UI:** Vue 3 + TypeScript + TailwindCSS
+- **虚拟化渲染:** 大数据量表格性能优化
+- **动态表单:** 实时编辑和验证系统
+- **批量操作:** 高效的批量数据处理
+
+**后端架构:**
+- **Controller Layer:** ElasticsearchDataController
+- **Service Layer:** ElasticsearchDataService  
+- **DTO Layer:** 10+个数据传输对象
+- **Validation:** Bean Validation集成
+- **Exception Handling:** 统一异常处理机制
+
+**前端架构:**
+- **组件化设计:** 30+个专用组件
+- **状态管理:** Pinia集成的响应式状态
+- **性能优化:** 虚拟滚动和懒加载
+- **响应式设计:** 桌面和移动端适配
+
 ### JSON Import System
 **Purpose:** 处理大规模JSON文件上传、分析和数据导入
 
@@ -196,9 +262,15 @@ author: Claude Code PM System
 - Actuator endpoints
 - Logging configuration
 - Server configuration (port 8080, context-path /api)
-- **File upload configuration** - **NEW**
-- **Async task configuration** - **NEW**
-- **Elasticsearch connection settings** - **NEW**
+- **File upload configuration** - **EXISTING**
+- **Async task configuration** - **EXISTING**
+- **Elasticsearch connection settings** - **ENHANCED** ⭐
+
+**搜索数据管理配置:** - **NEW**
+- ElasticsearchDataController路由配置
+- 批量操作限制和超时设置
+- 文档大小和字段限制配置
+- 性能优化参数
 
 **AsyncTaskConfig.java:** - **NEW**
 - Thread pool configuration
@@ -265,6 +337,13 @@ author: Claude Code PM System
 
 ## Performance & Scalability
 
+### 搜索数据管理优化 ⭐ **NEW**
+- **虚拟化渲染:** VirtualList组件减少DOM开销
+- **响应式查询:** 智能媒体查询适配
+- **批量操作:** 高效的批量数据处理
+- **懒加载:** 按需加载表格数据
+- **缓存策略:** 搜索结果和组件状态缓存
+
 ### JSON Import Optimization
 - **Memory Management:** 流式处理大文件
 - **Batch Processing:** 批量操作减少I/O开销
@@ -283,6 +362,7 @@ author: Claude Code PM System
 - Node.js 20.19.0+
 - Docker with Compose support
 - Git 2.x
+- **Elasticsearch 8.x+** - **NEW**
 
 **Browser Support:**
 - Modern browsers with ES2020 support
@@ -290,5 +370,6 @@ author: Claude Code PM System
 - Vue 3 Composition API support
 
 ## Update History
+- 2025-09-24T23:02:23Z: 新增搜索数据管理完整技术栈，包括30+个前端组件、ElasticsearchDataController/Service、虚拟化性能优化、响应式设计系统
 - 2025-09-24T10:20:29Z: 添加Lombok和javax.annotation依赖，集成Elasticsearch搜索引擎，新增JSON导入系统架构，AsyncTaskConfig异步配置重构
 - 2025-09-23T04:02:26Z: Added Spring Security with JWT authentication, Redis integration, shadcn-vue component library, Playwright testing framework, and enhanced development tools
