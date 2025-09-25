@@ -7,43 +7,6 @@
           <h1 class="text-2xl font-bold text-gray-900">搜索数据管理</h1>
         </div>
 
-        <!-- 操作按钮组 -->
-        <div class="flex items-center gap-3">
-          <!-- 刷新按钮 -->
-          <Button
-            variant="outline"
-            size="sm"
-            @click="handleRefresh"
-            :disabled="loading"
-            class="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
-          >
-            <RefreshCw :class="['w-4 h-4 mr-2', { 'animate-spin': loading }]" />
-            刷新
-          </Button>
-
-          <!-- 导出按钮 -->
-          <Button
-            variant="outline"
-            size="sm"
-            @click="handleExport"
-            :disabled="loading || selectedRows.length === 0"
-            class="text-blue-600 border-blue-300 hover:bg-blue-50"
-          >
-            <Download class="w-4 h-4 mr-2" />
-            导出 ({{ selectedRows.length }})
-          </Button>
-
-          <!-- 字段管理按钮 -->
-          <Button
-            variant="outline"
-            size="sm"
-            @click="showFieldManager = true"
-            class="text-purple-600 border-purple-300 hover:bg-purple-50"
-          >
-            <Settings class="w-4 h-4 mr-2" />
-            字段管理
-          </Button>
-        </div>
       </div>
     </div>
 
@@ -157,29 +120,6 @@
       </div>
     </div>
 
-    <!-- 字段管理弹窗 - 完全禁用 -->
-    <!-- 临时禁用此弹窗，直到查明自动触发原因 -->
-    <!--
-    <Dialog v-model:open="showFieldManager" v-if="!isInitializing">
-      <DialogContent class="max-w-4xl max-h-[80vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle>字段管理</DialogTitle>
-          <DialogDescription>
-            管理表格显示字段，调整字段顺序和可见性
-          </DialogDescription>
-        </DialogHeader>
-
-        <div class="flex-1 overflow-hidden">
-          <FieldManager
-            v-if="indexMapping"
-            :mapping="indexMapping"
-            :initial-fields="visibleColumns"
-            @fields-change="handleFieldsChange"
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
-    -->
 
     <!-- 数据详情弹窗 - 完全禁用 -->
     <!-- 临时禁用此弹窗，直到查明自动触发原因 -->
@@ -219,9 +159,6 @@ import {
 import {
   Database,
   Search,
-  RefreshCw,
-  Download,
-  Settings,
   ChevronUp,
   ChevronDown,
   FileText,
@@ -231,7 +168,6 @@ import {
 
 // 组件导入
 import DynamicResultsTable from '@/components/searchData/DynamicResultsTable.vue'
-import FieldManager from '@/components/searchData/FieldManager.vue'
 
 // 服务导入
 import { searchDataService } from '@/services/searchDataService'
@@ -257,7 +193,6 @@ const loading = ref(false)
 const loadingText = ref('')
 const showSearchPanel = ref(true)
 const showAdvancedSearch = ref(false)
-const showFieldManager = ref(false)
 const showDataDetail = ref(false)
 
 // 添加初始化防护
@@ -298,12 +233,11 @@ const sortableColumns = computed(() => {
 })
 
 // 生命周期
-onMounted(async () => {  
+onMounted(async () => {
   // 强制重置所有弹窗状态
-  showFieldManager.value = false
   showDataDetail.value = false
   selectedRowData.value = null
-  
+
   await loadAvailableSearchSpaces()
   
   // 从路由参数恢复状态
@@ -319,7 +253,6 @@ onMounted(async () => {
   // 延长初始化防护时间到5秒，确保页面完全加载完成
   setTimeout(() => {
     // 再次强制重置弹窗状态
-    showFieldManager.value = false
     showDataDetail.value = false
     selectedRowData.value = null
     isInitializing.value = false
@@ -632,27 +565,6 @@ function generateMockData(): TableRow[] {
   return data
 }
 
-async function handleRefresh() {
-  await handleSearch()
-}
-
-function handleExport() {
-  if (selectedRows.value.length === 0) {
-    toast({
-      title: '提示',
-      description: '请先选择要导出的数据',
-      variant: 'default'
-    })
-    return
-  }
-  
-  // TODO: 实现导出功能
-  toast({
-    title: '导出功能',
-    description: '导出功能将在Issue #42中实现',
-    variant: 'default'
-  })
-}
 
 function toggleSearchPanel() {
   showSearchPanel.value = !showSearchPanel.value
@@ -693,8 +605,7 @@ function handleSortChange(field: string, order: 'asc' | 'desc') {
 
 function handleFieldsChange(fields: TableColumn[]) {
   visibleColumns.value = fields
-  showFieldManager.value = false
-  
+
   toast({
     title: '字段设置已更新',
     description: '表格显示已根据新的字段配置更新',
