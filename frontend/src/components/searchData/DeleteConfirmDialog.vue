@@ -216,7 +216,12 @@ const emit = defineEmits<Emits>()
 // 本地状态
 const isOpen = computed({
   get: () => props.open,
-  set: (value) => emit('update:open', value)
+  set: (value) => {
+    // 只有在值真正发生变化时才emit事件
+    if (value !== props.open) {
+      emit('update:open', value)
+    }
+  }
 })
 const deleting = ref(false)
 const forceDelete = ref(false)
