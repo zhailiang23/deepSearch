@@ -1,9 +1,11 @@
 ---
 name: search-data-manage
 description: 搜索数据管理模块技术实现
-status: planning
+status: completed
 created: 2025-09-24T10:30:15Z
-updated: 2025-09-24T19:20:00Z
+updated: 2025-09-25T07:29:09Z
+completed: 2025-09-25T07:29:09Z
+progress: 100%
 github: https://github.com/zhailiang/deepSearch/issues/35
 prd_source: .claude/prds/search-data-manage.md
 estimated_effort: 2-3 weeks
