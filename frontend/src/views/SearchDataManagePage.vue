@@ -289,6 +289,7 @@ const pageSize = ref(20)
 const selectedRows = ref<string[]>([])
 const selectedRowData = ref<TableRow | null>(null)
 const indexMapping = ref<ESIndexMapping>()
+const realIndexName = ref('')
 const visibleColumns = ref<TableColumn[]>([])
 
 // 计算属性
@@ -398,6 +399,9 @@ async function loadIndexMapping() {
     console.log('索引映射API响应:', response)
 
     if (response.success && response.data) {
+      // 保存真实的索引名称
+      realIndexName.value = response.data.index || ''
+
       // 直接使用后端返回的映射数据
       indexMapping.value = response.data.mapping || response.data
 
@@ -405,6 +409,7 @@ async function loadIndexMapping() {
       visibleColumns.value = generateInitialColumns()
 
       console.log('索引映射加载成功:', indexMapping.value)
+      console.log('真实索引名称:', realIndexName.value)
       console.log('生成的可见列:', visibleColumns.value)
     } else {
       throw new Error(response.message || '获取索引映射失败')
@@ -717,6 +722,7 @@ function handleRowView(row: TableRow) {
 }
 
 function handleRowDelete(row: TableRow) {
+  console.log('SearchDataManagePage.handleRowDelete 收到删除请求:', row._id)
   handleDeleteDocument(row)
 }
 
@@ -729,32 +735,58 @@ async function executeSearch() {
 }
 
 async function handleDeleteDocument(document: TableRow) {
-  if (!currentIndex.value) {
+  console.log('SearchDataManagePage.handleDeleteDocument 开始处理删除:', document._id)
+
+  if (!currentIndex.value || !realIndexName.value) {
     showErrorToast('请先选择搜索空间')
     return
   }
 
   try {
-    const response = await searchDataService.deleteDocument({
+    console.log('删除文档:', {
       id: document._id,
-      index: currentIndex.value,
+      index: realIndexName.value,
       version: document._version
     })
 
-    if (response.result === 'deleted') {
-      showSuccessToast('文档删除成功')
+    const response = await searchDataService.deleteDocument({
+      id: document._id,
+      index: realIndexName.value,
+      version: document._version
+    })
+
+    console.log('删除响应:', response)
+    console.log('响应数据:', response.data)
+    console.log('删除结果:', response.data?.result)
+
+    // 删除成功的判断条件：检查ApiResponse的data.result
+    if (response.success && response.data?.result === 'deleted') {
+      console.log('删除成功，准备通知子组件:', tableRef.value)
+
       // 移除本地数据
       const index = searchResults.value.hits.findIndex(item => item._id === document._id)
       if (index !== -1) {
         searchResults.value.hits.splice(index, 1)
         searchResults.value.total = Math.max(0, searchResults.value.total - 1)
       }
-      // 通知表格组件删除成功
-      tableRef.value?.handleDeleteSuccess()
-    } else if (response.result === 'not_found') {
+
+      // 先显示删除成功提示（在对话框关闭前显示，确保不被遮挡）
+      showSuccessToast('数据删除成功')
+
+      // 然后通知表格组件删除成功（关闭弹窗）
+      if (tableRef.value?.handleDeleteSuccess) {
+        console.log('调用子组件 handleDeleteSuccess')
+        tableRef.value.handleDeleteSuccess()
+      } else {
+        console.error('子组件方法不存在:', tableRef.value)
+      }
+    } else if (response.success && response.data?.result === 'not_found') {
       showWarningToast('文档不存在或已被删除')
       // 刷新数据
       await executeSearch()
+    } else {
+      console.error('删除响应格式异常:', response)
+      showErrorToast('删除操作异常，请重试')
     }
   } catch (error: any) {
     console.error('删除文档失败:', error)
