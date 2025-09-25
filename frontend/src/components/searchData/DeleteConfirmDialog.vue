@@ -214,7 +214,10 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 // 本地状态
-const isOpen = ref(props.open)
+const isOpen = computed({
+  get: () => props.open,
+  set: (value) => emit('update:open', value)
+})
 const deleting = ref(false)
 const forceDelete = ref(false)
 
@@ -324,7 +327,7 @@ async function handleConfirmDelete() {
 // 关闭对话框
 function closeDialog() {
   if (!deleting.value) {
-    emit('update:open', false)
+    isOpen.value = false
     emit('cancel')
     // 重置状态
     forceDelete.value = false
@@ -332,16 +335,8 @@ function closeDialog() {
 }
 
 // 监听props变化
-watch(() => props.open, (newVal) => {
-  isOpen.value = newVal
-})
-
 watch(() => props.loading, (newVal) => {
   deleting.value = newVal
-})
-
-watch(isOpen, (newVal) => {
-  emit('update:open', newVal)
 })
 </script>
 
