@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-24T23:02:23Z
-version: 1.3
+last_updated: 2025-09-25T07:55:40Z
+version: 1.4
 author: Claude Code PM System
 ---
 
@@ -15,10 +15,13 @@ deepSearch/
 ├── frontend/               # Vue.js frontend application  
 ├── docker/                 # Docker configuration files
 ├── .claude/                # Claude Code PM system
-│   ├── context/            # Project context documentation  
+│   ├── context/            # Project context documentation
 │   ├── epics/              # Epic documentation
-│   │   ├── search-space-json-import/  # JSON导入Epic (11个任务)
-│   │   └── search-data-manage/        # **NEW: 搜索数据管理Epic**
+│   │   ├── .archived/      # **NEW: 归档的已完成Epics**
+│   │   │   ├── loginAndLogout/         # 已完成的登录登出Epic
+│   │   │   ├── search-data-manage/     # 已完成的搜索数据管理Epic
+│   │   │   └── search-space-json-import/ # 已完成的JSON导入Epic
+│   │   └── pinyin-search/  # **NEW: 拼音搜索Epic (进行中)**
 │   └── prds/               # Product Requirement Documents
 ├── test/                   # Test data and documentation
 │   ├── extended_search_test_data.json

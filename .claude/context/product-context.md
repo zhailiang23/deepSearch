@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-24T23:02:23Z
-version: 1.2
+last_updated: 2025-09-25T07:55:40Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -13,7 +13,8 @@ author: Claude Code PM System
 
 ## Core Value Proposition
 
-**主要价值：** 
+**主要价值：**
+- **智能中文搜索：** 拼音搜索支持，汉字拼音混合检索，提升中文搜索准确性 ⭐ **NEW**
 - **实时搜索数据管理：** 高性能Elasticsearch全文检索，动态表格展示，实时编辑和删除
 - **智能JSON导入：** 自动分析JSON文件结构，推断字段类型，生成统计信息
 - **灵活索引配置：** 用户可自定义Elasticsearch索引映射和搜索配置

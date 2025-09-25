@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-24T23:02:23Z
-version: 1.4
+last_updated: 2025-09-25T07:55:40Z
+version: 1.5
 author: Claude Code PM System
 ---
 
@@ -82,6 +82,7 @@ author: Claude Code PM System
 - **Pinia:** 3.0.3 (State management)
 - **Vue Router:** 4.5.1 (SPA routing)
 - **Vue I18n:** 9.14.5 (Internationalization - 系统不需要但保留)
+- **vuedraggable:** 2.24.3 (拖拽交互组件)
 
 **UI & Styling**
 - **shadcn-vue:** Modern component library (replaces Reka UI)
