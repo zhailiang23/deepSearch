@@ -24,6 +24,15 @@ const routes = [
         }
       },
       {
+        path: 'search-data',
+        name: 'SearchData',
+        component: () => import('@/views/SearchDataManagePage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '搜索数据管理'
+        }
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/pages/Settings.vue'),

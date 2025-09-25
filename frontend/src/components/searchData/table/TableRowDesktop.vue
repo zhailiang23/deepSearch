@@ -1,77 +1,47 @@
 <template>
-  <div 
+  <div
     :class="[
-      'table-row flex items-center border-b border-gray-200 hover:bg-gray-50 transition-colors',
-      { 
-        'bg-emerald-50 border-emerald-200': selected,
-        'opacity-75': row._score !== undefined && row._score < 0.5 
+      'table-row border-b border-gray-200 hover:bg-gray-50 transition-colors',
+      {
+        'opacity-75': row._score !== undefined && row._score < 0.5
       }
     ]"
   >
-    <!-- 选择列 -->
-    <div class="w-12 flex-shrink-0 p-3 flex items-center justify-center border-r">
-      <input
-        type="checkbox"
-        :checked="selected"
-        @change="handleSelect"
-        class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500"
+    <div class="flex items-center" :style="{ width: getCalculatedTableWidth() }">
+      <!-- 动态数据列 -->
+      <div
+        v-for="column in columns"
+        :key="column.key"
+        :class="[
+          'p-3 border-r',
+          `text-${column.align || 'left'}`,
+          {
+            'sticky left-12 bg-white z-10': column.fixed === 'left',
+            'sticky right-0 bg-white z-10': column.fixed === 'right'
+          }
+        ]"
+        :style="{
+          width: getColumnWidth(column),
+          flexShrink: 0
+        }"
       >
-    </div>
-    
-    <!-- 动态数据列 -->
-    <div
-      v-for="column in columns"
-      :key="column.key"
-      :class="[
-        'flex-shrink-0 p-3 border-r',
-        `text-${column.align || 'left'}`,
-        {
-          'sticky left-12 bg-white z-10': column.fixed === 'left',
-          'sticky right-0 bg-white z-10': column.fixed === 'right'
-        }
-      ]"
-      :style="{ 
-        width: getColumnWidth(column),
-        minWidth: column.minWidth ? `${column.minWidth}px` : undefined,
-        maxWidth: column.maxWidth ? `${column.maxWidth}px` : undefined
-      }"
-    >
-      <!-- 字段值渲染 -->
-      <div class="min-w-0 flex-1">
-        <CellRenderer
-          :value="getCellValue(row, column)"
-          :type="column.type"
-          :format="column.format"
-          :field="column.key"
-        />
+        <!-- 字段值渲染 -->
+        <div class="min-w-0 flex-1">
+          <CellRenderer
+            :value="getCellValue(row, column)"
+            :type="column.type"
+            :format="column.format"
+            :field="column.key"
+          />
+        </div>
       </div>
-    </div>
-    
-    <!-- 操作列 -->
-    <div class="w-32 flex-shrink-0 p-3 flex items-center justify-end gap-2 sticky right-0 bg-white z-10">
-      <!-- 评分显示 -->
-      <div 
-        v-if="row._score !== undefined"
-        class="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded"
-        :title="`相关度评分: ${row._score.toFixed(3)}`"
-      >
-        {{ formatScore(row._score) }}
-      </div>
+
+      <!-- 操作列 -->
+      <div class="w-32 flex-shrink-0 p-3 flex items-center justify-end gap-2 sticky right-0 bg-white z-20 border-r">
       
       <!-- 操作按钮 -->
       <div class="flex items-center gap-1">
-        <!-- 查看详情 -->
-        <Button
-          variant="ghost"
-          size="sm"
-          @click="handleView"
-          class="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-          title="查看详情"
-        >
-          <Eye class="w-4 h-4" />
-        </Button>
-        
-        <!-- 编辑按钮 (预留给Issue #40) -->
+        <!-- 编辑按钮 -->
         <Button
           variant="ghost"
           size="sm"
@@ -81,58 +51,19 @@
         >
           <Edit class="w-4 h-4" />
         </Button>
-        
-        <!-- 更多操作 -->
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              title="更多操作"
-            >
-              <MoreHorizontal class="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          
-          <DropdownMenuContent align="end" class="w-48">
-            <!-- 复制操作 -->
-            <DropdownMenuItem @click="copyRowData">
-              <Copy class="w-4 h-4 mr-2" />
-              复制数据
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem @click="copyId">
-              <Hash class="w-4 h-4 mr-2" />
-              复制ID
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-            
-            <!-- 导出操作 -->
-            <DropdownMenuItem @click="exportJson">
-              <FileJson class="w-4 h-4 mr-2" />
-              导出JSON
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem @click="exportCsv">
-              <FileSpreadsheet class="w-4 h-4 mr-2" />
-              导出CSV
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-            
-            <!-- 危险操作 (预留给Issue #41) -->
-            <DropdownMenuItem 
-              @click="handleDelete"
-              class="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2 class="w-4 h-4 mr-2" />
-              删除记录
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+
+        <!-- 删除按钮 -->
+        <Button
+          variant="ghost"
+          size="sm"
+          @click="handleDelete"
+          class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+          title="删除记录"
+        >
+          <Trash2 class="w-4 h-4" />
+        </Button>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -141,20 +72,7 @@
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { 
-  Eye, 
-  Edit, 
-  MoreHorizontal, 
-  Copy, 
-  Hash,
-  FileJson,
-  FileSpreadsheet,
+  Edit,
   Trash2
 } from 'lucide-vue-next'
 import CellRenderer from './CellRenderer.vue'
@@ -164,13 +82,10 @@ interface Props {
   row: TableRow
   columns: TableColumn[]
   index: number
-  selected: boolean
 }
 
 interface Emits {
-  (e: 'select', rowId: string): void
   (e: 'edit', row: TableRow): void
-  (e: 'view', row: TableRow): void
   (e: 'delete', row: TableRow): void
 }
 
@@ -183,18 +98,56 @@ function getColumnWidth(column: TableColumn): string {
   if (column.type === 'date') return '150px'
   if (column.type === 'number') return '120px'
   if (column.type === 'boolean') return '100px'
-  return '200px'
+  return '160px' // 减小默认宽度
+}
+
+// 获取列最小宽度
+function getMinColumnWidth(column: TableColumn): string {
+  if (column.minWidth) return `${column.minWidth}px`
+  if (column.type === 'date') return '120px'
+  if (column.type === 'number') return '80px'
+  if (column.type === 'boolean') return '80px'
+  return '100px' // 设置最小宽度
+}
+
+// 获取列最大宽度
+function getMaxColumnWidth(column: TableColumn): string {
+  if (column.maxWidth) return `${column.maxWidth}px`
+  if (column.type === 'date') return '180px'
+  if (column.type === 'number') return '150px'
+  if (column.type === 'boolean') return '120px'
+  return '220px' // 设置最大宽度
+}
+
+// 计算表格总宽度
+function getCalculatedTableWidth(): string {
+  if (!props.columns || props.columns.length === 0) {
+    return '800px' // 最小宽度
+  }
+
+  // 计算所有列的宽度总和
+  let totalWidth = 0
+  props.columns.forEach(column => {
+    const width = getColumnWidth(column)
+    totalWidth += parseInt(width.replace('px', ''))
+  })
+
+  // 加上操作列的宽度（128px = w-32）
+  totalWidth += 128
+
+  // 返回计算出的总宽度
+  return `${totalWidth}px`
 }
 
 // 获取单元格值
 function getCellValue(row: TableRow, column: TableColumn): any {
   const source = row._source
   if (!source) return null
-  
+
   // 支持嵌套字段访问 (e.g., "user.name")
   const keys = column.esField?.split('.') || column.key.split('.')
   let value = source
-  
+
   for (const key of keys) {
     if (value && typeof value === 'object') {
       value = value[key]
@@ -202,93 +155,18 @@ function getCellValue(row: TableRow, column: TableColumn): any {
       return null
     }
   }
-  
+
   return value
 }
 
-// 格式化评分
-function formatScore(score: number): string {
-  if (score >= 0.9) return '★★★'
-  if (score >= 0.7) return '★★☆'
-  if (score >= 0.5) return '★☆☆'
-  return '☆☆☆'
-}
 
 // 事件处理
-function handleSelect() {
-  emit('select', props.row._id)
-}
-
 function handleEdit() {
   emit('edit', props.row)
 }
 
-function handleView() {
-  emit('view', props.row)
-}
-
 function handleDelete() {
   emit('delete', props.row)
-}
-
-// 复制操作
-async function copyRowData() {
-  try {
-    const data = JSON.stringify(props.row._source, null, 2)
-    await navigator.clipboard.writeText(data)
-    // TODO: 添加成功提示
-  } catch (error) {
-    console.error('复制失败:', error)
-  }
-}
-
-async function copyId() {
-  try {
-    await navigator.clipboard.writeText(props.row._id)
-    // TODO: 添加成功提示
-  } catch (error) {
-    console.error('复制失败:', error)
-  }
-}
-
-// 导出操作
-function exportJson() {
-  const data = JSON.stringify(props.row._source, null, 2)
-  const blob = new Blob([data], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `record_${props.row._id}.json`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
-function exportCsv() {
-  const headers = props.columns.map(col => col.label).join(',')
-  const values = props.columns.map(col => {
-    const value = getCellValue(props.row, col)
-    // 处理CSV转义
-    if (value === null || value === undefined) return ''
-    const strValue = String(value)
-    return strValue.includes(',') || strValue.includes('"') 
-      ? `"${strValue.replace(/"/g, '""')}"` 
-      : strValue
-  }).join(',')
-  
-  const csv = `${headers}\n${values}`
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `record_${props.row._id}.csv`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
 }
 </script>
 
@@ -298,10 +176,6 @@ function exportCsv() {
   min-height: 60px;
 }
 
-/* 选中状态 */
-.table-row.bg-emerald-50 {
-  border-left: 3px solid #10b981;
-}
 
 /* 固定列阴影效果 */
 .sticky.left-12 {
@@ -309,7 +183,7 @@ function exportCsv() {
 }
 
 .sticky.right-0 {
-  box-shadow: -2px 0 5px -2px rgba(0, 0, 0, 0.1);
+  box-shadow: -2px 0 5px -2px rgba(0, 0, 0, 0.15);
 }
 
 /* 单元格内容溢出处理 */

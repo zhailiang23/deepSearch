@@ -1,78 +1,7 @@
 <template>
-  <div class="dynamic-results-table w-full">
-    <!-- 表格控制栏 -->
-    <div class="table-controls flex flex-col sm:flex-row gap-4 mb-4 p-4 bg-emerald-50 rounded-lg">
-      <!-- 左侧控制 -->
-      <div class="flex flex-wrap items-center gap-2 flex-1">
-        <!-- 字段管理按钮 -->
-        <Button
-          variant="outline"
-          size="sm"
-          @click="showFieldManager = !showFieldManager"
-          class="border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-        >
-          <Settings class="w-4 h-4 mr-1" />
-          字段管理
-        </Button>
-        
-        <!-- 批量删除按钮 -->
-        <Button
-          v-if="selectedRows.size > 0"
-          variant="outline"
-          size="sm"
-          @click="handleBatchDelete"
-          class="border-red-200 text-red-600 hover:bg-red-50"
-        >
-          <Trash2 class="w-4 h-4 mr-1" />
-          删除选中 ({{ selectedRows.size }})
-        </Button>
-        
-        <!-- 视图切换 -->
-        <div class="hidden sm:flex border rounded-md overflow-hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            :class="[
-              'rounded-none border-none',
-              viewMode === 'table' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600'
-            ]"
-            @click="viewMode = 'table'"
-          >
-            <Table class="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            :class="[
-              'rounded-none border-none',
-              viewMode === 'card' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600'
-            ]"
-            @click="viewMode = 'card'"
-          >
-            <Grid class="w-4 h-4" />
-          </Button>
-        </div>
-        
-        <!-- 虚拟滚动开关 -->
-        <label class="hidden md:flex items-center gap-2 text-sm text-gray-600">
-          <input
-            v-model="virtualScrollEnabled"
-            type="checkbox"
-            class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500"
-          >
-          虚拟滚动
-        </label>
-      </div>
-      
-      <!-- 右侧信息 -->
-      <div class="flex items-center gap-4 text-sm text-gray-600">
-        <span>共 {{ totalCount }} 条</span>
-        <span v-if="virtualScrollEnabled && visibleRange">
-          显示 {{ visibleRange.start + 1 }}-{{ Math.min(visibleRange.end, totalCount) }}
-        </span>
-      </div>
-    </div>
-    
+  <div class="dynamic-results-table w-full max-w-full overflow-hidden">
+
+
     <!-- 字段管理面板 -->
     <div v-if="showFieldManager" class="field-manager mb-4">
       <FieldManager
@@ -81,114 +10,118 @@
         @update:columns="handleColumnsUpdate"
       />
     </div>
-    
+
     <!-- 表格内容区域 -->
-    <div class="table-content bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div class="table-content bg-white rounded-lg border border-gray-200 overflow-hidden w-full max-w-full">
       <!-- 桌面端表格视图 -->
-      <div v-if="viewMode === 'table'" class="desktop-table hidden md:block">
-        <!-- 表格头部 -->
-        <div class="table-header bg-gray-50 border-b sticky top-0 z-10">
-          <div class="flex">
-            <!-- 选择列 -->
-            <div class="w-12 flex-shrink-0 p-3 flex items-center justify-center border-r">
-              <input
-                type="checkbox"
-                :checked="isAllSelected"
-                :indeterminate="isSomeSelected"
-                @change="toggleSelectAll"
-                class="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500"
-              >
-            </div>
-            <!-- 动态列头 -->
-            <div
-              v-for="column in visibleColumns"
-              :key="column.key"
-              :class="[
-                'flex-shrink-0 p-3 border-r font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none',
-                column.sortable ? 'cursor-pointer' : 'cursor-default'
-              ]"
-              :style="{ width: getColumnWidth(column) }"
-              @click="column.sortable && handleSort(column.key)"
-            >
-              <div class="flex items-center justify-between">
-                <span>{{ column.label }}</span>
-                <div v-if="column.sortable" class="ml-2 flex flex-col">
-                  <ChevronUp 
-                    :class="[
-                      'w-3 h-3 -mb-1',
-                      sortConfig?.field === column.key && sortConfig?.order === 'asc' 
-                        ? 'text-emerald-600' : 'text-gray-400'
-                    ]" 
-                  />
-                  <ChevronDown 
-                    :class="[
-                      'w-3 h-3',
-                      sortConfig?.field === column.key && sortConfig?.order === 'desc'
-                        ? 'text-emerald-600' : 'text-gray-400'
-                    ]" 
-                  />
+      <div v-if="viewMode === 'table'" class="desktop-table hidden md:block w-full max-w-full overflow-hidden">
+        <!-- 表格容器 - 统一滚动容器 -->
+        <div
+          ref="tableScrollContainer"
+          class="table-container overflow-x-auto max-h-96 overflow-y-auto"
+          style="width: 100%; max-width: 100%;"
+          @scroll="handleTableScroll"
+        >
+          <div :style="{ width: getCalculatedTableWidth() }">
+            <!-- 表格头部 -->
+            <div class="table-header bg-gray-50 border-b sticky top-0 z-10">
+              <div class="flex">
+                <!-- 动态列头 -->
+                <div
+                  v-for="column in visibleColumns"
+                  :key="column.key"
+                  :class="[
+                    'p-3 border-r font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none',
+                    column.sortable ? 'cursor-pointer' : 'cursor-default'
+                  ]"
+                  :style="{
+                    width: getColumnWidth(column),
+                    flexShrink: 0
+                  }"
+                  @click="column.sortable && handleSort(column.key)"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="truncate">{{ column.label }}</span>
+                    <div v-if="column.sortable" class="ml-2 flex flex-col flex-shrink-0">
+                      <ChevronUp
+                        :class="[
+                          'w-3 h-3 -mb-1',
+                          sortConfig?.field === column.key && sortConfig?.order === 'asc'
+                            ? 'text-emerald-600' : 'text-gray-400'
+                        ]"
+                      />
+                      <ChevronDown
+                        :class="[
+                          'w-3 h-3',
+                          sortConfig?.field === column.key && sortConfig?.order === 'desc'
+                            ? 'text-emerald-600' : 'text-gray-400'
+                        ]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 操作列头 -->
+                <div class="w-32 flex-shrink-0 p-3 border-r font-medium text-gray-700 sticky right-0 bg-gray-50 z-20">
+                  <span>操作</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <!-- 虚拟滚动表格体 -->
-        <VirtualList
-          v-if="virtualScrollEnabled"
-          ref="virtualListRef"
-          :items="tableRows"
-          :item-height="60"
-          :container-height="500"
-          :visible-count="15"
-          :buffer-size="5"
-          :loading="loading"
-          key-field="_id"
-          @scroll="handleScroll"
-          @reach-bottom="handleReachBottom"
-        >
-          <template #item="{ item, index }">
-            <TableRowDesktop 
-              :row="item"
-              :columns="visibleColumns"
-              :index="index"
-              :selected="selectedRows.has(item._id)"
-              @select="toggleRowSelection(item._id)"
-              @edit="handleEdit(item)"
-              @view="handleView(item)"
-              @delete="handleDelete(item)"
-            />
-          </template>
-          
-          <template #empty>
-            <div class="text-center py-12">
-              <div class="text-6xl mb-4">🔍</div>
-              <div class="text-lg text-gray-500 mb-2">暂无搜索结果</div>
-              <div class="text-sm text-gray-400">尝试调整搜索条件或搜索空间</div>
+
+            <!-- 表格体 -->
+            <div>
+            <VirtualList
+              v-if="virtualScrollEnabled"
+              ref="virtualListRef"
+              :items="tableRows"
+              :item-height="60"
+              :container-height="500"
+              :visible-count="15"
+              :buffer-size="5"
+              :loading="loading"
+              key-field="_id"
+              @scroll="handleScroll"
+              @reach-bottom="handleReachBottom"
+            >
+              <template #item="{ item, index }">
+                <TableRowDesktop
+                  :row="item"
+                  :columns="visibleColumns"
+                  :index="index"
+                  @edit="handleEdit(item)"
+                  @delete="handleDelete(item)"
+                />
+              </template>
+
+              <template #empty>
+                <div class="text-center py-12">
+                  <div class="text-6xl mb-4">🔍</div>
+                  <div class="text-lg text-gray-500 mb-2">暂无搜索结果</div>
+                  <div class="text-sm text-gray-400">尝试调整搜索条件或搜索空间</div>
+                </div>
+              </template>
+            </VirtualList>
+
+            <!-- 普通滚动表格体 -->
+            <div v-else class="table-body">
+              <TableRowDesktop
+                v-for="(row, index) in tableRows"
+                :key="row._id"
+                :row="row"
+                :columns="visibleColumns"
+                :index="index"
+                @edit="handleEdit(row)"
+                @delete="handleDelete(row)"
+              />
+
+              <!-- 空状态 -->
+              <div v-if="!loading && tableRows.length === 0" class="text-center py-12">
+                <div class="text-6xl mb-4">🔍</div>
+                <div class="text-lg text-gray-500 mb-2">暂无搜索结果</div>
+                <div class="text-sm text-gray-400">尝试调整搜索条件或搜索空间</div>
+              </div>
             </div>
-          </template>
-        </VirtualList>
-        
-        <!-- 普通滚动表格体 -->
-        <div v-else class="table-body max-h-96 overflow-y-auto">
-          <TableRowDesktop
-            v-for="(row, index) in tableRows"
-            :key="row._id"
-            :row="row"
-            :columns="visibleColumns"
-            :index="index"
-            :selected="selectedRows.has(row._id)"
-            @select="toggleRowSelection(row._id)"
-            @edit="handleEdit(row)"
-            @view="handleView(row)"
-            @delete="handleDelete(row)"
-          />
-          
-          <!-- 空状态 -->
-          <div v-if="!loading && tableRows.length === 0" class="text-center py-12">
-            <div class="text-6xl mb-4">🔍</div>
-            <div class="text-lg text-gray-500 mb-2">暂无搜索结果</div>
-            <div class="text-sm text-gray-400">尝试调整搜索条件或搜索空间</div>
+            </div>
           </div>
         </div>
       </div>
@@ -265,7 +198,9 @@
       @save-error="handleEditError"
     />
 
-    <!-- 删除确认对话框 -->
+    <!-- 删除确认对话框 - 临时禁用 -->
+    <!-- 临时禁用删除弹窗，直到查明自动触发原因 -->
+    <!--
     <DeleteConfirmDialog
       v-model:open="deleteDialogOpen"
       :document="deletingDocument"
@@ -274,6 +209,7 @@
       @confirm="handleDeleteConfirm"
       @cancel="handleDeleteCancel"
     />
+    -->
   </div>
 </template>
 
@@ -334,12 +270,12 @@ const emit = defineEmits<Emits>()
 // 响应式状态
 const showFieldManager = ref(false)
 const virtualScrollEnabled = ref(props.enableVirtualScroll)
-const selectedRows = ref(new Set<string>())
 const sortConfig = ref<SortConfig>()
 const currentPage = ref(1)
 const pageSize = ref(props.defaultPageSize)
 const virtualListRef = ref()
 const visibleRange = ref()
+const tableScrollContainer = ref()
 
 // 媒体查询
 const isMobile = useMediaQuery('(max-width: 768px)')
@@ -363,44 +299,73 @@ const tableRows = computed(() => props.data)
 const totalCount = computed(() => props.totalCount)
 const loading = computed(() => props.loading)
 
+// 表格采用flex布局，通过min-width和max-width约束总体宽度
+
 // 动态生成列配置
 const allColumns = computed(() => generateColumnsFromMapping(props.mapping))
 const visibleColumns = ref<TableColumn[]>([])
 
-// 选择相关计算属性
-const isAllSelected = computed(() => {
-  return tableRows.value.length > 0 && selectedRows.value.size === tableRows.value.length
-})
-
-const isSomeSelected = computed(() => {
-  return selectedRows.value.size > 0 && selectedRows.value.size < tableRows.value.length
-})
-
 // 基于ES mapping生成列配置
 function generateColumnsFromMapping(mapping?: ESIndexMapping): TableColumn[] {
-  if (!mapping?.mappings?.properties) return []
-  
+  if (!mapping) return []
+
+  // 支持不同的映射结构
+  let properties = mapping.properties ||
+                   mapping.mappings?.properties ||
+                   mapping.mappings
+
+  if (!properties) return []
+
   const columns: TableColumn[] = []
-  
-  Object.entries(mapping.mappings.properties).forEach(([field, fieldMapping]) => {
+
+  Object.entries(properties).forEach(([field, fieldMapping]: [string, any]) => {
+    // 过滤以下划线开头的字段
+    if (field.startsWith('_')) {
+      return
+    }
+
+    // 从布尔值映射中解析字段类型
+    const fieldType = getFieldTypeFromBooleanMapping(fieldMapping)
+
     const column: TableColumn = {
       key: field,
-      label: field,
-      type: mapESTypeToColumnType(fieldMapping.type),
-      sortable: ['keyword', 'date', 'number', 'boolean'].includes(fieldMapping.type),
+      label: field.charAt(0).toUpperCase() + field.slice(1),
+      type: mapESTypeToColumnType(fieldType),
+      sortable: ['keyword', 'date', 'number', 'boolean'].includes(fieldType),
       filterable: true,
       visible: true,
       resizable: true,
-      align: fieldMapping.type === 'number' ? 'right' : 'left',
+      align: fieldType === 'number' ? 'right' : 'left',
       esField: field,
-      esType: fieldMapping.type,
+      esType: fieldType,
       format: fieldMapping.format
     }
-    
+
     columns.push(column)
   })
   
   return columns
+}
+
+// 从布尔值映射中解析字段类型
+function getFieldTypeFromBooleanMapping(fieldMapping: any): string {
+  if (!fieldMapping || typeof fieldMapping !== 'object') {
+    return 'text'
+  }
+
+  // 检查各种类型的布尔值标识
+  if (fieldMapping.boolean === true) return 'boolean'
+  if (fieldMapping.date === true) return 'date'
+  if (fieldMapping.long === true || fieldMapping.integer === true) return 'number'
+  if (fieldMapping.float === true || fieldMapping.double === true) return 'number'
+  if (fieldMapping.keyword === true) return 'keyword'
+  if (fieldMapping.text === true) return 'text'
+
+  // 如果有传统的type字段，直接使用
+  if (fieldMapping.type) return fieldMapping.type
+
+  // 默认为文本类型
+  return 'text'
 }
 
 // ES类型映射到表格列类型
@@ -427,7 +392,45 @@ function getColumnWidth(column: TableColumn): string {
   if (column.type === 'date') return '150px'
   if (column.type === 'number') return '120px'
   if (column.type === 'boolean') return '100px'
-  return '200px'
+  return '160px' // 减小默认宽度
+}
+
+// 获取列最小宽度
+function getMinColumnWidth(column: TableColumn): string {
+  if (column.minWidth) return `${column.minWidth}px`
+  if (column.type === 'date') return '120px'
+  if (column.type === 'number') return '80px'
+  if (column.type === 'boolean') return '80px'
+  return '100px' // 设置最小宽度
+}
+
+// 获取列最大宽度
+function getMaxColumnWidth(column: TableColumn): string {
+  if (column.maxWidth) return `${column.maxWidth}px`
+  if (column.type === 'date') return '180px'
+  if (column.type === 'number') return '150px'
+  if (column.type === 'boolean') return '120px'
+  return '220px' // 设置最大宽度
+}
+
+// 计算表格总宽度
+function getCalculatedTableWidth(): string {
+  if (!visibleColumns.value || visibleColumns.value.length === 0) {
+    return '800px' // 最小宽度
+  }
+
+  // 计算所有列的宽度总和
+  let totalWidth = 0
+  visibleColumns.value.forEach(column => {
+    const width = getColumnWidth(column)
+    totalWidth += parseInt(width.replace('px', ''))
+  })
+
+  // 加上操作列的宽度（128px = w-32）
+  totalWidth += 128
+
+  // 返回计算出的总宽度，但不超过最大限制
+  return `${totalWidth}px`
 }
 
 // 排序处理
@@ -444,28 +447,6 @@ const handleSort = debounce((field: string) => {
   emit('sort', newSortConfig)
 }, 200)
 
-// 行选择
-function toggleRowSelection(rowId: string) {
-  if (selectedRows.value.has(rowId)) {
-    selectedRows.value.delete(rowId)
-  } else {
-    selectedRows.value.add(rowId)
-  }
-  
-  emit('selection-change', Array.from(selectedRows.value))
-}
-
-function toggleSelectAll() {
-  if (isAllSelected.value) {
-    selectedRows.value.clear()
-  } else {
-    tableRows.value.forEach(row => {
-      selectedRows.value.add(row._id)
-    })
-  }
-  
-  emit('selection-change', Array.from(selectedRows.value))
-}
 
 // 列配置更新
 function handleColumnsUpdate(newColumns: TableColumn[]) {
@@ -485,6 +466,12 @@ const handleScroll = throttle((scrollData: { scrollTop: number; direction: strin
     visibleRange.value = virtualListRef.value.getVisibleRange()
   }
 }, 100)
+
+// 表格统一滚动处理
+function handleTableScroll(event: Event) {
+  // 表格滚动事件处理，可以在此添加其他逻辑
+  // 由于表头和数据行现在在同一个滚动容器中，它们会自动同步滚动
+}
 
 function handleReachBottom() {
   if (!loading.value) {
@@ -509,14 +496,6 @@ function handleDelete(row: TableRow) {
   deleteDialogOpen.value = true
 }
 
-function handleBatchDelete() {
-  if (selectedRows.value.size === 0) return
-  
-  const selectedRowsData = tableRows.value.filter(row => selectedRows.value.has(row._id))
-  deletingDocument.value = null
-  deletingDocuments.value = selectedRowsData
-  deleteDialogOpen.value = true
-}
 
 // 删除处理方法
 function handleDeleteConfirm(options: { forceDelete: boolean }) {
@@ -540,11 +519,7 @@ function handleDeleteCancel() {
 
 function handleDeleteSuccess() {
   // 清理选中状态
-  if (deletingDocuments.value.length > 0) {
-    // 批量删除成功后清空选中状态
-    selectedRows.value.clear()
-    emit('selection-change', [])
-  }
+  // 批量删除处理已移除选中状态相关逻辑
   
   // 关闭对话框
   deleteDialogOpen.value = false
@@ -614,9 +589,10 @@ watch(isMobile, (mobile) => {
 
 // 初始化列配置
 watch(allColumns, (columns) => {
-  if (columns.length > 0 && visibleColumns.value.length === 0) {
-    // 初始显示前6列
-    visibleColumns.value = columns.slice(0, 6)
+  if (columns.length > 0) {
+    // 每次allColumns变化时都重新生成可见列
+    // 显示所有列
+    visibleColumns.value = columns.filter(col => col.visible)
   }
 }, { immediate: true })
 
@@ -682,6 +658,29 @@ defineExpose({
 .table-row.selected {
   background-color: #ecfdf5;
   border-left: 3px solid var(--emerald-color);
+}
+
+/* 表格容器严格宽度约束 */
+.table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 表头容器固定宽度，不允许撑开 */
+.table-header {
+  position: relative;
+}
+
+.table-header .flex {
+  /* 宽度由Vue模板中的计算属性控制 */
+}
+
+/* 动态列采用固定宽度，通过JS计算控制 */
+
+/* 固定列阴影效果 */
+.sticky.right-0 {
+  box-shadow: -2px 0 5px -2px rgba(0, 0, 0, 0.15);
 }
 
 /* 滚动条优化 */

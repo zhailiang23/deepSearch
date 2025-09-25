@@ -126,7 +126,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Search, Settings, User } from 'lucide-vue-next'
+import { Search, Settings, User, Database } from 'lucide-vue-next'
 
 interface Props {
   collapsed?: boolean
@@ -148,10 +148,15 @@ const props = withDefaults(defineProps<Props>(), {
 const $route = useRoute()
 
 // 主要导航菜单
-const navigation = computed((): NavigationItem[] => [
-  { name: 'search-spaces', label: '搜索空间管理', to: '/search-spaces', icon: Search },
-  { name: 'settings', label: '设置', to: '/settings', icon: Settings },
-])
+const navigation = computed((): NavigationItem[] => {
+  const nav = [
+    { name: 'search-spaces', label: '搜索空间管理', to: '/search-spaces', icon: Search },
+    { name: 'search-data', label: '搜索数据管理', to: '/search-data', icon: Database },
+    { name: 'settings', label: '设置', to: '/settings', icon: Settings },
+  ]
+  console.log('Navigation items:', nav)
+  return nav
+})
 
 // 辅助导航菜单 - 暂时移除
 const auxiliaryNavigation = computed((): NavigationItem[] => [])
