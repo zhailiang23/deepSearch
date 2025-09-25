@@ -1,13 +1,12 @@
 package com.ynet.mgmt.channel.service;
 
-import com.ynet.mgmt.channel.dto.ChannelDTO;
-import com.ynet.mgmt.channel.dto.CreateChannelRequest;
-import com.ynet.mgmt.channel.dto.UpdateChannelRequest;
+import com.ynet.mgmt.channel.dto.*;
 import com.ynet.mgmt.channel.entity.ChannelStatus;
 import com.ynet.mgmt.channel.entity.ChannelType;
 import com.ynet.mgmt.common.dto.PageResult;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -62,6 +61,13 @@ public interface ChannelService {
      * @return 分页结果
      */
     PageResult<ChannelDTO> listChannels(Pageable pageable);
+
+    /**
+     * 带条件分页查询渠道列表
+     * @param request 查询条件
+     * @return 分页结果
+     */
+    PageResult<ChannelDTO> listChannels(ChannelQueryRequest request);
 
     // ========== 状态管理 ==========
 
@@ -146,4 +152,51 @@ public interface ChannelService {
      * @return 是否可用
      */
     boolean isNameAvailable(String name, Long excludeId);
+
+    // ========== 销售管理 ==========
+
+    /**
+     * 更新销售数据
+     * @param id 渠道ID
+     * @param request 销售数据更新请求
+     * @return 更新后的渠道信息
+     */
+    ChannelDTO updateSales(Long id, UpdateSalesRequest request);
+
+    /**
+     * 重置月度销售
+     * @param id 渠道ID
+     * @return 更新后的渠道信息
+     */
+    ChannelDTO resetMonthlySales(Long id);
+
+    /**
+     * 获取销售排行
+     * @param limit 排行榜数量
+     * @return 销售业绩排行榜
+     */
+    List<ChannelDTO> getTopPerformingChannels(int limit);
+
+    // ========== 统计分析 ==========
+
+    /**
+     * 获取渠道统计信息
+     * @return 统计信息
+     */
+    ChannelStatistics getChannelStatistics();
+
+    // ========== 批量操作 ==========
+
+    /**
+     * 批量状态变更
+     * @param request 批量状态更新请求
+     * @return 更新后的渠道列表
+     */
+    List<ChannelDTO> batchUpdateStatus(BatchStatusUpdateRequest request);
+
+    /**
+     * 批量删除渠道
+     * @param channelIds 渠道ID列表
+     */
+    void batchDeleteChannels(List<Long> channelIds);
 }

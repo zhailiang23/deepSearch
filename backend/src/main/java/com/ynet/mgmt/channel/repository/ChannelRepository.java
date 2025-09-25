@@ -337,4 +337,49 @@ public interface ChannelRepository extends JpaRepository<Channel, Long>,
      * @return 是否被其他渠道使用
      */
     boolean existsByNameAndIdNot(String name, Long id);
+
+    // 新增统计方法
+
+    /**
+     * 获取所有渠道的总销售额
+     * @return 总销售额
+     */
+    @Query("SELECT COALESCE(SUM(c.totalSales), 0) FROM Channel c")
+    BigDecimal sumTotalSales();
+
+    /**
+     * 获取所有渠道的当月销售额总和
+     * @return 当月销售额总和
+     */
+    @Query("SELECT COALESCE(SUM(c.currentMonthSales), 0) FROM Channel c")
+    BigDecimal sumCurrentMonthSales();
+
+    /**
+     * 统计已达成目标的渠道数量
+     * @return 达成目标的渠道数量
+     */
+    @Query("SELECT COUNT(c) FROM Channel c WHERE c.targetAchieved = true")
+    long countByTargetAchievedTrue();
+
+    /**
+     * 计算所有活跃渠道的平均佣金率
+     * @return 平均佣金率
+     */
+    @Query("SELECT AVG(c.commissionRate) FROM Channel c WHERE c.status = 'ACTIVE' AND c.commissionRate IS NOT NULL")
+    BigDecimal avgCommissionRate();
+
+    /**
+     * 获取最高当月销售额
+     * @return 最高当月销售额
+     */
+    @Query("SELECT MAX(c.currentMonthSales) FROM Channel c WHERE c.currentMonthSales IS NOT NULL")
+    BigDecimal maxCurrentMonthSales();
+
+    /**
+     * 按总销售额降序查找指定状态的渠道（分页）
+     * @param status 渠道状态
+     * @param pageable 分页参数
+     * @return 渠道分页结果
+     */
+    Page<Channel> findByStatusOrderByTotalSalesDesc(ChannelStatus status, Pageable pageable);
 }

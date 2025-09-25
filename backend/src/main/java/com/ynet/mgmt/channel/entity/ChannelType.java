@@ -21,7 +21,12 @@ public enum ChannelType {
     /**
      * 混合渠道 - 线上线下结合渠道
      */
-    HYBRID("混合渠道", "线上线下结合渠道");
+    HYBRID("混合渠道", "线上线下结合渠道"),
+
+    /**
+     * 分销商渠道 - 第三方分销商渠道
+     */
+    DISTRIBUTOR("分销商渠道", "第三方分销商渠道");
 
     private final String displayName;
     private final String description;
