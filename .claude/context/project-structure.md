@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-24T10:20:29Z
-version: 1.2
+last_updated: 2025-09-24T23:02:23Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -12,12 +12,13 @@ author: Claude Code PM System
 ```
 deepSearch/
 ├── backend/                 # Spring Boot backend application
-├── frontend/               # Vue.js frontend application
+├── frontend/               # Vue.js frontend application  
 ├── docker/                 # Docker configuration files
 ├── .claude/                # Claude Code PM system
 │   ├── context/            # Project context documentation  
 │   ├── epics/              # Epic documentation
-│   │   └── search-space-json-import/  # JSON导入Epic (11个任务)
+│   │   ├── search-space-json-import/  # JSON导入Epic (11个任务)
+│   │   └── search-data-manage/        # **NEW: 搜索数据管理Epic**
 │   └── prds/               # Product Requirement Documents
 ├── test/                   # Test data and documentation
 │   ├── extended_search_test_data.json
@@ -69,7 +70,23 @@ backend/
 │   │   │   │   │   └── RefreshTokenResponse.java
 │   │   │   │   ├── UserStatistics.java
 │   │   │   │   └── UserSearchCriteria.java
-│   │   │   ├── jsonimport/    # **NEW: JSON导入功能模块**
+│   │   │   ├── searchdata/    # **NEW: 搜索数据管理模块** ⭐
+│   │   │   │   ├── controller/
+│   │   │   │   │   └── ElasticsearchDataController.java
+│   │   │   │   ├── dto/       # 搜索数据DTO
+│   │   │   │   │   ├── BulkOperationRequest.java
+│   │   │   │   │   ├── BulkOperationResponse.java
+│   │   │   │   │   ├── DeleteDocumentRequest.java
+│   │   │   │   │   ├── DeleteDocumentResponse.java
+│   │   │   │   │   ├── DocumentDetailResponse.java
+│   │   │   │   │   ├── IndexMappingResponse.java
+│   │   │   │   │   ├── SearchDataRequest.java
+│   │   │   │   │   ├── SearchDataResponse.java
+│   │   │   │   │   ├── UpdateDocumentRequest.java
+│   │   │   │   │   └── UpdateDocumentResponse.java
+│   │   │   │   └── service/   # 搜索数据服务
+│   │   │   │       └── ElasticsearchDataService.java
+│   │   │   ├── jsonimport/    # JSON导入功能模块
 │   │   │   │   ├── dto/       # 导入相关DTO
 │   │   │   │   │   ├── ImportExecuteRequest.java
 │   │   │   │   │   └── ImportTaskStatus.java
@@ -88,7 +105,7 @@ backend/
 │   │   │   │   └── util/      # 导入工具类
 │   │   │   │       ├── FieldTypeInferrer.java
 │   │   │   │       └── StatisticsCalculator.java
-│   │   │   ├── searchspace/   # **EXPANDED: 搜索空间管理模块**
+│   │   │   ├── searchspace/   # 搜索空间管理模块
 │   │   │   │   ├── controller/
 │   │   │   │   │   ├── SearchSpaceController.java (扩展)
 │   │   │   │   │   └── SearchSpaceExceptionHandler.java (新增)
@@ -97,7 +114,7 @@ backend/
 │   │   │   │   │   ├── FileValidationResult.java
 │   │   │   │   │   ├── ImportStatistics.java
 │   │   │   │   │   ├── ImportSyncResponse.java
-│   │   │   │   │   └── SearchSpaceDTO.java
+│   │   │   │   │   └── SearchSpaceDTO.java (扩展)
 │   │   │   │   ├── entity/    # 实体扩展
 │   │   │   │   │   └── SearchSpace.java (扩展)
 │   │   │   │   ├── mapper/    # 映射器
@@ -118,7 +135,7 @@ backend/
 │   │   │   │   ├── SecurityConfig.java
 │   │   │   │   ├── RedisConfig.java
 │   │   │   │   ├── DataInitializer.java
-│   │   │   │   └── AsyncTaskConfig.java  # **UPDATED: 重构的异步配置**
+│   │   │   │   └── AsyncTaskConfig.java  # 重构的异步配置
 │   │   │   ├── security/      # Security components
 │   │   │   │   ├── JwtService.java
 │   │   │   │   ├── RefreshTokenService.java
@@ -131,7 +148,7 @@ backend/
 │       └── java/com/ynet/mgmt/
 │           ├── integration/        # Integration tests
 │           ├── e2e/               # End-to-end tests
-│           ├── jsonimport/        # **NEW: JSON导入测试**
+│           ├── jsonimport/        # JSON导入测试
 │           │   ├── service/       # 服务测试
 │           │   │   ├── DataImportServiceTest.java
 │           │   │   ├── IndexConfigServiceTest.java
@@ -139,7 +156,7 @@ backend/
 │           │   └── util/          # 工具类测试
 │           │       ├── FieldTypeInferrerTest.java
 │           │       └── StatisticsCalculatorTest.java
-│           ├── searchspace/       # **EXPANDED: 搜索空间测试扩展**
+│           ├── searchspace/       # 搜索空间测试扩展
 │           │   ├── controller/    # 控制器测试
 │           │   │   ├── SearchSpaceControllerImportIntegrationTest.java
 │           │   │   └── SearchSpaceControllerImportTest.java
@@ -169,97 +186,74 @@ backend/
 ```
 frontend/
 ├── src/
-│   ├── components/          # Reusable Vue components
-│   │   ├── ui/             # shadcn-vue UI library components
-│   │   │   ├── button/     # Button component variants
-│   │   │   ├── card/       # Card components
-│   │   │   ├── collapsible/ # Collapsible components
-│   │   │   ├── dropdown-menu/ # Dropdown menu components
-│   │   │   ├── input/      # Input components
-│   │   │   ├── label/      # Label components
-│   │   │   ├── separator/  # Separator components
-│   │   │   ├── sheet/      # Sheet components
-│   │   │   ├── sidebar/    # Sidebar components
-│   │   │   ├── skeleton/   # Skeleton components
-│   │   │   ├── table/      # Table components
-│   │   │   └── tooltip/    # Tooltip components
-│   │   ├── layout/         # Layout components
-│   │   │   ├── ResponsiveLayout.vue (移除i18n引用)
-│   │   │   ├── SidebarNav.vue
-│   │   │   └── TopNav.vue
-│   │   ├── common/         # Common components
-│   │   │   ├── UserMenu.vue
-│   │   │   ├── Breadcrumb.vue
-│   │   │   ├── LanguageSelector.vue
-│   │   │   └── ThemeToggle.vue
-│   │   ├── searchSpace/    # **NEW: 搜索空间组件**
-│   │   │   ├── JsonImportDialog.vue  # **NEW: JSON导入对话框 (1015行)**
-│   │   │   └── SearchSpaceList.vue   # **UPDATED: 集成导入功能**
-│   │   ├── LoginForm.vue   # Login form component
-│   │   └── icons/          # Icon components
-│   ├── pages/              # Application pages
-│   │   ├── auth/           # Authentication pages
-│   │   │   ├── Login.vue
-│   │   │   └── LoginSimple.vue
-│   │   ├── users/          # User management pages
-│   │   │   └── UserList.vue
-│   │   ├── searchSpace/    # **NEW: 搜索空间页面**
-│   │   │   └── SearchSpaceContent.vue  # **UPDATED: 添加导入功能**
-│   │   ├── Dashboard.vue
-│   │   ├── DashboardSimple.vue
-│   │   └── Settings.vue
-│   ├── layouts/            # Page layouts
-│   │   └── DefaultLayout.vue
-│   ├── stores/             # Pinia state management
-│   │   ├── auth.ts
-│   │   └── searchSpace.ts  # **UPDATED: 扩展状态管理**
-│   ├── router/             # Vue Router configuration
+│   ├── main.ts              # Application entry point
+│   ├── App.vue              # Root component
+│   ├── router/              # Vue Router configuration
 │   │   └── index.ts
-│   ├── services/           # **NEW: 服务层**
-│   │   └── importService.ts  # **NEW: 导入服务 (335行)**
-│   ├── utils/              # Utility functions
-│   │   ├── api.ts
-│   │   └── http.ts
-│   ├── lib/                # Library utilities
-│   │   └── utils.ts
-│   ├── types/              # TypeScript type definitions
-│   │   └── auth.ts
-│   ├── locales/            # Internationalization (系统不需要但保留)
-│   │   ├── index.ts
-│   │   ├── zh-CN.json
-│   │   └── en-US.json
-│   ├── assets/             # Static assets
-│   │   ├── styles/
-│   │   │   └── globals.css
-│   │   ├── main.css
-│   │   ├── base.css
-│   │   └── logo.svg
-│   ├── App.vue             # Root component
-│   ├── main.ts             # Application entry point
-│   └── env.d.ts            # Environment type definitions
-├── tests/                  # Test files
-│   └── e2e/               # End-to-end tests
-│       ├── config/        # Test configuration
-│       └── auth-integration.spec.ts
-├── dist/                   # Build output
-├── node_modules/           # Node.js dependencies
-├── public/                 # Static public files
-├── test-import-dialog.html # **NEW: 导入对话框测试页面**
-├── .env.development        # Development environment variables
-├── package.json            # Node.js dependencies and scripts
-├── package-lock.json       # Dependency lock file
-├── components.json         # shadcn-vue components configuration
+│   ├── stores/              # Pinia state management
+│   │   ├── auth.ts          # Authentication store
+│   │   └── searchSpace.ts   # Search space store
+│   ├── composables/         # **NEW: Composition API utilities** ⭐
+│   │   └── useMediaQuery.ts # 318行媒体查询工具 (响应式设计)
+│   ├── utils/               # **NEW: Utility functions** ⭐
+│   │   └── performance.ts   # 422行性能优化工具
+│   ├── types/               # TypeScript type definitions
+│   │   ├── auth.ts          # Authentication types
+│   │   ├── searchSpace.ts   # Search space types
+│   │   └── tableData.ts     # **NEW: 110行表格数据类型定义** ⭐
+│   ├── services/            # API service layer
+│   │   ├── api.ts           # Base API configuration
+│   │   ├── authService.ts   # Authentication API
+│   │   ├── searchSpaceApi.ts # Search space API
+│   │   └── searchDataService.ts # **NEW: 129行搜索数据API服务** ⭐
+│   ├── components/          # Reusable components
+│   │   ├── layout/          # Layout components
+│   │   │   ├── TopNav.vue
+│   │   │   ├── SidebarNav.vue
+│   │   │   └── ResponsiveLayout.vue
+│   │   ├── ui/              # Base UI components
+│   │   │   ├── Button.vue
+│   │   │   ├── Dropdown.vue
+│   │   │   ├── UserMenu.vue
+│   │   │   └── VirtualList.vue  # **NEW: 249行虚拟化列表组件** ⭐
+│   │   ├── searchSpace/     # Search space components
+│   │   │   ├── SearchSpaceList.vue
+│   │   │   ├── SearchSpaceForm.vue
+│   │   │   ├── JsonImportDialog.vue (1015行)
+│   │   │   └── SpaceSelectionDialog.vue
+│   │   └── searchData/      # **NEW: 搜索数据管理组件系统** ⭐
+│   │       ├── DeleteConfirmDialog.vue     # 420行删除确认对话框
+│   │       ├── DocumentEditDialog.vue      # 532行文档编辑对话框
+│   │       ├── DynamicResultsTable.vue     # 725行动态结果表格
+│   │       ├── FieldEditor.vue             # 482行字段编辑器
+│   │       ├── FieldManager.vue            # 409行字段管理器
+│   │       ├── PaginationControl.vue       # 379行分页控制器
+│   │       ├── TypeBadge.vue               # 142行类型标记组件
+│   │       └── table/                      # 表格子组件系统
+│   │           ├── CellRenderer.vue        # 428行单元格渲染器
+│   │           ├── TableRowCard.vue        # 500行移动端表格行
+│   │           └── TableRowDesktop.vue     # 383行桌面端表格行
+│   ├── views/               # Page components
+│   │   ├── LoginPage.vue
+│   │   ├── DashboardPage.vue
+│   │   ├── UserListPage.vue
+│   │   ├── UserSettingsPage.vue
+│   │   ├── SearchSpaceListPage.vue
+│   │   └── SearchDataManagePage.vue # **NEW: 936行搜索数据主管理页面** ⭐
+│   └── assets/              # Static assets
+│       ├── styles/
+│       │   └── globals.css
+│       └── images/
+├── public/                  # Public static files
+├── components.json          # shadcn-vue component registry
+├── index.html              # HTML template
+├── tailwind.config.js      # TailwindCSS configuration
 ├── tsconfig.json           # TypeScript configuration
 ├── tsconfig.app.json       # App TypeScript configuration
-├── tsconfig.node.json      # Node TypeScript configuration
+├── tsconfig.node.json      # Node TypeScript configuration  
 ├── vite.config.ts          # Vite build configuration
-├── tailwind.config.js      # TailwindCSS configuration
-├── postcss.config.js       # PostCSS configuration
-├── playwright.config.ts    # Playwright test configuration
-├── Dockerfile              # Docker image definition
-├── Dockerfile.prod         # Production Docker image
-├── index.html              # HTML template
-└── README.md               # Frontend documentation
+├── package.json            # Dependencies and scripts
+└── package-lock.json       # Dependency lock file
 ```
 
 ## Docker Infrastructure
@@ -354,3 +348,4 @@ docker/
 
 ## Update History
 - 2025-09-24T10:20:29Z: 新增JSON导入功能模块结构，包括70个新文件的完整组织结构
+- 2025-09-24T23:02:23Z: 新增完整的搜索数据管理模块结构，包括后端searchdata包(12个文件)、前端searchData组件系统(15个组件)、性能优化工具、类型定义等30+个新文件

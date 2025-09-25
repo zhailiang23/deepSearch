@@ -70,7 +70,7 @@ public class SearchSpaceDTO {
      * @return 索引名称
      */
     public String getIndexName() {
-        return this.code != null ? "ss_" + this.code.toLowerCase() : null;
+        return this.code;
     }
 
     // Getters and Setters

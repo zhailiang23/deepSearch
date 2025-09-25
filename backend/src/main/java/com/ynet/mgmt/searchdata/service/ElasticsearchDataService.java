@@ -369,11 +369,24 @@ public class ElasticsearchDataService {
      * 转换映射对象为Map
      */
     private Map<String, Object> convertMappingToMap(IndexMappingRecord indexMapping) {
-        // 简化处理：将映射对象转换为Map
-        // 实际实现中可能需要更复杂的转换逻辑
+        // 直接返回mappings内容，避免双层嵌套
         Map<String, Object> result = new HashMap<>();
         if (indexMapping.mappings() != null) {
-            result.put("mappings", indexMapping.mappings());
+            // 将TypeMapping对象转换为Map
+            try {
+                // 使用Java客户端API获取映射的实际内容
+                var mappings = indexMapping.mappings();
+                if (mappings.properties() != null) {
+                    result.put("properties", mappings.properties());
+                }
+                if (mappings.dynamic() != null) {
+                    result.put("dynamic", mappings.dynamic());
+                }
+            } catch (Exception e) {
+                log.warn("转换映射对象失败，使用简化处理", e);
+                // 如果转换失败，尝试直接返回映射对象
+                result.put("mappings", indexMapping.mappings());
+            }
         }
         return result;
     }
