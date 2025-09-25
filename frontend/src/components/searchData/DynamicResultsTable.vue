@@ -198,9 +198,7 @@
       @save-error="handleEditError"
     />
 
-    <!-- 删除确认对话框 - 临时禁用 -->
-    <!-- 临时禁用删除弹窗，直到查明自动触发原因 -->
-    <!--
+    <!-- 删除确认对话框 -->
     <DeleteConfirmDialog
       v-model:open="deleteDialogOpen"
       :document="deletingDocument"
@@ -209,7 +207,6 @@
       @confirm="handleDeleteConfirm"
       @cancel="handleDeleteCancel"
     />
-    -->
   </div>
 </template>
 
