@@ -33,6 +33,15 @@ const routes = [
         }
       },
       {
+        path: 'channels',
+        name: 'Channels',
+        component: () => import('@/pages/channels/ChannelManage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '渠道管理'
+        }
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/pages/Settings.vue'),

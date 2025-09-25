@@ -126,7 +126,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Search, Settings, User, Database } from 'lucide-vue-next'
+import { Search, Settings, User, Database, Store } from 'lucide-vue-next'
 
 interface Props {
   collapsed?: boolean
@@ -152,6 +152,7 @@ const navigation = computed((): NavigationItem[] => {
   const nav = [
     { name: 'search-spaces', label: '搜索空间管理', to: '/search-spaces', icon: Search },
     { name: 'search-data', label: '搜索数据管理', to: '/search-data', icon: Database },
+    { name: 'channels', label: '渠道管理', to: '/channels', icon: Store },
     { name: 'settings', label: '设置', to: '/settings', icon: Settings },
   ]
   console.log('Navigation items:', nav)
