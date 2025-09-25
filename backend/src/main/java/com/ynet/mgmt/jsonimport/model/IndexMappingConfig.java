@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
@@ -108,6 +109,11 @@ public class IndexMappingConfig {
         private String analyzer;
 
         /**
+         * 搜索分析器名称
+         */
+        private String searchAnalyzer;
+
+        /**
          * 是否建立索引
          */
         private Boolean index;
@@ -205,21 +211,38 @@ public class IndexMappingConfig {
 
     /**
      * 生成Elasticsearch映射JSON
+     * 支持分析器配置和完整的索引设置
      */
     public Map<String, Object> toElasticsearchMapping() {
-        // 这里需要将配置转换为Elasticsearch客户端能理解的格式
-        // 具体实现会在IndexConfigService中完成
-        return Map.of(
-            "settings", Map.of(
-                "number_of_shards", settings.getNumberOfShards(),
-                "number_of_replicas", settings.getNumberOfReplicas(),
-                "refresh_interval", settings.getRefreshInterval()
-            ),
-            "mappings", Map.of(
-                "dynamic", dynamicMapping,
-                "properties", buildPropertiesMap()
-            )
-        );
+        Map<String, Object> mapping = new HashMap<>();
+
+        // 构建设置部分
+        Map<String, Object> settingsMap = new HashMap<>();
+
+        // 基础索引设置
+        settingsMap.put("number_of_shards", settings.getNumberOfShards());
+        settingsMap.put("number_of_replicas", settings.getNumberOfReplicas());
+        settingsMap.put("refresh_interval", settings.getRefreshInterval());
+
+        if (settings.getMaxResultWindow() != null) {
+            settingsMap.put("max_result_window", settings.getMaxResultWindow());
+        }
+
+        // 添加分析器配置
+        if (analyzers != null && !analyzers.isEmpty()) {
+            settingsMap.put("analysis", analyzers);
+        }
+
+        mapping.put("settings", settingsMap);
+
+        // 构建映射部分
+        Map<String, Object> mappingsMap = new HashMap<>();
+        mappingsMap.put("dynamic", dynamicMapping != null ? dynamicMapping : true);
+        mappingsMap.put("properties", buildPropertiesMap());
+
+        mapping.put("mappings", mappingsMap);
+
+        return mapping;
     }
 
     /**
@@ -237,12 +260,16 @@ public class IndexMappingConfig {
      * 构建单个字段的映射配置
      */
     private Map<String, Object> buildFieldMap(FieldMapping fieldMapping) {
-        Map<String, Object> fieldMap = new java.util.HashMap<>();
+        Map<String, Object> fieldMap = new HashMap<>();
 
         fieldMap.put("type", fieldMapping.getElasticsearchType());
 
         if (fieldMapping.getAnalyzer() != null) {
             fieldMap.put("analyzer", fieldMapping.getAnalyzer());
+        }
+
+        if (fieldMapping.getSearchAnalyzer() != null) {
+            fieldMap.put("search_analyzer", fieldMapping.getSearchAnalyzer());
         }
 
         if (fieldMapping.getIndex() != null) {
@@ -253,6 +280,52 @@ public class IndexMappingConfig {
             fieldMap.put("store", fieldMapping.getStore());
         }
 
+        if (fieldMapping.getDocValues() != null) {
+            fieldMap.put("doc_values", fieldMapping.getDocValues());
+        }
+
+        if (fieldMapping.getBoost() != null) {
+            fieldMap.put("boost", fieldMapping.getBoost());
+        }
+
+        if (fieldMapping.getFormat() != null) {
+            fieldMap.put("format", fieldMapping.getFormat());
+        }
+
+        if (fieldMapping.getIgnoreMalformed() != null) {
+            fieldMap.put("ignore_malformed", fieldMapping.getIgnoreMalformed());
+        }
+
+        if (fieldMapping.getNullValue() != null) {
+            fieldMap.put("null_value", fieldMapping.getNullValue());
+        }
+
+        // 处理文本字段的特殊配置
+        if (fieldMapping.getTextConfig() != null) {
+            TextFieldConfig textConfig = fieldMapping.getTextConfig();
+            if (textConfig.getEnablePositionIncrements() != null) {
+                fieldMap.put("position_increment_gap", textConfig.getEnablePositionIncrements() ? 100 : 0);
+            }
+            if (textConfig.getTermVector() != null && textConfig.getTermVector()) {
+                fieldMap.put("term_vector", "with_positions_offsets");
+            }
+            if (textConfig.getFielddata() != null) {
+                fieldMap.put("fielddata", textConfig.getFielddata());
+            }
+        }
+
+        // 处理数值字段的特殊配置
+        if (fieldMapping.getNumericConfig() != null) {
+            NumericFieldConfig numericConfig = fieldMapping.getNumericConfig();
+            if (numericConfig.getCoerce() != null) {
+                fieldMap.put("coerce", numericConfig.getCoerce());
+            }
+            if (numericConfig.getScalingFactor() != null) {
+                fieldMap.put("scaling_factor", numericConfig.getScalingFactor());
+            }
+        }
+
+        // 处理子字段
         if (fieldMapping.getFields() != null && !fieldMapping.getFields().isEmpty()) {
             fieldMap.put("fields", fieldMapping.getFields().entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(

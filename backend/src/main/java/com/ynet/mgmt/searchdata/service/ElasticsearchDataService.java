@@ -4,9 +4,7 @@ import com.ynet.mgmt.searchdata.dto.*;
 import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.MatchAllQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
@@ -50,13 +48,16 @@ public class ElasticsearchDataService {
      * @return 搜索结果
      */
     public SearchDataResponse searchData(SearchDataRequest request, SearchSpaceDTO searchSpace) {
+        long startTime = System.currentTimeMillis();
+        String indexName = searchSpace.getIndexName();
+
         try {
-            String indexName = searchSpace.getIndexName();
-            log.info("开始搜索ES数据: index={}, query={}, page={}, size={}",
-                    indexName, request.getQuery(), request.getPage(), request.getSize());
+            log.info("开始搜索ES数据: index={}, query={}, page={}, size={}, pinyin={}, mode={}",
+                    indexName, request.getQuery(), request.getPage(), request.getSize(),
+                    request.getEnablePinyinSearch(), request.getPinyinMode());
 
             // 构建查询
-            Query query = buildQuery(request.getQuery());
+            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode());
 
             // 计算分页参数
             int from = (request.getPage() - 1) * request.getSize();
@@ -78,6 +79,7 @@ public class ElasticsearchDataService {
                         .order("desc".equalsIgnoreCase(sortOrder) ?
                                 co.elastic.clients.elasticsearch._types.SortOrder.Desc :
                                 co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
+                log.debug("添加排序: field={}, order={}", sortField, sortOrder);
             }
 
             // 执行搜索
@@ -89,7 +91,10 @@ public class ElasticsearchDataService {
                     .collect(Collectors.toList());
 
             // 获取总数
-            long totalHits = searchResponse.hits().total() != null ? searchResponse.hits().total().value() : 0L;
+            long totalHits = 0L;
+            if (searchResponse.hits().total() != null) {
+                totalHits = searchResponse.hits().total().value();
+            }
 
             // 获取映射信息（如果需要）
             SearchDataResponse.IndexMappingInfo mappingInfo = null;
@@ -97,7 +102,9 @@ public class ElasticsearchDataService {
                 mappingInfo = getSimpleMappingInfo(indexName);
             }
 
-            log.info("搜索完成: index={}, total={}, returned={}", indexName, totalHits, documents.size());
+            long duration = System.currentTimeMillis() - startTime;
+            log.info("搜索完成: index={}, total={}, returned={}, took={}ms",
+                    indexName, totalHits, documents.size(), duration);
 
             return SearchDataResponse.builder()
                     .data(documents)
@@ -108,11 +115,23 @@ public class ElasticsearchDataService {
                     .build();
 
         } catch (IOException e) {
-            log.error("搜索ES数据失败: index={}, query={}", searchSpace.getIndexName(), request.getQuery(), e);
-            throw new RuntimeException("搜索失败: " + e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("搜索ES数据IO异常: index={}, query={}, took={}ms",
+                    indexName, request.getQuery(), duration, e);
+            throw new RuntimeException("搜索IO异常: " + e.getMessage(), e);
         } catch (ElasticsearchException e) {
-            log.error("ES查询异常: index={}, query={}", searchSpace.getIndexName(), request.getQuery(), e);
-            throw new RuntimeException("查询异常: " + e.getMessage(), e);
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("ES查询异常: index={}, query={}, status={}, took={}ms",
+                    indexName, request.getQuery(), e.status(), duration, e);
+
+            // 根据不同的ES异常类型提供更友好的错误信息
+            String errorMsg = getElasticsearchErrorMessage(e);
+            throw new RuntimeException("查询异常: " + errorMsg, e);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("搜索过程中出现未预期异常: index={}, query={}, took={}ms",
+                    indexName, request.getQuery(), duration, e);
+            throw new RuntimeException("搜索失败: " + e.getMessage(), e);
         }
     }
 
@@ -316,17 +335,220 @@ public class ElasticsearchDataService {
     // 私有辅助方法
 
     /**
-     * 构建查询
+     * 构建查询 - 支持拼音搜索增强
      */
-    private Query buildQuery(String queryString) {
+    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode) {
         if (!StringUtils.hasText(queryString)) {
             return MatchAllQuery.of(m -> m)._toQuery();
         }
 
+        // 如果拼音搜索被禁用，直接使用标准查询
+        if (enablePinyinSearch == null || !enablePinyinSearch) {
+            log.debug("拼音搜索已禁用，使用标准查询: query={}", queryString);
+            return QueryStringQuery.of(q -> q
+                    .query(queryString)
+                    .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
+                    .analyzeWildcard(true))._toQuery();
+        }
+
+        try {
+            // 尝试构建拼音增强查询
+            Query pinyinQuery = buildPinyinEnhancedQuery(queryString, pinyinMode);
+            if (pinyinQuery != null) {
+                log.debug("使用拼音增强查询: query={}, mode={}", queryString, pinyinMode);
+                return pinyinQuery;
+            }
+        } catch (Exception e) {
+            log.warn("拼音查询构建失败，降级为标准查询: query={}, mode={}, error={}",
+                    queryString, pinyinMode, e.getMessage());
+
+            // 记录拼音搜索错误的详细信息，便于问题排查
+            if (log.isDebugEnabled()) {
+                log.debug("拼音查询构建异常详情", e);
+            }
+        }
+
+        // 降级为标准查询
         return QueryStringQuery.of(q -> q
                 .query(queryString)
                 .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
                 .analyzeWildcard(true))._toQuery();
+    }
+
+    /**
+     * 构建拼音增强查询
+     */
+    private Query buildPinyinEnhancedQuery(String queryString, String pinyinMode) {
+        String mode = pinyinMode != null ? pinyinMode.toUpperCase() : "AUTO";
+        boolean containsChinese = queryString.matches(".*[\\u4e00-\\u9fa5].*");
+        boolean isShortChinese = containsChinese && queryString.length() <= 2;
+
+        // 添加调试日志
+        System.out.println("=== 拼音查询构建调试 ===");
+        System.out.println("查询字符串: " + queryString);
+        System.out.println("包含中文: " + containsChinese);
+        System.out.println("是否短中文: " + isShortChinese);
+        System.out.println("拼音模式: " + mode);
+
+        switch (mode) {
+            case "STRICT":
+                // 严格模式：优先原字段匹配，拼音作为辅助
+                BoolQuery.Builder strictBuilder = new BoolQuery.Builder()
+                    .should(buildMultiFieldQuery(queryString, 3.0f))  // 原字段权重更高
+                    .should(buildPinyinQuery(queryString, 1.0f))      // 拼音权重较低
+                    .minimumShouldMatch("1");
+                // 短中文查询避免使用首字母匹配
+                if (!isShortChinese) {
+                    System.out.println("STRICT模式: 添加首字母匹配 (非短中文)");
+                    strictBuilder.should(buildFirstLetterQuery(queryString, 0.5f));
+                } else {
+                    System.out.println("STRICT模式: 跳过首字母匹配 (短中文)");
+                }
+                return strictBuilder.build()._toQuery();
+
+            case "FUZZY":
+                // 模糊模式：增强拼音和首字母匹配权重
+                System.out.println("FUZZY模式: 使用所有匹配方式");
+                return BoolQuery.of(b -> b
+                    .should(buildMultiFieldQuery(queryString, 1.5f))  // 原字段权重降低
+                    .should(buildPinyinQuery(queryString, 2.0f))      // 拼音权重更高
+                    .should(buildFirstLetterQuery(queryString, 1.5f)) // 首字母权重提高
+                    .minimumShouldMatch("1")
+                )._toQuery();
+
+            case "AUTO":
+            default:
+                // 自动模式：平衡所有搜索策略
+                BoolQuery.Builder autoBuilder = new BoolQuery.Builder()
+                    .should(buildMultiFieldQuery(queryString, 2.0f))  // 原字段精确匹配，权重2.0
+                    .minimumShouldMatch("1"); // 至少匹配一个should条件
+
+                // 对于短中文查询，只使用原字段匹配，避免拼音分析器导致的过度匹配
+                if (!isShortChinese) {
+                    System.out.println("AUTO模式: 添加拼音和首字母匹配 (非短中文)");
+                    autoBuilder.should(buildPinyinQuery(queryString, 1.5f));      // 拼音字段匹配，权重1.5
+                    autoBuilder.should(buildFirstLetterQuery(queryString, 1.0f)); // 首字母匹配，权重1.0
+                } else {
+                    System.out.println("AUTO模式: 跳过拼音和首字母匹配 (短中文，避免过度匹配)");
+                }
+                Query finalQuery = autoBuilder.build()._toQuery();
+                System.out.println("=== 查询构建完成 ===");
+                return finalQuery;
+        }
+    }
+
+    /**
+     * 构建多字段搜索查询
+     */
+    private Query buildMultiFieldQuery(String queryString, float boost) {
+        return MultiMatchQuery.of(m -> m
+            .query(queryString)
+            .fields(getSearchableFields())
+            .type(TextQueryType.BestFields)
+            .boost(boost)
+            .operator(Operator.And)
+        )._toQuery();
+    }
+
+    /**
+     * 构建拼音搜索查询
+     */
+    private Query buildPinyinQuery(String queryString, float boost) {
+        return MultiMatchQuery.of(m -> m
+            .query(queryString)
+            .fields(getPinyinFields())
+            .type(TextQueryType.BestFields)
+            .boost(boost)
+            .operator(Operator.Or) // 拼音搜索使用OR操作符，更宽泛匹配
+        )._toQuery();
+    }
+
+    /**
+     * 构建首字母搜索查询
+     */
+    private Query buildFirstLetterQuery(String queryString, float boost) {
+        return MultiMatchQuery.of(m -> m
+            .query(queryString)
+            .fields(getFirstLetterFields())
+            .type(TextQueryType.BestFields)
+            .boost(boost)
+            .operator(Operator.Or)
+        )._toQuery();
+    }
+
+    /**
+     * 获取可搜索字段列表
+     */
+    private List<String> getSearchableFields() {
+        // 常见的文本搜索字段
+        return Arrays.asList(
+            "title^2",      // title字段权重加倍
+            "content",
+            "description",
+            "name",
+            "text",
+            "category"      // 分类字段
+        );
+    }
+
+    /**
+     * 获取拼音字段列表
+     */
+    private List<String> getPinyinFields() {
+        return Arrays.asList(
+            "title.pinyin^2",
+            "content.pinyin",
+            "description.pinyin",
+            "name.pinyin",
+            "text.pinyin",
+            "category.pinyin"
+        );
+    }
+
+    /**
+     * 获取首字母字段列表
+     */
+    private List<String> getFirstLetterFields() {
+        return Arrays.asList(
+            "title.first_letter^2",
+            "content.first_letter",
+            "description.first_letter",
+            "name.first_letter",
+            "text.first_letter",
+            "category.first_letter"
+        );
+    }
+
+    /**
+     * 解析Elasticsearch异常并返回友好的错误信息
+     */
+    private String getElasticsearchErrorMessage(ElasticsearchException e) {
+        if (e.getMessage() == null) {
+            return "未知的Elasticsearch错误";
+        }
+
+        String message = e.getMessage().toLowerCase();
+
+        if (message.contains("index_not_found")) {
+            return "索引不存在";
+        } else if (message.contains("parsing_exception")) {
+            return "查询语法错误";
+        } else if (message.contains("search_parse_exception")) {
+            return "搜索查询解析失败";
+        } else if (message.contains("timeout")) {
+            return "搜索超时";
+        } else if (message.contains("circuit_breaking_exception")) {
+            return "查询资源超限，请简化查询条件";
+        } else if (message.contains("too_many_clauses")) {
+            return "查询条件过于复杂";
+        } else if (message.contains("illegal_argument")) {
+            return "查询参数错误";
+        } else {
+            // 返回原始错误信息的前100个字符，避免过长
+            return e.getMessage().length() > 100 ?
+                    e.getMessage().substring(0, 100) + "..." :
+                    e.getMessage();
+        }
     }
 
     /**

@@ -48,10 +48,17 @@ public class ElasticsearchDataController {
     /**
      * 搜索ES数据
      *
+     * 功能特性：
+     * - 支持拼音搜索：可通过拼音查找中文内容（如：用"zhang"搜索"张三"）
+     * - 多层级搜索：原字段精确匹配 + 拼音匹配 + 首字母匹配
+     * - 智能权重：不同匹配策略具有不同的相关性权重
+     * - 可配置搜索模式：AUTO（平衡）、STRICT（严格）、FUZZY（模糊）
+     *
      * @param request 搜索请求参数
      * @return 搜索结果
      */
-    @Operation(summary = "搜索ES数据", description = "根据搜索空间和查询条件搜索Elasticsearch中的数据")
+    @Operation(summary = "搜索ES数据",
+               description = "根据搜索空间和查询条件搜索Elasticsearch中的数据。支持拼音搜索、首字母搜索等智能匹配功能。")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -74,8 +81,9 @@ public class ElasticsearchDataController {
             @Parameter(description = "搜索请求参数", required = true)
             @Valid @RequestBody SearchDataRequest request) {
 
-        logger.info("搜索ES数据: searchSpaceId={}, query={}, page={}, size={}",
-                request.getSearchSpaceId(), request.getQuery(), request.getPage(), request.getSize());
+        logger.info("搜索ES数据: searchSpaceId={}, query={}, page={}, size={}, pinyin={}, mode={}",
+                request.getSearchSpaceId(), request.getQuery(), request.getPage(), request.getSize(),
+                request.getEnablePinyinSearch(), request.getPinyinMode());
 
         try {
             // 验证搜索空间是否存在

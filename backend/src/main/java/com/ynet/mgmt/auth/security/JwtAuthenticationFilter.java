@@ -41,9 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                   FilterChain filterChain) throws ServletException, IOException {
 
+        System.out.println("=== JWT Filter 被调用 ===");
+        System.out.println("请求URI: " + request.getRequestURI());
+        System.out.println("请求方法: " + request.getMethod());
+
         try {
             // 提取JWT令牌
             String token = getTokenFromRequest(request);
+            logger.debug("JWT过滤器处理请求: URI={}, Token存在={}", request.getRequestURI(), token != null);
 
             if (StringUtils.hasText(token) && jwtTokenManager.validateToken(token)) {
                 // 从令牌中获取用户名
@@ -68,6 +73,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     logger.debug("JWT认证成功: 用户={}", username);
                 }
+            } else {
+                logger.debug("JWT令牌无效或不存在: token存在={}, 有效性={}",
+                    token != null, token != null && jwtTokenManager.validateToken(token));
             }
         } catch (Exception e) {
             logger.error("JWT认证过程中发生错误: {}", e.getMessage());

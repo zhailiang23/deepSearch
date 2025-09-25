@@ -80,6 +80,7 @@ public class JwtTokenManager {
         try {
             // 首先检查令牌是否在黑名单中
             if (blacklistService.isBlacklisted(token)) {
+                System.out.println("JWT验证失败: token在黑名单中");
                 return false;
             }
 
@@ -89,8 +90,10 @@ public class JwtTokenManager {
                 .build()
                 .parseClaimsJws(token);
 
+            System.out.println("JWT验证成功");
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("JWT验证失败: " + e.getMessage());
             return false;
         }
     }

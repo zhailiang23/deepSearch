@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +23,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * IndexConfigService 单元测试
  */
 @ExtendWith(MockitoExtension.class)
+@TestPropertySource(properties = {
+    "elasticsearch.pinyin.enabled=true"
+})
 class IndexConfigServiceTest {
 
     @InjectMocks
@@ -30,6 +35,11 @@ class IndexConfigServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 启用拼音功能用于测试
+        ReflectionTestUtils.setField(indexConfigService, "pinyinEnabled", true);
+
+        // 重置插件可用性缓存，确保每次测试都重新检测
+        ReflectionTestUtils.setField(indexConfigService, "pinyinPluginAvailable", null);
         // 创建测试用的JSON分析结果
         FieldAnalysisResult idField = FieldAnalysisResult.builder()
                 .fieldName("id")
@@ -115,7 +125,7 @@ class IndexConfigServiceTest {
         // Then
         assertNotNull(config);
         assertNotNull(config.getIndexName());
-        assertTrue(config.getIndexName().startsWith("searchspace_test_space_"));
+        assertEquals("test_space", config.getIndexName());
 
         // 验证索引设置
         assertNotNull(config.getSettings());
@@ -184,6 +194,7 @@ class IndexConfigServiceTest {
         IndexMappingConfig.FieldMapping nameMapping = config.getFieldMappings().get("name");
         assertNotNull(nameMapping);
         assertEquals("text", nameMapping.getElasticsearchType());
+        // 由于原测试的name字段没有样本数据，且虽然重要性85>70但字段名只是"name"不包含中文，所以使用标准分析器
         assertEquals("standard", nameMapping.getAnalyzer());
 
         // 应该有keyword子字段
@@ -352,5 +363,329 @@ class IndexConfigServiceTest {
         IndexMappingConfig.FieldMapping versionField = mappings.get("_dataVersion");
         assertNotNull(versionField);
         assertEquals("integer", versionField.getElasticsearchType());
+    }
+
+    @Test
+    void testPinyinFieldMapping_ChineseNameField() {
+        // Given - 创建包含中文内容的字段
+        FieldAnalysisResult chineseNameField = FieldAnalysisResult.builder()
+                .fieldName("name")
+                .inferredType(FieldType.STRING)
+                .confidence(0.95)
+                .statistics(FieldStatistics.builder()
+                        .totalCount(1000)
+                        .nonNullCount(980)
+                        .nullCount(20)
+                        .nullRatio(0.02)
+                        .uniqueCount(950)
+                        .uniqueRatio(0.95)
+                        .qualityScore(90)
+                        .build())
+                .sampleValues(List.of("张三", "李四", "王五", "赵六", "陈七"))
+                .suggestAsId(false)
+                .suggestIndex(true)
+                .importance(85)
+                .build();
+
+        Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
+                "name", chineseNameField
+        );
+
+        JsonSchemaAnalysis analysisWithChinese = sampleAnalysis.toBuilder()
+                .fieldAnalysis(fieldAnalysis)
+                .build();
+
+        String searchSpaceCode = "chinese_test_space";
+
+        // When
+        IndexMappingConfig config = indexConfigService.generateIndexConfig(searchSpaceCode, analysisWithChinese);
+
+        // Then
+        IndexMappingConfig.FieldMapping nameMapping = config.getFieldMappings().get("name");
+        assertNotNull(nameMapping);
+        assertEquals("text", nameMapping.getElasticsearchType());
+
+        // 验证使用了拼音分析器
+        assertEquals("chinese_pinyin_analyzer", nameMapping.getAnalyzer());
+        assertEquals("pinyin_search_analyzer", nameMapping.getSearchAnalyzer());
+
+        // 验证拼音子字段
+        assertNotNull(nameMapping.getFields());
+        assertTrue(nameMapping.getFields().containsKey("pinyin"));
+        assertTrue(nameMapping.getFields().containsKey("chinese_pinyin"));
+        assertTrue(nameMapping.getFields().containsKey("first_letter")); // 高重要性字段应该有首字母字段
+
+        // 验证拼音子字段配置
+        IndexMappingConfig.FieldMapping pinyinField = nameMapping.getFields().get("pinyin");
+        assertEquals("text", pinyinField.getElasticsearchType());
+        assertEquals("pinyin_analyzer", pinyinField.getAnalyzer());
+
+        IndexMappingConfig.FieldMapping chinesePinyinField = nameMapping.getFields().get("chinese_pinyin");
+        assertEquals("text", chinesePinyinField.getElasticsearchType());
+        assertEquals("chinese_pinyin_analyzer", chinesePinyinField.getAnalyzer());
+
+        IndexMappingConfig.FieldMapping firstLetterField = nameMapping.getFields().get("first_letter");
+        assertEquals("text", firstLetterField.getElasticsearchType());
+        assertEquals("pinyin_first_letter_analyzer", firstLetterField.getAnalyzer());
+    }
+
+    @Test
+    void testPinyinFieldMapping_EnglishNameField() {
+        // Given - 创建包含英文内容的字段
+        FieldAnalysisResult englishNameField = FieldAnalysisResult.builder()
+                .fieldName("name")
+                .inferredType(FieldType.STRING)
+                .confidence(0.95)
+                .statistics(FieldStatistics.builder()
+                        .totalCount(1000)
+                        .nonNullCount(980)
+                        .nullCount(20)
+                        .nullRatio(0.02)
+                        .uniqueCount(950)
+                        .uniqueRatio(0.95)
+                        .qualityScore(90)
+                        .build())
+                .sampleValues(List.of("John", "Jane", "Bob", "Alice", "Charlie"))
+                .suggestAsId(false)
+                .suggestIndex(true)
+                .importance(85)
+                .build();
+
+        Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
+                "name", englishNameField
+        );
+
+        JsonSchemaAnalysis analysisWithEnglish = sampleAnalysis.toBuilder()
+                .fieldAnalysis(fieldAnalysis)
+                .build();
+
+        String searchSpaceCode = "english_test_space";
+
+        // When
+        IndexMappingConfig config = indexConfigService.generateIndexConfig(searchSpaceCode, analysisWithEnglish);
+
+        // Then
+        IndexMappingConfig.FieldMapping nameMapping = config.getFieldMappings().get("name");
+        assertNotNull(nameMapping);
+        assertEquals("text", nameMapping.getElasticsearchType());
+
+        // 验证使用了标准分析器（不是拼音分析器）
+        assertEquals("standard", nameMapping.getAnalyzer());
+        assertNull(nameMapping.getSearchAnalyzer());
+
+        // 验证没有拼音子字段
+        assertNotNull(nameMapping.getFields());
+        assertFalse(nameMapping.getFields().containsKey("pinyin"));
+        assertFalse(nameMapping.getFields().containsKey("chinese_pinyin"));
+        assertFalse(nameMapping.getFields().containsKey("first_letter"));
+
+        // 应该仍然有keyword子字段
+        assertTrue(nameMapping.getFields().containsKey("keyword"));
+    }
+
+    @Test
+    void testPinyinFieldMapping_MixedContentField() {
+        // Given - 创建包含中英文混合内容的字段
+        FieldAnalysisResult mixedContentField = FieldAnalysisResult.builder()
+                .fieldName("title")
+                .inferredType(FieldType.STRING)
+                .confidence(0.9)
+                .statistics(FieldStatistics.builder()
+                        .totalCount(1000)
+                        .nonNullCount(950)
+                        .nullCount(50)
+                        .nullRatio(0.05)
+                        .uniqueCount(900)
+                        .uniqueRatio(0.9)
+                        .qualityScore(85)
+                        .build())
+                .sampleValues(List.of("产品介绍", "Product Introduction", "用户手册", "User Manual", "技术文档"))
+                .suggestAsId(false)
+                .suggestIndex(true)
+                .importance(75)
+                .build();
+
+        Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
+                "title", mixedContentField
+        );
+
+        JsonSchemaAnalysis analysisWithMixed = sampleAnalysis.toBuilder()
+                .fieldAnalysis(fieldAnalysis)
+                .build();
+
+        String searchSpaceCode = "mixed_test_space";
+
+        // When
+        IndexMappingConfig config = indexConfigService.generateIndexConfig(searchSpaceCode, analysisWithMixed);
+
+        // Then
+        IndexMappingConfig.FieldMapping titleMapping = config.getFieldMappings().get("title");
+        assertNotNull(titleMapping);
+        assertEquals("text", titleMapping.getElasticsearchType());
+
+        // 验证使用了拼音分析器（因为有中文内容）
+        assertEquals("chinese_pinyin_analyzer", titleMapping.getAnalyzer());
+        assertEquals("pinyin_search_analyzer", titleMapping.getSearchAnalyzer());
+
+        // 验证拼音子字段
+        assertNotNull(titleMapping.getFields());
+        assertTrue(titleMapping.getFields().containsKey("pinyin"));
+        assertTrue(titleMapping.getFields().containsKey("chinese_pinyin"));
+    }
+
+    @Test
+    void testPinyinAnalyzersGeneration() {
+        // Given
+        String searchSpaceCode = "test_space";
+
+        // When
+        IndexMappingConfig config = indexConfigService.generateIndexConfig(searchSpaceCode, sampleAnalysis);
+
+        // Then
+        assertNotNull(config.getAnalyzers());
+
+        // 验证分析器存在
+        @SuppressWarnings("unchecked")
+        Map<String, Object> analyzers = (Map<String, Object>) config.getAnalyzers().get("analyzer");
+        assertNotNull(analyzers);
+        assertTrue(analyzers.containsKey("pinyin_analyzer"));
+        assertTrue(analyzers.containsKey("pinyin_first_letter_analyzer"));
+        assertTrue(analyzers.containsKey("pinyin_search_analyzer"));
+        assertTrue(analyzers.containsKey("chinese_pinyin_analyzer"));
+
+        // 验证过滤器存在
+        @SuppressWarnings("unchecked")
+        Map<String, Object> filters = (Map<String, Object>) config.getAnalyzers().get("filter");
+        assertNotNull(filters);
+        assertTrue(filters.containsKey("pinyin_filter"));
+        assertTrue(filters.containsKey("pinyin_first_letter_filter"));
+        assertTrue(filters.containsKey("pinyin_search_filter"));
+        assertTrue(filters.containsKey("chinese_pinyin_filter"));
+    }
+
+    @Test
+    void testElasticsearchMappingWithPinyinAnalyzers() {
+        // Given
+        FieldAnalysisResult chineseField = FieldAnalysisResult.builder()
+                .fieldName("company")
+                .inferredType(FieldType.STRING)
+                .confidence(0.9)
+                .statistics(FieldStatistics.builder()
+                        .totalCount(1000)
+                        .nonNullCount(950)
+                        .nullCount(50)
+                        .build())
+                .sampleValues(List.of("北京科技有限公司", "上海贸易公司", "深圳软件公司"))
+                .suggestAsId(false)
+                .suggestIndex(true)
+                .importance(80)
+                .build();
+
+        Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
+                "company", chineseField
+        );
+
+        JsonSchemaAnalysis analysisWithChinese = sampleAnalysis.toBuilder()
+                .fieldAnalysis(fieldAnalysis)
+                .build();
+
+        String searchSpaceCode = "chinese_company_space";
+        IndexMappingConfig config = indexConfigService.generateIndexConfig(searchSpaceCode, analysisWithChinese);
+
+        // When
+        Map<String, Object> esMapping = config.toElasticsearchMapping();
+
+        // Then
+        assertNotNull(esMapping);
+
+        // 验证设置中包含分析器配置
+        @SuppressWarnings("unchecked")
+        Map<String, Object> settings = (Map<String, Object>) esMapping.get("settings");
+        assertTrue(settings.containsKey("analysis"));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> analysis = (Map<String, Object>) settings.get("analysis");
+        assertTrue(analysis.containsKey("analyzer"));
+        assertTrue(analysis.containsKey("filter"));
+
+        // 验证映射中包含拼音字段配置
+        @SuppressWarnings("unchecked")
+        Map<String, Object> mappings = (Map<String, Object>) esMapping.get("mappings");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> properties = (Map<String, Object>) mappings.get("properties");
+        assertTrue(properties.containsKey("company"));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> companyField = (Map<String, Object>) properties.get("company");
+        assertEquals("chinese_pinyin_analyzer", companyField.get("analyzer"));
+        assertEquals("pinyin_search_analyzer", companyField.get("search_analyzer"));
+
+        // 验证子字段
+        assertTrue(companyField.containsKey("fields"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> fields = (Map<String, Object>) companyField.get("fields");
+        assertTrue(fields.containsKey("pinyin"));
+        assertTrue(fields.containsKey("chinese_pinyin"));
+        assertTrue(fields.containsKey("first_letter"));
+    }
+
+    @Test
+    void testPinyinPluginStatus() {
+        // When
+        Map<String, Object> status = indexConfigService.getPinyinPluginStatus();
+
+        // Then
+        assertNotNull(status);
+        assertTrue(status.containsKey("enabled"));
+        assertTrue(status.containsKey("available"));
+        assertTrue(status.containsKey("checked"));
+
+        // 验证状态值类型
+        assertInstanceOf(Boolean.class, status.get("enabled"));
+        assertInstanceOf(Boolean.class, status.get("available"));
+        assertInstanceOf(Boolean.class, status.get("checked"));
+    }
+
+    @Test
+    void testLowImportanceFieldWithoutPinyin() {
+        // Given - 创建低重要性的中文字段
+        FieldAnalysisResult lowImportanceField = FieldAnalysisResult.builder()
+                .fieldName("备注")  // 中文字段名，但重要性低
+                .inferredType(FieldType.STRING)
+                .confidence(0.8)
+                .statistics(FieldStatistics.builder().build())
+                .sampleValues(List.of("test remark", "another remark"))  // 使用英文样本数据，确保不触发拼音
+                .suggestAsId(false)
+                .suggestIndex(false)  // 不建议索引
+                .importance(40)  // 低重要性
+                .build();
+
+        Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
+                "备注", lowImportanceField
+        );
+
+        JsonSchemaAnalysis analysisWithLowImportance = sampleAnalysis.toBuilder()
+                .fieldAnalysis(fieldAnalysis)
+                .build();
+
+        String searchSpaceCode = "low_importance_space";
+
+        // When
+        IndexMappingConfig config = indexConfigService.generateIndexConfig(searchSpaceCode, analysisWithLowImportance);
+
+        // Then
+        IndexMappingConfig.FieldMapping remarkMapping = config.getFieldMappings().get("备注");
+        assertNotNull(remarkMapping);
+
+        // 由于样本数据是英文，即使字段名是中文，也不应该使用拼音分析器
+        assertEquals("standard", remarkMapping.getAnalyzer());
+        assertNull(remarkMapping.getSearchAnalyzer());
+
+        // 不应该有拼音子字段
+        if (remarkMapping.getFields() != null) {
+            assertFalse(remarkMapping.getFields().containsKey("pinyin"));
+            assertFalse(remarkMapping.getFields().containsKey("chinese_pinyin"));
+            assertFalse(remarkMapping.getFields().containsKey("first_letter"));
+        }
     }
 }

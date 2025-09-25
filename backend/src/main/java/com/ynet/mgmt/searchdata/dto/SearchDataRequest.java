@@ -38,6 +38,14 @@ public class SearchDataRequest {
     @Schema(description = "过滤条件")
     private List<FilterConfig> filters;
 
+    @Schema(description = "启用拼音搜索", example = "true", defaultValue = "true")
+    private Boolean enablePinyinSearch = true;
+
+    @Schema(description = "拼音搜索模式", example = "AUTO",
+            allowableValues = {"AUTO", "STRICT", "FUZZY"},
+            defaultValue = "AUTO")
+    private String pinyinMode = "AUTO";
+
     /**
      * 排序配置
      */

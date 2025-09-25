@@ -1,0 +1,96 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "pinyin_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "pinyin_filter"]
+        },
+        "pinyin_first_letter_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "pinyin_first_letter_filter"]
+        },
+        "pinyin_search_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "pinyin_search_filter"]
+        }
+      },
+      "filter": {
+        "pinyin_filter": {
+          "type": "pinyin",
+          "keep_first_letter": true,
+          "keep_full_pinyin": true,
+          "keep_joined_full_pinyin": true,
+          "keep_original": false,
+          "limit_first_letter_length": 16,
+          "lowercase": true,
+          "remove_duplicated_term": true
+        },
+        "pinyin_first_letter_filter": {
+          "type": "pinyin",
+          "keep_first_letter": true,
+          "keep_full_pinyin": false,
+          "keep_joined_full_pinyin": false,
+          "keep_original": false,
+          "limit_first_letter_length": 16,
+          "lowercase": true,
+          "remove_duplicated_term": true
+        },
+        "pinyin_search_filter": {
+          "type": "pinyin",
+          "keep_first_letter": false,
+          "keep_full_pinyin": true,
+          "keep_joined_full_pinyin": true,
+          "keep_original": true,
+          "limit_first_letter_length": 16,
+          "lowercase": true,
+          "remove_duplicated_term": true
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "pinyin_analyzer",
+        "search_analyzer": "pinyin_search_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          },
+          "pinyin": {
+            "type": "text",
+            "analyzer": "pinyin_analyzer"
+          },
+          "first_letter": {
+            "type": "text",
+            "analyzer": "pinyin_first_letter_analyzer"
+          }
+        }
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "pinyin_analyzer",
+        "search_analyzer": "pinyin_search_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          },
+          "pinyin": {
+            "type": "text",
+            "analyzer": "pinyin_analyzer"
+          }
+        }
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "pinyin_analyzer",
+        "search_analyzer": "pinyin_search_analyzer"
+      }
+    }
+  }
+}

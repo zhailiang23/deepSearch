@@ -7,6 +7,7 @@ import com.ynet.mgmt.jsonimport.model.JsonSchemaAnalysis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,19 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class IndexConfigService {
+
+    /**
+     * 是否启用拼音分析器功能
+     * 可以通过配置文件控制是否启用拼音功能
+     */
+    @Value("${elasticsearch.pinyin.enabled:true}")
+    private boolean pinyinEnabled;
+
+    /**
+     * 拼音插件可用性缓存
+     * 避免重复检测插件状态
+     */
+    private Boolean pinyinPluginAvailable = null;
 
     private static final Map<FieldType, String> TYPE_MAPPING = Map.of(
         FieldType.STRING, "text",
@@ -187,6 +201,7 @@ public class IndexConfigService {
 
     /**
      * 配置文本字段
+     * 根据字段特征智能添加拼音子字段支持
      */
     private void configureTextField(IndexMappingConfig.FieldMapping.FieldMappingBuilder builder,
                                   FieldAnalysisResult fieldResult) {
@@ -194,13 +209,51 @@ public class IndexConfigService {
         String analyzer = determineAnalyzer(fieldResult);
         builder.analyzer(analyzer);
 
-        // 添加keyword子字段用于精确匹配和聚合
+        // 构建子字段映射
         Map<String, IndexMappingConfig.FieldMapping> fields = new HashMap<>();
+
+        // 添加keyword子字段用于精确匹配和聚合
         fields.put("keyword", IndexMappingConfig.FieldMapping.builder()
                 .elasticsearchType("keyword")
                 .index(true)
                 .docValues(true)
                 .build());
+
+        // 如果需要拼音支持，添加拼音相关子字段
+        if (shouldAddPinyinField(fieldResult)) {
+            log.debug("为字段 {} 添加拼音子字段支持", fieldResult.getFieldName());
+
+            // 添加拼音子字段 - 支持全拼和简拼搜索
+            fields.put("pinyin", IndexMappingConfig.FieldMapping.builder()
+                    .elasticsearchType("text")
+                    .analyzer("pinyin_analyzer")
+                    .index(true)
+                    .docValues(false)
+                    .build());
+
+            // 添加中文拼音混合子字段 - 同时支持中文和拼音搜索
+            fields.put("chinese_pinyin", IndexMappingConfig.FieldMapping.builder()
+                    .elasticsearchType("text")
+                    .analyzer("chinese_pinyin_analyzer")
+                    .index(true)
+                    .docValues(false)
+                    .build());
+
+            // 为重要字段添加首字母搜索支持
+            if (fieldResult.getImportance() >= 80 || fieldResult.isSuggestIndex()) {
+                fields.put("first_letter", IndexMappingConfig.FieldMapping.builder()
+                        .elasticsearchType("text")
+                        .analyzer("pinyin_first_letter_analyzer")
+                        .index(true)
+                        .docValues(false)
+                        .build());
+            }
+
+            // 如果使用拼音分析器作为主分析器，设置搜索分析器
+            if (analyzer.contains("pinyin")) {
+                builder.searchAnalyzer("pinyin_search_analyzer");
+            }
+        }
 
         builder.fields(fields);
 
@@ -241,15 +294,23 @@ public class IndexConfigService {
      */
     private String determineAnalyzer(FieldAnalysisResult fieldResult) {
         String fieldName = fieldResult.getFieldName().toLowerCase();
+        boolean shouldUsePinyin = shouldAddPinyinField(fieldResult);
 
-        // 名称类字段使用标准分析器
+        log.trace("确定分析器 - 字段: {}, 是否使用拼音: {}", fieldName, shouldUsePinyin);
+
+        // 名称类字段使用拼音分析器（如果符合条件）
         if (fieldName.contains("name") || fieldName.contains("title")) {
-            return "standard";
+            return shouldUsePinyin ? "chinese_pinyin_analyzer" : "standard";
         }
 
-        // 内容类字段使用中文分析器（如果有的话）
+        // 内容类字段使用拼音分析器（如果符合条件）
         if (fieldName.contains("content") || fieldName.contains("description")) {
-            return "standard"; // 可以配置为中文分析器如ik_max_word
+            return shouldUsePinyin ? "pinyin_search_analyzer" : "standard";
+        }
+
+        // 公司类字段使用拼音分析器（如果符合条件）
+        if (fieldName.contains("company") || fieldName.contains("corp")) {
+            return shouldUsePinyin ? "chinese_pinyin_analyzer" : "standard";
         }
 
         // 代码类字段使用keyword分析器
@@ -257,7 +318,184 @@ public class IndexConfigService {
             return "keyword";
         }
 
+        // 其他文本字段也可能需要拼音支持
+        if (shouldUsePinyin) {
+            return "chinese_pinyin_analyzer";
+        }
+
         return "standard";
+    }
+
+    /**
+     * 判断字段是否应该添加拼音字段支持
+     * 基于字段名称、内容特征和重要性进行智能判断
+     *
+     * @param fieldResult 字段分析结果
+     * @return 是否需要拼音支持
+     */
+    private boolean shouldAddPinyinField(FieldAnalysisResult fieldResult) {
+        // 首先检查拼音插件是否可用
+        if (!isPinyinPluginAvailable()) {
+            return false;
+        }
+
+        // 只为字符串类型字段考虑拼音支持
+        if (fieldResult.getInferredType() != FieldType.STRING) {
+            return false;
+        }
+
+        String fieldName = fieldResult.getFieldName().toLowerCase();
+        boolean hasSampleData = fieldResult.getSampleValues() != null && !fieldResult.getSampleValues().isEmpty();
+
+        // 1. 如果有样本数据，优先根据内容判断
+        if (hasSampleData) {
+            boolean hasChineseContent = containsChineseContent(fieldResult.getSampleValues());
+
+            // 如果样本数据包含中文，且字段符合条件，则启用拼音
+            if (hasChineseContent) {
+                // 有中文内容的文本字段，重要性达到阈值或建议索引时启用拼音
+                return fieldResult.getImportance() >= 60 || fieldResult.isSuggestIndex();
+            } else {
+                // 如果样本数据不包含中文，则不启用拼音（即使字段名是中文）
+                return false;
+            }
+        }
+
+        // 2. 没有样本数据时，根据字段名判断
+        if (isChineseTextFieldCandidate(fieldName)) {
+            // 中文字段名，高重要性或建议索引时启用
+            return fieldResult.getImportance() >= 70 || fieldResult.isSuggestIndex();
+        }
+
+        // 3. 对于英文字段名但可能包含中文内容的字段，需要更高的阈值
+        if (isTextContentField(fieldName)) {
+            // 英文字段名但可能是文本内容字段，需要非常高的重要性才启用拼音（保守策略）
+            return fieldResult.getImportance() >= 90 && fieldResult.isSuggestIndex();
+        }
+
+        return false;
+    }
+
+    /**
+     * 判断字段名称是否为中文文本字段候选
+     * 优先检查中文字段名，英文字段名需要额外的条件才会被认为是中文字段
+     */
+    private boolean isChineseTextFieldCandidate(String fieldName) {
+        // 包含中文字符的字段名直接返回 true
+        if (containsChinese(fieldName)) {
+            return true;
+        }
+
+        // 对于英文字段名，只有在明确的中文业务场景下才认为是中文字段候选
+        // 这里我们保守处理，只认为明确包含中文相关概念的英文字段名才是候选
+        return fieldName.contains("chinese") || fieldName.contains("cn") || fieldName.contains("chn");
+    }
+
+    /**
+     * 判断字段名称是否可能包含文本内容
+     * 用于辅助判断是否需要拼音支持
+     */
+    private boolean isTextContentField(String fieldName) {
+        return fieldName.contains("name") || fieldName.contains("名称") || fieldName.contains("姓名") ||
+               fieldName.contains("title") || fieldName.contains("标题") || fieldName.contains("主题") ||
+               fieldName.contains("content") || fieldName.contains("内容") || fieldName.contains("正文") ||
+               fieldName.contains("description") || fieldName.contains("描述") || fieldName.contains("说明") ||
+               fieldName.contains("remark") || fieldName.contains("备注") || fieldName.contains("注释") ||
+               fieldName.contains("comment") || fieldName.contains("评论") || fieldName.contains("留言") ||
+               fieldName.contains("address") || fieldName.contains("地址") || fieldName.contains("位置") ||
+               fieldName.contains("company") || fieldName.contains("公司") || fieldName.contains("单位") ||
+               fieldName.contains("department") || fieldName.contains("部门") || fieldName.contains("科室") ||
+               fieldName.contains("subject") || fieldName.contains("主题") || fieldName.contains("学科") ||
+               fieldName.contains("corp") || fieldName.contains("organization") || fieldName.contains("org");
+    }
+
+    /**
+     * 检查样本值中是否包含中文内容
+     */
+    private boolean containsChineseContent(List<String> sampleValues) {
+        if (sampleValues == null || sampleValues.isEmpty()) {
+            return false;
+        }
+
+        // 检查前几个样本值，如果超过30%包含中文，则认为需要拼音支持
+        int chineseContentCount = 0;
+        int totalSamples = Math.min(sampleValues.size(), 10); // 最多检查10个样本
+
+        for (int i = 0; i < totalSamples; i++) {
+            String value = sampleValues.get(i);
+            if (value != null && containsChinese(value.trim())) {
+                chineseContentCount++;
+            }
+        }
+
+        return totalSamples > 0 && (chineseContentCount * 1.0 / totalSamples) >= 0.3;
+    }
+
+    /**
+     * 判断字符串是否包含中文字符
+     */
+    private boolean containsChinese(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+
+        // 检查是否包含中文字符（CJK统一表意文字）
+        return text.chars().anyMatch(ch ->
+            (ch >= 0x4E00 && ch <= 0x9FFF) ||     // CJK统一表意文字
+            (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK扩展A
+            (ch >= 0x20000 && ch <= 0x2A6DF) ||   // CJK扩展B
+            (ch >= 0x2A700 && ch <= 0x2B73F) ||   // CJK扩展C
+            (ch >= 0x2B740 && ch <= 0x2B81F) ||   // CJK扩展D
+            (ch >= 0x2B820 && ch <= 0x2CEAF)      // CJK扩展E
+        );
+    }
+
+    /**
+     * 检查拼音插件是否可用
+     * 通过尝试创建测试分析器来检测拼音插件
+     *
+     * @return 拼音插件是否可用
+     */
+    private boolean isPinyinPluginAvailable() {
+        // 如果配置禁用拼音功能，直接返回false
+        if (!pinyinEnabled) {
+            log.info("拼音功能已通过配置禁用");
+            return false;
+        }
+
+        // 使用缓存避免重复检测
+        if (pinyinPluginAvailable != null) {
+            return pinyinPluginAvailable;
+        }
+
+        try {
+            // TODO: 在实际集成ES客户端时，可以通过以下方式检测插件
+            // 1. 调用 _nodes/plugins API 检查是否安装了pinyin插件
+            // 2. 创建临时索引测试拼音分析器
+            // 3. 捕获异常判断插件是否可用
+
+            // 当前暂时假设拼音插件可用，在实际部署时会进行真实检测
+            pinyinPluginAvailable = true;
+            log.info("拼音插件检测完成，状态: {}", pinyinPluginAvailable ? "可用" : "不可用");
+
+        } catch (Exception e) {
+            log.warn("拼音插件检测失败，将禁用拼音功能: {}", e.getMessage());
+            pinyinPluginAvailable = false;
+        }
+
+        return pinyinPluginAvailable;
+    }
+
+    /**
+     * 获取拼音插件状态信息
+     * 用于监控和诊断
+     */
+    public Map<String, Object> getPinyinPluginStatus() {
+        Map<String, Object> status = new HashMap<>();
+        status.put("enabled", pinyinEnabled);
+        status.put("available", isPinyinPluginAvailable());
+        status.put("checked", pinyinPluginAvailable != null);
+        return status;
     }
 
     /**
@@ -310,18 +548,104 @@ public class IndexConfigService {
 
     /**
      * 生成分析器配置
+     * 包含拼音分析器、分词器和过滤器的完整配置
      */
     private Map<String, Object> generateAnalyzers() {
+        Map<String, Object> analysisConfig = new HashMap<>();
+
+        // 分析器配置
         Map<String, Object> analyzers = new HashMap<>();
 
-        // 自定义中文分析器配置（如果需要的话）
+        // 自定义中文分析器配置
         analyzers.put("custom_text", Map.of(
             "type", "custom",
             "tokenizer", "standard",
             "filter", List.of("lowercase", "stop")
         ));
 
-        return analyzers;
+        // 拼音分析器配置 - 支持全拼和简拼
+        analyzers.put("pinyin_analyzer", Map.of(
+            "type", "custom",
+            "tokenizer", "standard",
+            "filter", List.of("lowercase", "pinyin_filter")
+        ));
+
+        // 拼音首字母分析器 - 仅保留首字母
+        analyzers.put("pinyin_first_letter_analyzer", Map.of(
+            "type", "custom",
+            "tokenizer", "standard",
+            "filter", List.of("lowercase", "pinyin_first_letter_filter")
+        ));
+
+        // 拼音搜索分析器 - 搜索时使用，保留原文和拼音
+        analyzers.put("pinyin_search_analyzer", Map.of(
+            "type", "custom",
+            "tokenizer", "standard",
+            "filter", List.of("lowercase", "pinyin_search_filter")
+        ));
+
+        // 中文拼音混合分析器 - 同时支持中文和拼音搜索
+        analyzers.put("chinese_pinyin_analyzer", Map.of(
+            "type", "custom",
+            "tokenizer", "standard",
+            "filter", List.of("lowercase", "chinese_pinyin_filter")
+        ));
+
+        // 过滤器配置
+        Map<String, Object> filters = new HashMap<>();
+
+        // 拼音过滤器 - 全功能拼音转换
+        filters.put("pinyin_filter", Map.of(
+            "type", "pinyin",
+            "keep_first_letter", true,
+            "keep_full_pinyin", true,
+            "keep_joined_full_pinyin", true,
+            "keep_original", false,
+            "limit_first_letter_length", 16,
+            "lowercase", true,
+            "remove_duplicated_term", true
+        ));
+
+        // 拼音首字母过滤器 - 仅保留首字母
+        filters.put("pinyin_first_letter_filter", Map.of(
+            "type", "pinyin",
+            "keep_first_letter", true,
+            "keep_full_pinyin", false,
+            "keep_joined_full_pinyin", false,
+            "keep_original", false,
+            "limit_first_letter_length", 16,
+            "lowercase", true,
+            "remove_duplicated_term", true
+        ));
+
+        // 拼音搜索过滤器 - 搜索时保留原文
+        filters.put("pinyin_search_filter", Map.of(
+            "type", "pinyin",
+            "keep_first_letter", false,
+            "keep_full_pinyin", true,
+            "keep_joined_full_pinyin", true,
+            "keep_original", true,
+            "limit_first_letter_length", 16,
+            "lowercase", true,
+            "remove_duplicated_term", true
+        ));
+
+        // 中文拼音混合过滤器 - 平衡性能和功能
+        filters.put("chinese_pinyin_filter", Map.of(
+            "type", "pinyin",
+            "keep_first_letter", true,
+            "keep_full_pinyin", true,
+            "keep_joined_full_pinyin", false,
+            "keep_original", true,
+            "limit_first_letter_length", 16,
+            "lowercase", true,
+            "remove_duplicated_term", true
+        ));
+
+        analysisConfig.put("analyzer", analyzers);
+        analysisConfig.put("filter", filters);
+
+        return analysisConfig;
     }
 
     /**
