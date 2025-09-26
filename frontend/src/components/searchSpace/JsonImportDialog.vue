@@ -153,7 +153,7 @@
           </div>
 
           <!-- 步骤2: JSON预览 -->
-          <div v-if="currentStep === 1" class="h-full flex flex-col space-y-6">
+          <div v-if="currentStep === 1" class="h-full flex flex-col space-y-6 pb-6">
             <div class="text-center flex-shrink-0 mt-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 JSON数据预览
@@ -221,7 +221,7 @@
                   数据预览 (前{{ Math.min(jsonPreview.length, 5) }}条记录)
                 </h4>
                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <pre class="text-xs text-gray-700 dark:text-gray-300 overflow-auto whitespace-pre-wrap max-h-80">{{ JSON.stringify(jsonPreview.slice(0, 5), null, 2) }}</pre>
+                  <pre class="text-xs text-gray-700 dark:text-gray-300 overflow-auto whitespace-pre-wrap max-h-60 mb-4">{{ JSON.stringify(jsonPreview.slice(0, 5), null, 2) }}</pre>
                 </div>
               </div>
             </div>

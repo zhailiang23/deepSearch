@@ -42,48 +42,21 @@ const routes = [
         }
       },
       {
+        path: 'roles',
+        name: 'Roles',
+        component: () => import('@/pages/roles/RoleManage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '角色管理'
+        }
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/pages/Settings.vue'),
         meta: {
           requiresAuth: true,
           title: '设置'
-        }
-      }
-    ]
-  },
-  {
-    path: '/old',
-    component: () => import('@/layouts/DefaultLayout.vue'),
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '/users',
-        name: 'Users',
-        component: () => import('@/pages/users/UserList.vue'),
-        meta: {
-          requiresAuth: true,
-          requiredRole: 'ADMIN',
-          permissions: ['read:users'],
-          title: '用户管理'
-        }
-      },
-      {
-        path: '/settings',
-        name: 'Settings',
-        component: () => import('@/pages/Settings.vue'),
-        meta: {
-          requiresAuth: true,
-          title: '系统设置'
-        }
-      },
-      {
-        path: '/search-spaces',
-        name: 'OldSearchSpaces',
-        component: () => import('@/pages/searchSpace/SearchSpaceManage.vue'),
-        meta: {
-          requiresAuth: true,
-          title: '搜索空间管理（旧版）'
         }
       }
     ]

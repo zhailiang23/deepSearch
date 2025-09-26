@@ -1,14 +1,5 @@
 <template>
   <div class="search-data-manage-page h-full bg-white flex flex-col min-w-0 overflow-hidden w-full max-w-full">
-    <!-- 页面头部 -->
-    <div class="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <h1 class="text-2xl font-bold text-gray-900">搜索数据管理</h1>
-        </div>
-
-      </div>
-    </div>
 
     <!-- 主要内容区域 -->
     <div class="flex-1 overflow-hidden w-full max-w-full">
