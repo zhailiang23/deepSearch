@@ -35,27 +35,10 @@ public class ChannelMapper {
         dto.setName(entity.getName());
         dto.setCode(entity.getCode());
         dto.setDescription(entity.getDescription());
-        dto.setType(entity.getType());
-        dto.setStatus(entity.getStatus());
-        dto.setContactName(entity.getContactName());
-        dto.setContactPhone(entity.getContactPhone());
-        dto.setContactEmail(entity.getContactEmail());
-        dto.setAddress(entity.getAddress());
-        dto.setCommissionRate(entity.getCommissionRate());
-        dto.setMonthlyTarget(entity.getMonthlyTarget());
-        dto.setTotalSales(entity.getTotalSales());
-        dto.setCurrentMonthSales(entity.getCurrentMonthSales());
-        dto.setLastActivityAt(entity.getLastActivityAt());
-        dto.setSortOrder(entity.getSortOrder());
-        dto.setVersion(entity.getVersion());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         dto.setCreatedBy(entity.getCreatedBy());
         dto.setUpdatedBy(entity.getUpdatedBy());
-
-        // 设置计算字段
-        dto.setPerformanceRatio(entity.getMonthlyTargetCompletion());
-        dto.setTargetAchieved(entity.isTargetAchieved());
 
         return dto;
     }
@@ -91,14 +74,6 @@ public class ChannelMapper {
         entity.setName(request.getName());
         entity.setCode(request.getCode());
         entity.setDescription(request.getDescription());
-        entity.setType(request.getType());
-        entity.setContactName(request.getContactPerson());
-        entity.setContactPhone(request.getContactPhone());
-        entity.setContactEmail(request.getContactEmail());
-        entity.setAddress(request.getAddress());
-        entity.setCommissionRate(request.getCommissionRate());
-        entity.setMonthlyTarget(request.getMonthlyTarget());
-        entity.setSortOrder(request.getSortOrder());
 
         return entity;
     }
@@ -120,37 +95,6 @@ public class ChannelMapper {
         if (request.getDescription() != null) {
             target.setDescription(request.getDescription());
         }
-        if (request.getType() != null) {
-            target.setType(request.getType());
-        }
-        if (request.getContactPerson() != null) {
-            target.setContactName(request.getContactPerson());
-        }
-        if (request.getContactPhone() != null) {
-            target.setContactPhone(request.getContactPhone());
-        }
-        if (request.getContactEmail() != null) {
-            target.setContactEmail(request.getContactEmail());
-        }
-        if (request.getAddress() != null) {
-            target.setAddress(request.getAddress());
-        }
-        if (request.getWebsite() != null) {
-            // 注意：实体中没有website字段，这里忽略
-            // 如果需要支持网站字段，需要先在实体中添加该字段
-        }
-        if (request.getCommissionRate() != null) {
-            target.setCommissionRate(request.getCommissionRate());
-        }
-        if (request.getMonthlyTarget() != null) {
-            target.setMonthlyTarget(request.getMonthlyTarget());
-        }
-        if (request.getSortOrder() != null) {
-            target.setSortOrder(request.getSortOrder());
-        }
-
-        // 更新最后活动时间
-        target.updateActivity();
     }
 
     /**
@@ -169,19 +113,6 @@ public class ChannelMapper {
         entity.setName(dto.getName());
         entity.setCode(dto.getCode());
         entity.setDescription(dto.getDescription());
-        entity.setType(dto.getType());
-        entity.setStatus(dto.getStatus());
-        entity.setContactName(dto.getContactName());
-        entity.setContactPhone(dto.getContactPhone());
-        entity.setContactEmail(dto.getContactEmail());
-        entity.setAddress(dto.getAddress());
-        entity.setCommissionRate(dto.getCommissionRate());
-        entity.setMonthlyTarget(dto.getMonthlyTarget());
-        entity.setTotalSales(dto.getTotalSales());
-        entity.setCurrentMonthSales(dto.getCurrentMonthSales());
-        entity.setLastActivityAt(dto.getLastActivityAt());
-        entity.setSortOrder(dto.getSortOrder());
-        entity.setVersion(dto.getVersion());
 
         return entity;
     }
@@ -203,19 +134,6 @@ public class ChannelMapper {
         target.setName(source.getName());
         target.setCode(source.getCode());
         target.setDescription(source.getDescription());
-        target.setType(source.getType());
-        target.setStatus(source.getStatus());
-        target.setContactName(source.getContactName());
-        target.setContactPhone(source.getContactPhone());
-        target.setContactEmail(source.getContactEmail());
-        target.setAddress(source.getAddress());
-        target.setCommissionRate(source.getCommissionRate());
-        target.setMonthlyTarget(source.getMonthlyTarget());
-        target.setTotalSales(source.getTotalSales());
-        target.setCurrentMonthSales(source.getCurrentMonthSales());
-        target.setLastActivityAt(source.getLastActivityAt());
-        target.setSortOrder(source.getSortOrder());
-        target.setVersion(source.getVersion());
 
         return target;
     }

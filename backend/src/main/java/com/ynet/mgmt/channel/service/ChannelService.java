@@ -1,12 +1,9 @@
 package com.ynet.mgmt.channel.service;
 
 import com.ynet.mgmt.channel.dto.*;
-import com.ynet.mgmt.channel.entity.ChannelStatus;
-import com.ynet.mgmt.channel.entity.ChannelType;
 import com.ynet.mgmt.common.dto.PageResult;
 import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -63,63 +60,18 @@ public interface ChannelService {
     PageResult<ChannelDTO> listChannels(Pageable pageable);
 
     /**
-     * 带条件分页查询渠道列表
-     * @param request 查询条件
+     * 关键字搜索渠道（分页）
+     * @param keyword 搜索关键字
+     * @param pageable 分页参数
      * @return 分页结果
      */
-    PageResult<ChannelDTO> listChannels(ChannelQueryRequest request);
-
-    // ========== 状态管理 ==========
+    PageResult<ChannelDTO> searchChannels(String keyword, Pageable pageable);
 
     /**
-     * 激活渠道
-     * @param id 渠道ID
-     * @return 更新后的渠道
-     */
-    ChannelDTO activateChannel(Long id);
-
-    /**
-     * 停用渠道
-     * @param id 渠道ID
-     * @return 更新后的渠道
-     */
-    ChannelDTO deactivateChannel(Long id);
-
-    /**
-     * 暂停渠道
-     * @param id 渠道ID
-     * @return 更新后的渠道
-     */
-    ChannelDTO suspendChannel(Long id);
-
-    /**
-     * 恢复渠道
-     * @param id 渠道ID
-     * @return 更新后的渠道
-     */
-    ChannelDTO restoreChannel(Long id);
-
-    // ========== 查询方法 ==========
-
-    /**
-     * 获取所有激活渠道列表
-     * @return 激活渠道列表
-     */
-    List<ChannelDTO> getActiveChannels();
-
-    /**
-     * 根据类型获取渠道列表
-     * @param type 渠道类型
+     * 获取所有渠道列表
      * @return 渠道列表
      */
-    List<ChannelDTO> getChannelsByType(ChannelType type);
-
-    /**
-     * 根据状态获取渠道列表
-     * @param status 渠道状态
-     * @return 渠道列表
-     */
-    List<ChannelDTO> getChannelsByStatus(ChannelStatus status);
+    List<ChannelDTO> getAllChannels();
 
     // ========== 验证方法 ==========
 
@@ -152,51 +104,4 @@ public interface ChannelService {
      * @return 是否可用
      */
     boolean isNameAvailable(String name, Long excludeId);
-
-    // ========== 销售管理 ==========
-
-    /**
-     * 更新销售数据
-     * @param id 渠道ID
-     * @param request 销售数据更新请求
-     * @return 更新后的渠道信息
-     */
-    ChannelDTO updateSales(Long id, UpdateSalesRequest request);
-
-    /**
-     * 重置月度销售
-     * @param id 渠道ID
-     * @return 更新后的渠道信息
-     */
-    ChannelDTO resetMonthlySales(Long id);
-
-    /**
-     * 获取销售排行
-     * @param limit 排行榜数量
-     * @return 销售业绩排行榜
-     */
-    List<ChannelDTO> getTopPerformingChannels(int limit);
-
-    // ========== 统计分析 ==========
-
-    /**
-     * 获取渠道统计信息
-     * @return 统计信息
-     */
-    ChannelStatistics getChannelStatistics();
-
-    // ========== 批量操作 ==========
-
-    /**
-     * 批量状态变更
-     * @param request 批量状态更新请求
-     * @return 更新后的渠道列表
-     */
-    List<ChannelDTO> batchUpdateStatus(BatchStatusUpdateRequest request);
-
-    /**
-     * 批量删除渠道
-     * @param channelIds 渠道ID列表
-     */
-    void batchDeleteChannels(List<Long> channelIds);
 }

@@ -49,16 +49,6 @@ public class ChannelExceptionHandler {
                 .body(ApiResponse.error(e.getMessage(), "409"));
     }
 
-    /**
-     * 处理渠道状态异常
-     */
-    @ExceptionHandler(ChannelStatusException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiResponse<Void>> handleChannelStatus(ChannelStatusException e) {
-        logger.warn("渠道状态错误: {}", e.getMessage());
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.badRequest(e.getMessage()));
-    }
 
     /**
      * 处理渠道验证异常

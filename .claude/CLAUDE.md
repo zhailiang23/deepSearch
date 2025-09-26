@@ -57,6 +57,7 @@ Using the test-runner agent ensures:
 - 前端整体采用淡绿色主题
 - 只使用 3000 和 8080 端口启动前后端服务，端口被占用时杀死占用的进程
 - IMPORTANT:编写代码前用 context7 工具搜集信息
+- 后端日志文件为 backend/logs/application.log
 - NO PARTIAL IMPLEMENTATION
 - NO SIMPLIFICATION : no "//This is simplified stuff for now, complete implementation would blablabla"
 - NO CODE DUPLICATION : check existing codebase to reuse functions and constants Read files before writing new functions. Use common sense function name to find them easily.
