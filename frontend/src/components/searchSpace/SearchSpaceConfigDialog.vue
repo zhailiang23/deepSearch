@@ -61,7 +61,9 @@
       </div>
 
       <!-- Tab 内容 -->
-      <div class="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+      <div :class="[
+        activeTab === 'mapping' ? 'h-[calc(90vh-140px)]' : 'px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]'
+      ]">
         <!-- 查看详情 Tab -->
         <div v-if="activeTab === 'view'" class="space-y-6">
           <!-- 基本信息 -->
@@ -181,24 +183,19 @@
         </div>
 
         <!-- Mapping 配置 Tab -->
-        <div v-else-if="activeTab === 'mapping'" class="space-y-6">
-          <div class="text-center py-12">
-            <Settings class="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Mapping 配置
-            </h4>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              这里将显示 JSON 编辑器来配置索引映射
-            </p>
-            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 text-left">
-              <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">预留功能区域：</div>
-              <ul class="text-sm text-gray-500 dark:text-gray-400 space-y-1">
-                <li>• JSON 编辑器组件</li>
-                <li>• 映射字段可视化编辑</li>
-                <li>• 语法验证和错误提示</li>
-                <li>• 保存和应用配置</li>
-              </ul>
-            </div>
+        <div v-else-if="activeTab === 'mapping'" class="h-full">
+          <MappingConfigTab
+            v-if="searchSpace?.id"
+            v-model="mappingConfig"
+            :space-id="searchSpace.id"
+            @save="handleMappingSave"
+            @validate="handleMappingValidate"
+            @load-error="handleMappingLoadError"
+            @save-error="handleMappingSaveError"
+            @save-success="handleMappingSaveSuccess"
+          />
+          <div v-else class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+            无法加载映射配置：搜索空间ID不可用
           </div>
         </div>
       </div>
@@ -211,6 +208,7 @@ import { ref, watch } from 'vue'
 import { X, Eye, Edit, Settings } from 'lucide-vue-next'
 import SearchSpaceForm from './SearchSpaceForm.vue'
 import SearchSpaceStatusBadge from './SearchSpaceStatusBadge.vue'
+import MappingConfigTab from './MappingConfigTab.vue'
 import type { SearchSpace, UpdateSearchSpaceRequest } from '@/types/searchSpace'
 
 interface Props {
@@ -223,6 +221,7 @@ interface Props {
 interface Emits {
   (e: 'close'): void
   (e: 'submit', data: UpdateSearchSpaceRequest): void
+  (e: 'saveMappingConfig', data: { searchSpaceId: number, mappingConfig: string }): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -235,10 +234,17 @@ const emit = defineEmits<Emits>()
 // 当前激活的 Tab
 const activeTab = ref<'view' | 'edit' | 'mapping'>(props.initialTab)
 
+// Mapping 配置相关状态
+const mappingConfig = ref('')
+const mappingSaving = ref(false)
+const mappingValid = ref(true)
+
 // 监听 props 变化
 watch(() => props.open, (newOpen) => {
   if (newOpen) {
     activeTab.value = props.initialTab
+    // 当弹窗打开时初始化 mapping 配置
+    initializeMappingConfig()
   }
 })
 
@@ -261,5 +267,82 @@ const handleFormSubmit = (data: UpdateSearchSpaceRequest) => {
   emit('submit', data)
   // 提交成功后切换到查看 tab
   activeTab.value = 'view'
+}
+
+// 处理 Mapping 配置保存
+const handleMappingSave = async (config: string) => {
+  if (!props.searchSpace?.id) return
+
+  try {
+    mappingSaving.value = true
+    emit('saveMappingConfig', {
+      searchSpaceId: props.searchSpace.id,
+      mappingConfig: config
+    })
+  } finally {
+    mappingSaving.value = false
+  }
+}
+
+// 处理 Mapping 配置验证
+const handleMappingValidate = (isValid: boolean) => {
+  mappingValid.value = isValid
+}
+
+// 处理 Mapping 加载错误
+const handleMappingLoadError = (error: string) => {
+  console.error('Mapping 加载错误:', error)
+  // 这里可以添加通知或者其他处理逻辑
+}
+
+// 处理 Mapping 保存错误
+const handleMappingSaveError = (error: string) => {
+  console.error('Mapping 保存错误:', error)
+  mappingSaving.value = false
+  // 这里可以添加通知或者其他处理逻辑
+}
+
+// 处理 Mapping 保存成功
+const handleMappingSaveSuccess = () => {
+  console.log('Mapping 保存成功')
+  mappingSaving.value = false
+  // 这里可以添加成功通知
+}
+
+// 初始化默认的 mapping 配置
+const initializeMappingConfig = () => {
+  if (!mappingConfig.value) {
+    mappingConfig.value = JSON.stringify({
+      "mappings": {
+        "properties": {
+          "title": {
+            "type": "text",
+            "analyzer": "standard"
+          },
+          "content": {
+            "type": "text",
+            "analyzer": "standard"
+          },
+          "created_at": {
+            "type": "date"
+          },
+          "updated_at": {
+            "type": "date"
+          }
+        }
+      },
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0,
+        "analysis": {
+          "analyzer": {
+            "default": {
+              "type": "standard"
+            }
+          }
+        }
+      }
+    }, null, 2)
+  }
 }
 </script>

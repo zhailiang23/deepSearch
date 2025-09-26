@@ -9,6 +9,7 @@ import com.ynet.mgmt.searchspace.service.SearchSpaceService;
 import com.ynet.mgmt.searchspace.service.FileValidationService;
 import com.ynet.mgmt.searchspace.service.FileStorageService;
 import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
+import com.ynet.mgmt.searchspace.exception.SearchSpaceException;
 import com.ynet.mgmt.jsonimport.service.DataImportService;
 import com.ynet.mgmt.jsonimport.service.JsonAnalysisService;
 import com.ynet.mgmt.jsonimport.service.IndexConfigService;
@@ -515,19 +516,35 @@ public class SearchSpaceController {
         logger.info("获取索引mapping配置: searchSpaceId={}", id);
 
         try {
-            // 1. 验证搜索空间是否存在
-            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(id);
-            logger.debug("搜索空间验证通过: id={}, name={}, code={}",
-                    searchSpace.getId(), searchSpace.getName(), searchSpace.getCode());
-
-            // 2. 获取索引mapping配置
-            // 目前暂时返回模拟的mapping配置，后续集成实际的Elasticsearch逻辑
-            String mockMapping = generateMockMapping(searchSpace);
+            // 调用服务层获取真实的索引mapping配置
+            String mappingJson = searchSpaceService.getIndexMapping(id);
 
             logger.info("索引mapping配置获取成功: searchSpaceId={}, mappingSize={}",
-                    id, mockMapping.length());
+                    id, mappingJson.length());
 
-            return ResponseEntity.ok(com.ynet.mgmt.common.dto.ApiResponse.success("获取mapping配置成功", mockMapping));
+            return ResponseEntity.ok(com.ynet.mgmt.common.dto.ApiResponse.success("获取mapping配置成功", mappingJson));
+
+        } catch (SearchSpaceException e) {
+            logger.warn("获取mapping配置业务异常: searchSpaceId={}, error={}", id, e.getMessage());
+
+            // 根据异常类型返回不同的HTTP状态码
+            if (e.getErrorCode() != null) {
+                switch (e.getErrorCode()) {
+                    case "SEARCH_SPACE_NOT_FOUND":
+                    case "INDEX_NOT_FOUND":
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.notFound(e.getMessage()));
+                    case "ELASTICSEARCH_CONNECTION_FAILED":
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error("Elasticsearch服务不可用"));
+                    default:
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
 
         } catch (RuntimeException e) {
             String message = e.getMessage();
@@ -573,43 +590,49 @@ public class SearchSpaceController {
                 mappingJson != null ? mappingJson.length() : 0);
 
         try {
-            // 1. 验证搜索空间是否存在
-            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(id);
-            logger.debug("搜索空间验证通过: id={}, name={}, code={}",
-                    searchSpace.getId(), searchSpace.getName(), searchSpace.getCode());
-
-            // 2. 验证JSON格式
+            // 基本验证
             if (mappingJson == null || mappingJson.trim().isEmpty()) {
                 logger.warn("mapping配置为空: searchSpaceId={}", id);
                 return ResponseEntity.badRequest()
                         .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("mapping配置不能为空"));
             }
 
-            validateJsonFormat(mappingJson);
-
-            // 3. 更新mapping配置
-            // 目前暂时记录日志，后续集成实际的Elasticsearch逻辑
-            logger.info("模拟更新mapping配置: searchSpaceId={}, code={}, mappingPreview={}",
-                    id, searchSpace.getCode(),
-                    mappingJson.length() > 100 ? mappingJson.substring(0, 100) + "..." : mappingJson);
-
-            // 4. 更新搜索空间的mapping信息（如果服务层支持）
-            try {
-                searchSpaceService.updateIndexMapping(id, mappingJson);
-            } catch (Exception e) {
-                logger.warn("服务层暂不支持mapping更新，跳过: {}", e.getMessage());
-                // 暂时忽略，因为服务层可能还未实现此方法
-            }
+            // 调用服务层更新索引mapping配置
+            searchSpaceService.updateIndexMapping(id, mappingJson);
 
             logger.info("索引mapping配置更新成功: searchSpaceId={}", id);
 
             // 返回204 No Content状态码，表示更新成功但无返回内容
             return ResponseEntity.noContent().build();
 
-        } catch (JsonProcessingException e) {
-            logger.warn("JSON格式验证失败: searchSpaceId={}, error={}", id, e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("JSON格式错误: " + e.getMessage()));
+        } catch (SearchSpaceException e) {
+            logger.warn("更新mapping配置业务异常: searchSpaceId={}, error={}", id, e.getMessage());
+
+            // 根据异常类型返回不同的HTTP状态码
+            if (e.getErrorCode() != null) {
+                switch (e.getErrorCode()) {
+                    case "SEARCH_SPACE_NOT_FOUND":
+                    case "INDEX_NOT_FOUND":
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.notFound(e.getMessage()));
+                    case "MAPPING_VALIDATION_FAILED":
+                        return ResponseEntity.badRequest()
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest(e.getMessage()));
+                    case "ELASTICSEARCH_CONNECTION_FAILED":
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error("Elasticsearch服务不可用"));
+                    case "MAPPING_UPDATE_FAILED":
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error("映射更新失败: " + e.getMessage()));
+                    default:
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+
 
         } catch (RuntimeException e) {
             String message = e.getMessage();
@@ -630,56 +653,5 @@ public class SearchSpaceController {
         }
     }
 
-    /**
-     * 生成模拟的mapping配置
-     * 在实际Elasticsearch集成之前使用
-     *
-     * @param searchSpace 搜索空间信息
-     * @return JSON格式的mapping配置
-     */
-    private String generateMockMapping(SearchSpaceDTO searchSpace) {
-        // 生成基础的mapping结构
-        Map<String, Object> mapping = new HashMap<>();
-        Map<String, Object> properties = new HashMap<>();
-
-        // 添加一些基础字段的mapping
-        properties.put("id", Map.of("type", "keyword"));
-        properties.put("title", Map.of("type", "text", "analyzer", "standard"));
-        properties.put("content", Map.of("type", "text", "analyzer", "standard"));
-        properties.put("created_at", Map.of("type", "date", "format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"));
-        properties.put("updated_at", Map.of("type", "date", "format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"));
-
-        mapping.put("properties", properties);
-
-        // 添加索引设置
-        Map<String, Object> settings = new HashMap<>();
-        settings.put("number_of_shards", 1);
-        settings.put("number_of_replicas", 0);
-
-        Map<String, Object> fullMapping = new HashMap<>();
-        fullMapping.put("settings", settings);
-        fullMapping.put("mappings", mapping);
-
-        // 转换为JSON字符串
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(fullMapping);
-        } catch (JsonProcessingException e) {
-            logger.error("生成模拟mapping配置失败", e);
-            return "{\n  \"mappings\": {\n    \"properties\": {\n      \"id\": { \"type\": \"keyword\" },\n      \"title\": { \"type\": \"text\" },\n      \"content\": { \"type\": \"text\" }\n    }\n  }\n}";
-        }
-    }
-
-    /**
-     * 验证JSON格式的有效性
-     *
-     * @param jsonString 待验证的JSON字符串
-     * @throws JsonProcessingException 当JSON格式无效时抛出异常
-     */
-    private void validateJsonFormat(String jsonString) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        // 尝试解析JSON，如果格式无效会抛出JsonProcessingException
-        mapper.readTree(jsonString);
-    }
 
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.searchspace.dto.*;
 import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
+import com.ynet.mgmt.searchspace.exception.SearchSpaceException;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +43,28 @@ class SearchSpaceControllerTest {
 
     @MockBean
     private SearchSpaceService searchSpaceService;
+
+    // 其他依赖项的Mock，只是为了满足Controller构造函数
+    @MockBean
+    private com.ynet.mgmt.searchspace.service.FileValidationService fileValidationService;
+
+    @MockBean
+    private com.ynet.mgmt.searchspace.service.FileStorageService fileStorageService;
+
+    @MockBean
+    private com.ynet.mgmt.searchspace.service.ElasticsearchManager elasticsearchManager;
+
+    @MockBean
+    private com.ynet.mgmt.jsonimport.service.DataImportService dataImportService;
+
+    @MockBean
+    private com.ynet.mgmt.jsonimport.service.JsonAnalysisService jsonAnalysisService;
+
+    @MockBean
+    private com.ynet.mgmt.jsonimport.service.IndexConfigService indexConfigService;
+
+    @MockBean
+    private co.elastic.clients.elasticsearch.ElasticsearchClient elasticsearchClient;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -346,5 +369,295 @@ class SearchSpaceControllerTest {
         request.setDescription("更新后的描述");
         request.setStatus(SearchSpaceStatus.ACTIVE);
         return request;
+    }
+
+    // ========== 索引映射配置相关测试 ==========
+
+    @Test
+    @DisplayName("获取索引映射配置 - 成功")
+    void testGetIndexMapping_Success() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String mockMappingJson = """
+                {
+                  "properties": {
+                    "title": {
+                      "type": "text",
+                      "analyzer": "ik_max_word"
+                    },
+                    "content": {
+                      "type": "text",
+                      "analyzer": "ik_max_word"
+                    },
+                    "createTime": {
+                      "type": "date",
+                      "format": "yyyy-MM-dd HH:mm:ss"
+                    }
+                  }
+                }
+                """;
+
+        when(searchSpaceService.getIndexMapping(searchSpaceId))
+                .thenReturn(mockMappingJson);
+
+        // When & Then
+        mockMvc.perform(get("/api/search-spaces/{id}/mapping", searchSpaceId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("获取mapping配置成功"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data").isString());
+
+        verify(searchSpaceService, times(1)).getIndexMapping(searchSpaceId);
+    }
+
+    @Test
+    @DisplayName("获取索引映射配置 - 搜索空间不存在")
+    void testGetIndexMapping_SearchSpaceNotFound() throws Exception {
+        // Given
+        Long searchSpaceId = 999L;
+        SearchSpaceException exception = SearchSpaceException.searchSpaceNotFound(searchSpaceId);
+
+        when(searchSpaceService.getIndexMapping(searchSpaceId))
+                .thenThrow(exception);
+
+        // When & Then
+        mockMvc.perform(get("/api/search-spaces/{id}/mapping", searchSpaceId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("搜索空间不存在: " + searchSpaceId));
+
+        verify(searchSpaceService, times(1)).getIndexMapping(searchSpaceId);
+    }
+
+    @Test
+    @DisplayName("获取索引映射配置 - 索引不存在")
+    void testGetIndexMapping_IndexNotFound() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        SearchSpaceException exception = SearchSpaceException.indexNotFound(searchSpaceId, "test_index");
+
+        when(searchSpaceService.getIndexMapping(searchSpaceId))
+                .thenThrow(exception);
+
+        // When & Then
+        mockMvc.perform(get("/api/search-spaces/{id}/mapping", searchSpaceId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("搜索空间对应的索引不存在: test_index (搜索空间ID: " + searchSpaceId + ")"));
+
+        verify(searchSpaceService, times(1)).getIndexMapping(searchSpaceId);
+    }
+
+    @Test
+    @DisplayName("获取索引映射配置 - Elasticsearch连接失败")
+    void testGetIndexMapping_ElasticsearchConnectionFailed() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        SearchSpaceException exception = SearchSpaceException.elasticsearchConnectionFailed(
+                searchSpaceId, "GET_MAPPING", new RuntimeException("Connection refused"));
+
+        when(searchSpaceService.getIndexMapping(searchSpaceId))
+                .thenThrow(exception);
+
+        // When & Then
+        mockMvc.perform(get("/api/search-spaces/{id}/mapping", searchSpaceId))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Elasticsearch服务不可用"));
+
+        verify(searchSpaceService, times(1)).getIndexMapping(searchSpaceId);
+    }
+
+    @Test
+    @DisplayName("获取索引映射配置 - 未知异常")
+    void testGetIndexMapping_UnknownException() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        RuntimeException exception = new RuntimeException("Unexpected error");
+
+        when(searchSpaceService.getIndexMapping(searchSpaceId))
+                .thenThrow(exception);
+
+        // When & Then
+        mockMvc.perform(get("/api/search-spaces/{id}/mapping", searchSpaceId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("获取mapping配置失败: Unexpected error"));
+
+        verify(searchSpaceService, times(1)).getIndexMapping(searchSpaceId);
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - 成功")
+    void testUpdateIndexMapping_Success() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String mappingJson = """
+                {
+                  "properties": {
+                    "title": {
+                      "type": "text",
+                      "analyzer": "ik_max_word"
+                    },
+                    "content": {
+                      "type": "text",
+                      "analyzer": "ik_max_word"
+                    }
+                  }
+                }
+                """;
+
+        doNothing().when(searchSpaceService).updateIndexMapping(searchSpaceId, mappingJson);
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mappingJson))
+                .andExpect(status().isNoContent());
+
+        verify(searchSpaceService, times(1)).updateIndexMapping(searchSpaceId, mappingJson);
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - JSON为空")
+    void testUpdateIndexMapping_EmptyJson() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String emptyJson = "";
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(emptyJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("mapping配置不能为空"));
+
+        verify(searchSpaceService, never()).updateIndexMapping(anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - JSON为null")
+    void testUpdateIndexMapping_NullJson() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("mapping配置不能为空"));
+
+        verify(searchSpaceService, never()).updateIndexMapping(anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - 搜索空间不存在")
+    void testUpdateIndexMapping_SearchSpaceNotFound() throws Exception {
+        // Given
+        Long searchSpaceId = 999L;
+        String mappingJson = "{\"properties\": {\"title\": {\"type\": \"text\"}}}";
+        SearchSpaceException exception = SearchSpaceException.searchSpaceNotFound(searchSpaceId);
+
+        doThrow(exception).when(searchSpaceService).updateIndexMapping(searchSpaceId, mappingJson);
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mappingJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("搜索空间不存在: " + searchSpaceId));
+
+        verify(searchSpaceService, times(1)).updateIndexMapping(searchSpaceId, mappingJson);
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - 映射验证失败")
+    void testUpdateIndexMapping_MappingValidationFailed() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String invalidMappingJson = "{\"invalid\": \"mapping\"}";
+        SearchSpaceException exception = SearchSpaceException.mappingValidationFailed(
+                searchSpaceId, "Invalid field type");
+
+        doThrow(exception).when(searchSpaceService).updateIndexMapping(searchSpaceId, invalidMappingJson);
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidMappingJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("映射配置验证失败: Invalid field type (搜索空间ID: " + searchSpaceId + ")"));
+
+        verify(searchSpaceService, times(1)).updateIndexMapping(searchSpaceId, invalidMappingJson);
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - Elasticsearch连接失败")
+    void testUpdateIndexMapping_ElasticsearchConnectionFailed() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String mappingJson = "{\"properties\": {\"title\": {\"type\": \"text\"}}}";
+        SearchSpaceException exception = SearchSpaceException.elasticsearchConnectionFailed(
+                searchSpaceId, "UPDATE_MAPPING", new RuntimeException("Connection refused"));
+
+        doThrow(exception).when(searchSpaceService).updateIndexMapping(searchSpaceId, mappingJson);
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mappingJson))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Elasticsearch服务不可用"));
+
+        verify(searchSpaceService, times(1)).updateIndexMapping(searchSpaceId, mappingJson);
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - 映射更新失败")
+    void testUpdateIndexMapping_MappingUpdateFailed() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String mappingJson = "{\"properties\": {\"title\": {\"type\": \"text\"}}}";
+        SearchSpaceException exception = SearchSpaceException.mappingUpdateFailed(
+                searchSpaceId, "test_index", new RuntimeException("Update failed"));
+
+        doThrow(exception).when(searchSpaceService).updateIndexMapping(searchSpaceId, mappingJson);
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mappingJson))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("映射更新失败: 更新索引映射失败: test_index (搜索空间ID: " + searchSpaceId + ")"));
+
+        verify(searchSpaceService, times(1)).updateIndexMapping(searchSpaceId, mappingJson);
+    }
+
+    @Test
+    @DisplayName("更新索引映射配置 - 未知异常")
+    void testUpdateIndexMapping_UnknownException() throws Exception {
+        // Given
+        Long searchSpaceId = 1L;
+        String mappingJson = "{\"properties\": {\"title\": {\"type\": \"text\"}}}";
+        RuntimeException exception = new RuntimeException("Unexpected error");
+
+        doThrow(exception).when(searchSpaceService).updateIndexMapping(searchSpaceId, mappingJson);
+
+        // When & Then
+        mockMvc.perform(put("/api/search-spaces/{id}/mapping", searchSpaceId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mappingJson))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("更新mapping配置失败: Unexpected error"));
+
+        verify(searchSpaceService, times(1)).updateIndexMapping(searchSpaceId, mappingJson);
     }
 }

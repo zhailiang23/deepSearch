@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { searchSpaceApi } from '@/services/searchSpaceApi'
+import { mappingApi } from '@/api/mappingApi'
 import type {
   SearchSpace,
   CreateSearchSpaceRequest,
@@ -17,6 +18,13 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
   const statistics = ref<SearchSpaceStatistics | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  // Mapping 相关状态
+  const currentMapping = ref<string | null>(null)
+  const mappingLoading = ref(false)
+  const mappingError = ref<string | null>(null)
+  const lastMappingUpdated = ref<Date | null>(null)
+  const mappingCache = ref<Map<number, string>>(new Map())
 
   // 分页状态
   const pagination = ref({
@@ -59,6 +67,18 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
 
   const clearError = () => {
     error.value = null
+  }
+
+  const setMappingLoading = (value: boolean) => {
+    mappingLoading.value = value
+  }
+
+  const setMappingError = (value: string | null) => {
+    mappingError.value = value
+  }
+
+  const clearMappingError = () => {
+    mappingError.value = null
   }
 
   /**
@@ -302,6 +322,81 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
   }
 
   /**
+   * 获取搜索空间的 mapping 配置
+   */
+  const fetchMapping = async (spaceId: number) => {
+    try {
+      setMappingLoading(true)
+      clearMappingError()
+
+      // 检查缓存
+      const cached = mappingCache.value.get(spaceId)
+      if (cached) {
+        currentMapping.value = cached
+        return cached
+      }
+
+      const response = await mappingApi.getMapping(spaceId)
+      if (response.data) {
+        currentMapping.value = response.data
+        mappingCache.value.set(spaceId, response.data)
+        lastMappingUpdated.value = new Date()
+      }
+      return response.data
+    } catch (err: any) {
+      setMappingError(err.message || '获取 mapping 配置失败')
+      throw err
+    } finally {
+      setMappingLoading(false)
+    }
+  }
+
+  /**
+   * 更新搜索空间的 mapping 配置
+   */
+  const updateMapping = async (spaceId: number, mapping: string) => {
+    try {
+      setMappingLoading(true)
+      clearMappingError()
+
+      await mappingApi.updateMapping(spaceId, mapping)
+
+      // 更新本地状态和缓存
+      currentMapping.value = mapping
+      mappingCache.value.set(spaceId, mapping)
+      lastMappingUpdated.value = new Date()
+
+    } catch (err: any) {
+      setMappingError(err.message || '更新 mapping 配置失败')
+      throw err
+    } finally {
+      setMappingLoading(false)
+    }
+  }
+
+  /**
+   * 清除 mapping 缓存
+   */
+  const clearMappingCache = (spaceId?: number) => {
+    if (spaceId) {
+      mappingCache.value.delete(spaceId)
+    } else {
+      mappingCache.value.clear()
+    }
+  }
+
+  /**
+   * 重置 mapping 状态
+   */
+  const resetMappingState = () => {
+    currentMapping.value = null
+    mappingLoading.value = false
+    mappingError.value = null
+    lastMappingUpdated.value = null
+    mappingCache.value.clear()
+  }
+
+  /**
    * 更新查询参数
    */
   const updateQueryParams = (params: Partial<SearchSpaceQueryRequest>) => {
@@ -332,6 +427,7 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
       sortBy: 'createdAt',
       sortDirection: 'DESC'
     }
+    resetMappingState()
   }
 
   return {
@@ -343,6 +439,13 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
     error,
     pagination,
     queryParams,
+
+    // Mapping 状态
+    currentMapping,
+    mappingLoading,
+    mappingError,
+    lastMappingUpdated,
+    mappingCache,
 
     // Getters
     activeSearchSpaces,
@@ -364,6 +467,15 @@ export const useSearchSpaceStore = defineStore('searchSpace', () => {
     fetchStatistics,
     checkCodeAvailability,
     updateQueryParams,
-    reset
+    reset,
+
+    // Mapping Actions
+    setMappingLoading,
+    setMappingError,
+    clearMappingError,
+    fetchMapping,
+    updateMapping,
+    clearMappingCache,
+    resetMappingState
   }
 })

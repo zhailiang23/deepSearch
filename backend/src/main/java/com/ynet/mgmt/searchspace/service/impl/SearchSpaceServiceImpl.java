@@ -27,6 +27,18 @@ import com.ynet.mgmt.searchspace.repository.SearchSpaceRepository;
 import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
 import com.ynet.mgmt.searchspace.validator.SearchSpaceValidator;
+import com.ynet.mgmt.searchspace.exception.SearchSpaceException;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
+import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
+import co.elastic.clients.elasticsearch.indices.PutMappingRequest;
+import co.elastic.clients.elasticsearch.indices.PutMappingResponse;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
+import jakarta.json.Json;
 
 /**
  * 搜索空间业务服务实现
@@ -45,15 +57,18 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     private final ElasticsearchManager elasticsearchManager;
     private final SearchSpaceMapper mapper;
     private final SearchSpaceValidator validator;
+    private final ElasticsearchClient elasticsearchClient;
 
     public SearchSpaceServiceImpl(SearchSpaceRepository searchSpaceRepository,
                                  ElasticsearchManager elasticsearchManager,
                                  SearchSpaceMapper mapper,
-                                 SearchSpaceValidator validator) {
+                                 SearchSpaceValidator validator,
+                                 ElasticsearchClient elasticsearchClient) {
         this.searchSpaceRepository = searchSpaceRepository;
         this.elasticsearchManager = elasticsearchManager;
         this.mapper = mapper;
         this.validator = validator;
+        this.elasticsearchClient = elasticsearchClient;
     }
 
     @Override
@@ -318,20 +333,193 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
         return false;
     }
 
-    // ========== 新增的JSON导入相关业务方法实现 ==========
+    // ========== 新增的索引映射管理方法实现 ==========
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getIndexMapping(Long spaceId) {
+        log.info("获取搜索空间的索引映射配置: spaceId={}", spaceId);
+
+        try {
+            // 1. 查询搜索空间是否存在
+            SearchSpace searchSpace = searchSpaceRepository.findById(spaceId)
+                .orElseThrow(() -> SearchSpaceException.searchSpaceNotFound(spaceId));
+
+            // 2. 获取实际的索引名称
+            String indexName = elasticsearchManager.findActualIndexName(searchSpace.getCode());
+            log.debug("搜索空间 {} 对应的实际索引名: {}", searchSpace.getCode(), indexName);
+
+            // 3. 检查索引是否存在
+            if (!elasticsearchManager.indexExists(indexName)) {
+                throw SearchSpaceException.indexNotFound(spaceId, indexName);
+            }
+
+            // 4. 调用 Elasticsearch 获取映射
+            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(indexName));
+            GetMappingResponse response = elasticsearchClient.indices().getMapping(request);
+
+            // 5. 解析响应并转换为JSON字符串
+            var indexMappings = response.result();
+            if (indexMappings.isEmpty()) {
+                log.warn("索引 {} 没有映射配置", indexName);
+                return "{}";
+            }
+
+            // 获取第一个（也是唯一的）索引的映射
+            var mappingEntry = indexMappings.entrySet().iterator().next();
+            TypeMapping typeMapping = mappingEntry.getValue().mappings();
+
+            // 将 TypeMapping 转换为 JSON 字符串
+            ObjectMapper objectMapper = new ObjectMapper();
+            String mappingJson = objectMapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(typeMapping);
+
+            log.info("获取索引映射配置成功: spaceId={}, indexName={}, mappingSize={}",
+                spaceId, indexName, mappingJson.length());
+
+            return mappingJson;
+
+        } catch (SearchSpaceException e) {
+            // 重新抛出业务异常
+            throw e;
+        } catch (JsonProcessingException e) {
+            log.error("JSON处理失败: spaceId={}", spaceId, e);
+            throw SearchSpaceException.mappingRetrievalFailed(spaceId, "unknown", e);
+        } catch (Exception e) {
+            log.error("获取索引映射配置失败: spaceId={}", spaceId, e);
+            throw SearchSpaceException.elasticsearchConnectionFailed(spaceId, "GET_MAPPING", e);
+        }
+    }
 
     @Override
     @Transactional
-    public SearchSpaceDTO updateIndexMapping(Long id, String indexMapping) {
-        log.info("更新搜索空间索引映射: {}", id);
-        
+    public void updateIndexMapping(Long spaceId, String mappingJson) {
+        log.info("更新搜索空间的索引映射配置: spaceId={}, mappingSize={}",
+                spaceId, mappingJson != null ? mappingJson.length() : 0);
+
+        try {
+            // 1. 查询搜索空间是否存在
+            SearchSpace searchSpace = searchSpaceRepository.findById(spaceId)
+                .orElseThrow(() -> SearchSpaceException.searchSpaceNotFound(spaceId));
+
+            // 2. 验证映射JSON格式
+            if (mappingJson == null || mappingJson.trim().isEmpty()) {
+                throw SearchSpaceException.mappingValidationFailed(spaceId, "映射配置不能为空");
+            }
+
+            validateMappingJson(mappingJson, spaceId);
+
+            // 3. 获取实际的索引名称
+            String indexName = elasticsearchManager.findActualIndexName(searchSpace.getCode());
+            log.debug("搜索空间 {} 对应的实际索引名: {}", searchSpace.getCode(), indexName);
+
+            // 4. 检查索引是否存在
+            if (!elasticsearchManager.indexExists(indexName)) {
+                throw SearchSpaceException.indexNotFound(spaceId, indexName);
+            }
+
+            // 5. 解析映射JSON并构建更新请求
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode mappingNode = objectMapper.readTree(mappingJson);
+
+            // 6. 调用 Elasticsearch 更新映射
+            PutMappingRequest request = PutMappingRequest.of(builder -> {
+                builder.index(indexName);
+
+                // 从JSON构建TypeMapping
+                try {
+                    // 将JsonNode转换为字符串，然后使用StringReader和JsonParser
+                    String mappingJsonStr = objectMapper.writeValueAsString(mappingNode);
+
+                    // 使用JsonpMapper解析映射
+                    JacksonJsonpMapper jsonpMapper = new JacksonJsonpMapper();
+                    java.io.StringReader reader = new java.io.StringReader(mappingJsonStr);
+                    jakarta.json.stream.JsonParser parser = jakarta.json.Json.createParser(reader);
+                    TypeMapping typeMapping = jsonpMapper.deserialize(parser, TypeMapping.class);
+
+                    builder.properties(typeMapping.properties());
+
+                    parser.close();
+                    reader.close();
+
+                } catch (Exception e) {
+                    log.error("解析映射配置失败: spaceId={}, mappingJson={}", spaceId, mappingJson, e);
+                    throw new RuntimeException("映射配置格式错误", e);
+                }
+
+                return builder;
+            });
+
+            PutMappingResponse response = elasticsearchClient.indices().putMapping(request);
+
+            if (!response.acknowledged()) {
+                throw SearchSpaceException.mappingUpdateFailed(spaceId, indexName,
+                    new RuntimeException("Elasticsearch未确认映射更新操作"));
+            }
+
+            // 7. 更新数据库中的映射信息（可选，用于缓存）
+            searchSpace.setIndexMapping(mappingJson);
+            searchSpaceRepository.save(searchSpace);
+
+            log.info("更新索引映射配置成功: spaceId={}, indexName={}", spaceId, indexName);
+
+        } catch (SearchSpaceException e) {
+            // 重新抛出业务异常
+            throw e;
+        } catch (JsonProcessingException e) {
+            log.error("JSON处理失败: spaceId={}, mappingJson={}", spaceId, mappingJson, e);
+            throw SearchSpaceException.mappingValidationFailed(spaceId, "JSON格式错误: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("更新索引映射配置失败: spaceId={}, mappingJson={}", spaceId, mappingJson, e);
+            throw SearchSpaceException.elasticsearchConnectionFailed(spaceId, "UPDATE_MAPPING", e);
+        }
+    }
+
+    /**
+     * 验证映射JSON的有效性
+     */
+    private void validateMappingJson(String mappingJson, Long spaceId) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(mappingJson);
+
+            // 基本的映射结构验证
+            if (rootNode.has("properties")) {
+                JsonNode properties = rootNode.get("properties");
+                if (!properties.isObject()) {
+                    throw SearchSpaceException.mappingValidationFailed(spaceId, "properties字段必须是对象类型");
+                }
+
+                // 可以添加更多具体的字段验证逻辑
+                log.debug("映射JSON验证通过: spaceId={}, propertiesCount={}",
+                    spaceId, properties.size());
+            } else {
+                log.warn("映射JSON缺少properties字段: spaceId={}", spaceId);
+            }
+
+        } catch (JsonProcessingException e) {
+            throw SearchSpaceException.mappingValidationFailed(spaceId, "JSON格式错误: " + e.getMessage());
+        }
+    }
+
+    // ========== 新增的JSON导入相关业务方法实现 ==========
+
+    /**
+     * 更新搜索空间的索引映射配置（保留原有方法以维持兼容性）
+     *
+     * @deprecated 使用 {@link #updateIndexMapping(Long, String)} 替代
+     */
+    @Deprecated
+    public SearchSpaceDTO updateIndexMappingCompat(Long id, String indexMapping) {
+        log.info("更新搜索空间索引映射(兼容方法): {}", id);
+
         SearchSpace searchSpace = searchSpaceRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("搜索空间不存在: " + id));
-        
+
         // 使用实体的业务方法设置映射配置
         searchSpace.setIndexMapping(indexMapping);
         searchSpace = searchSpaceRepository.save(searchSpace);
-        
+
         log.info("搜索空间索引映射更新成功: {} (ID: {})", searchSpace.getCode(), id);
         return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
     }

@@ -83,15 +83,25 @@ public interface SearchSpaceService {
      */
     boolean isCodeAvailable(String code);
 
-    // ========== 新增的JSON导入相关业务方法 ==========
+    // ========== 新增的索引映射管理方法 ==========
+
+    /**
+     * 获取搜索空间的索引映射配置
+     * @param spaceId 搜索空间ID
+     * @return 索引映射配置（JSON字符串）
+     * @throws com.ynet.mgmt.searchspace.exception.SearchSpaceException 当操作失败时
+     */
+    String getIndexMapping(Long spaceId);
 
     /**
      * 更新搜索空间的索引映射配置
-     * @param id 搜索空间ID
-     * @param indexMapping 索引映射配置（JSON字符串）
-     * @return 更新后的搜索空间DTO
+     * @param spaceId 搜索空间ID
+     * @param mappingJson 新的映射配置（JSON字符串）
+     * @throws com.ynet.mgmt.searchspace.exception.SearchSpaceException 当操作失败时
      */
-    SearchSpaceDTO updateIndexMapping(Long id, String indexMapping);
+    void updateIndexMapping(Long spaceId, String mappingJson);
+
+    // ========== 新增的JSON导入相关业务方法 ==========
 
     /**
      * 更新搜索空间的导入统计
