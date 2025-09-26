@@ -1,0 +1,82 @@
+[
+  {
+    "id": "func_001",
+    "name": "转账汇款",
+    "type": "功能",
+    "descript": "支持本行及跨行转账汇款服务，实时到账安全便捷",
+    "link": "/function/transfer",
+    "category": "资金管理",
+    "permission": "TRANSFER",
+    "frequency": 95
+  },
+  {
+    "id": "func_002",
+    "name": "账户查询",
+    "type": "功能",
+    "descript": "查看账户余额、交易明细、资产概览等信息",
+    "link": "/function/account-inquiry",
+    "category": "账户服务",
+    "permission": "INQUIRY",
+    "frequency": 100
+  },
+  {
+    "id": "activity_001",
+    "name": "新春理财节",
+    "type": "活动",
+    "descript": "新春特惠理财产品，年化收益率高达5.8%，限时抢购",
+    "link": "/activity/spring-finance",
+    "startDate": "2024-02-01",
+    "endDate": "2024-02-29",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_002",
+    "name": "积分兑换大促",
+    "type": "活动",
+    "descript": "积分兑换好礼，话费、油卡、购物卡等丰富奖品等你来",
+    "link": "/activity/points-exchange",
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-31",
+    "status": "进行中"
+  },
+  {
+    "id": "product_001",
+    "name": "恒丰宝理财",
+    "type": "产品",
+    "descript": "稳健型理财产品，预期年化收益4.5%，1万元起购",
+    "link": "/product/hengfengbao",
+    "riskLevel": "R2",
+    "minAmount": 10000,
+    "expectedReturn": "4.5%"
+  },
+  {
+    "id": "product_002",
+    "name": "恒丰定期宝",
+    "type": "产品",
+    "descript": "定期存款产品，期限灵活，利率优惠，安全保障",
+    "link": "/product/term-deposit",
+    "riskLevel": "R1",
+    "minAmount": 1000,
+    "expectedReturn": "3.8%"
+  },
+  {
+    "id": "news_001",
+    "name": "央行降准释放资金约1万亿元",
+    "type": "资讯",
+    "descript": "央行宣布下调存款准备金率0.5个百分点，释放长期资金约1万亿元",
+    "link": "/news/pboc-rrr-cut",
+    "publishTime": "2024-01-24 09:30:00",
+    "author": "恒丰银行研究院",
+    "readCount": 15680
+  },
+  {
+    "id": "news_002",
+    "name": "数字人民币试点范围再扩大",
+    "type": "资讯",
+    "descript": "数字人民币试点城市新增10个，覆盖更多消费场景和应用领域",
+    "link": "/news/digital-yuan-expansion",
+    "publishTime": "2024-01-20 14:15:00",
+    "author": "恒丰银行金融科技部",
+    "readCount": 12450
+  }
+]
