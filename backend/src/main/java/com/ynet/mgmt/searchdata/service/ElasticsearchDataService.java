@@ -12,6 +12,8 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
 import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
 import co.elastic.clients.elasticsearch.indices.get_mapping.IndexMappingRecord;
+import co.elastic.clients.elasticsearch._types.mapping.Property;
+import co.elastic.clients.elasticsearch._types.mapping.ObjectProperty;
 import co.elastic.clients.json.JsonData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +59,7 @@ public class ElasticsearchDataService {
                     request.getEnablePinyinSearch(), request.getPinyinMode());
 
             // 构建查询
-            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode());
+            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName);
 
             // 计算分页参数
             int from = (request.getPage() - 1) * request.getSize();
@@ -337,7 +339,7 @@ public class ElasticsearchDataService {
     /**
      * 构建查询 - 支持拼音搜索增强
      */
-    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode) {
+    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName) {
         if (!StringUtils.hasText(queryString)) {
             return MatchAllQuery.of(m -> m)._toQuery();
         }
@@ -353,7 +355,7 @@ public class ElasticsearchDataService {
 
         try {
             // 尝试构建拼音增强查询
-            Query pinyinQuery = buildPinyinEnhancedQuery(queryString, pinyinMode);
+            Query pinyinQuery = buildPinyinEnhancedQuery(queryString, pinyinMode, indexName);
             if (pinyinQuery != null) {
                 log.debug("使用拼音增强查询: query={}, mode={}", queryString, pinyinMode);
                 return pinyinQuery;
@@ -378,7 +380,7 @@ public class ElasticsearchDataService {
     /**
      * 构建拼音增强查询
      */
-    private Query buildPinyinEnhancedQuery(String queryString, String pinyinMode) {
+    private Query buildPinyinEnhancedQuery(String queryString, String pinyinMode, String indexName) {
         String mode = pinyinMode != null ? pinyinMode.toUpperCase() : "AUTO";
         boolean containsChinese = queryString.matches(".*[\\u4e00-\\u9fa5].*");
         boolean isShortChinese = containsChinese && queryString.length() <= 2;
@@ -394,7 +396,7 @@ public class ElasticsearchDataService {
             case "STRICT":
                 // 严格模式：优先原字段匹配，拼音作为辅助
                 BoolQuery.Builder strictBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, 3.0f))  // 原字段权重更高
+                    .should(buildMultiFieldQuery(queryString, indexName, 3.0f))  // 原字段权重更高
                     .should(buildPinyinQuery(queryString, 1.0f))      // 拼音权重较低
                     .minimumShouldMatch("1");
                 // 短中文查询避免使用首字母匹配
@@ -410,7 +412,7 @@ public class ElasticsearchDataService {
                 // 模糊模式：增强拼音和首字母匹配权重
                 System.out.println("FUZZY模式: 使用所有匹配方式");
                 return BoolQuery.of(b -> b
-                    .should(buildMultiFieldQuery(queryString, 1.5f))  // 原字段权重降低
+                    .should(buildMultiFieldQuery(queryString, indexName, 1.5f))  // 原字段权重降低
                     .should(buildPinyinQuery(queryString, 2.0f))      // 拼音权重更高
                     .should(buildFirstLetterQuery(queryString, 1.5f)) // 首字母权重提高
                     .minimumShouldMatch("1")
@@ -420,7 +422,7 @@ public class ElasticsearchDataService {
             default:
                 // 自动模式：平衡所有搜索策略
                 BoolQuery.Builder autoBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, 2.0f))  // 原字段精确匹配，权重2.0
+                    .should(buildMultiFieldQuery(queryString, indexName, 2.0f))  // 原字段精确匹配，权重2.0
                     .minimumShouldMatch("1"); // 至少匹配一个should条件
 
                 // 对于短中文查询，只使用原字段匹配，避免拼音分析器导致的过度匹配
@@ -440,10 +442,10 @@ public class ElasticsearchDataService {
     /**
      * 构建多字段搜索查询
      */
-    private Query buildMultiFieldQuery(String queryString, float boost) {
+    private Query buildMultiFieldQuery(String queryString, String indexName, float boost) {
         return MultiMatchQuery.of(m -> m
             .query(queryString)
-            .fields(getSearchableFields())
+            .fields(getSearchableFields(indexName))
             .type(TextQueryType.BestFields)
             .boost(boost)
             .operator(Operator.And)
@@ -480,15 +482,154 @@ public class ElasticsearchDataService {
      * 获取可搜索字段列表
      * 使用通配符和常见字段相结合，支持更广泛的搜索
      */
-    private List<String> getSearchableFields() {
-        // 组合固定字段和通配符，支持各种字段名
+    /**
+     * 获取可搜索字段列表 - 动态从索引映射中获取
+     * 根据索引的实际映射动态获取所有text和keyword类型的字段
+     */
+    private List<String> getSearchableFields(String indexName) {
+        try {
+            // 获取索引映射
+            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(indexName));
+            GetMappingResponse response = elasticsearchClient.indices().getMapping(request);
+
+            Map<String, IndexMappingRecord> mappings = response.result();
+            if (mappings.isEmpty()) {
+                log.warn("索引映射为空，使用默认字段: index={}", indexName);
+                return getDefaultSearchableFields();
+            }
+
+            IndexMappingRecord indexMapping = mappings.values().iterator().next();
+            List<String> searchableFields = new ArrayList<>();
+
+            // 从映射中提取可搜索字段
+            extractSearchableFields(indexMapping.mappings().properties(), "", searchableFields);
+
+            log.debug("动态获取到可搜索字段: index={}, fields={}", indexName, searchableFields);
+
+            // 如果没有找到任何字段，使用默认配置
+            if (searchableFields.isEmpty()) {
+                log.warn("未找到可搜索字段，使用默认字段: index={}", indexName);
+                return getDefaultSearchableFields();
+            }
+
+            return searchableFields;
+
+        } catch (Exception e) {
+            log.warn("获取索引字段失败，使用默认字段: index={}, error={}", indexName, e.getMessage());
+            return getDefaultSearchableFields();
+        }
+    }
+
+    /**
+     * 递归提取可搜索字段
+     */
+    private void extractSearchableFields(Map<String, Property> properties, String prefix, List<String> searchableFields) {
+        if (properties == null) {
+            return;
+        }
+
+        for (Map.Entry<String, Property> entry : properties.entrySet()) {
+            String fieldName = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+            Property property = entry.getValue();
+
+            // 检查字段类型是否可搜索
+            if (isSearchableProperty(property)) {
+                // 根据字段名称设置权重
+                String fieldWithBoost = fieldName + getFieldBoost(fieldName);
+                searchableFields.add(fieldWithBoost);
+
+                // 如果有子字段，也添加主要的子字段
+                addSubFields(property, fieldName, searchableFields);
+            }
+
+            // 处理object类型的嵌套字段
+            if (property.isObject()) {
+                ObjectProperty objectProperty = property.object();
+                if (objectProperty.properties() != null) {
+                    extractSearchableFields(objectProperty.properties(), fieldName, searchableFields);
+                }
+            }
+        }
+    }
+
+    /**
+     * 判断字段是否可搜索
+     */
+    private boolean isSearchableProperty(Property property) {
+        // text字段肯定可搜索
+        if (property.isText()) {
+            return true;
+        }
+
+        // keyword字段也可搜索
+        if (property.isKeyword()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 根据字段名称返回相应的权重
+     */
+    private String getFieldBoost(String fieldName) {
+        String lowerFieldName = fieldName.toLowerCase();
+
+        // 标题类字段权重最高
+        if (lowerFieldName.contains("title") || lowerFieldName.contains("标题")) {
+            return "^3.0";
+        }
+
+        // 名称类字段权重较高
+        if (lowerFieldName.contains("name") || lowerFieldName.contains("名称")) {
+            return "^2.5";
+        }
+
+        // 内容类字段权重中等
+        if (lowerFieldName.contains("content") || lowerFieldName.contains("内容") ||
+            lowerFieldName.contains("description") || lowerFieldName.contains("描述")) {
+            return "^2.0";
+        }
+
+        // 文本类字段权重中等偏低
+        if (lowerFieldName.contains("text") || lowerFieldName.contains("文本")) {
+            return "^1.5";
+        }
+
+        // 类型、分类字段权重较低
+        if (lowerFieldName.contains("type") || lowerFieldName.contains("category") ||
+            lowerFieldName.contains("类型") || lowerFieldName.contains("分类")) {
+            return "^1.2";
+        }
+
+        // 默认权重
+        return "^1.0";
+    }
+
+    /**
+     * 添加字段的重要子字段
+     */
+    private void addSubFields(Property property, String fieldName, List<String> searchableFields) {
+        // 如果是text字段且有fields定义，检查是否有keyword子字段
+        if (property.isText() && property.text().fields() != null) {
+            Map<String, Property> fields = property.text().fields();
+            if (fields.containsKey("keyword")) {
+                searchableFields.add(fieldName + ".keyword^0.8");
+            }
+        }
+    }
+
+    /**
+     * 获取默认可搜索字段列表（作为后备方案）
+     */
+    private List<String> getDefaultSearchableFields() {
         return Arrays.asList(
             // 常见英文字段名
             "title^3.0", "name^2.5", "content^2.0", "description^1.8",
-            "text^1.5", "category^1.2",
-            // 常见中文字段名（需要使用引号包围）
+            "text^1.5", "category^1.2", "type^1.2",
+            // 常见中文字段名
             "*名称^2.5", "*标题^2.5", "*内容^2.0", "*描述^1.5",
-            "*公司^2.0", "*地址^1.5", "*备注^1.2"
+            "*公司^2.0", "*地址^1.5", "*备注^1.2", "*类型^1.2"
         );
     }
 
