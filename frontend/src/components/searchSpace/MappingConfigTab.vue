@@ -150,7 +150,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
-import { EditorView, basicSetup } from 'codemirror'
+import { basicSetup } from 'codemirror'
+import { EditorView } from '@codemirror/view'
 import { EditorState, StateEffect } from '@codemirror/state'
 import { json } from '@codemirror/lang-json'
 import { oneDark } from '@codemirror/theme-one-dark'
@@ -254,11 +255,6 @@ const createEditorTheme = () => {
       color: 'inherit',
       caretColor: isDark ? 'hsl(142.1 91.2% 59.8%)' : 'hsl(142.1 76.2% 36.3%)'
     },
-    '@media (min-width: 640px)': {
-      '.cm-content': {
-        padding: '16px'
-      }
-    },
     '.cm-focused': {
       outline: 'none'
     },
@@ -325,10 +321,8 @@ const createEditorTheme = () => {
       backgroundColor: isDark ? 'hsl(45 93% 47% / 0.5)' : 'hsl(45 93% 47% / 0.4)'
     },
     // 错误状态 - JSON 无效时的样式
-    '&.json-invalid': {
-      '.cm-content': {
-        borderLeft: `3px solid ${isDark ? 'hsl(0 62.8% 30.6%)' : 'hsl(0 84.2% 60.2%)'}`
-      }
+    '&.json-invalid .cm-content': {
+      borderLeft: `3px solid ${isDark ? 'hsl(0 62.8% 30.6%)' : 'hsl(0 84.2% 60.2%)'}`
     }
   }, {
     dark: isDark
