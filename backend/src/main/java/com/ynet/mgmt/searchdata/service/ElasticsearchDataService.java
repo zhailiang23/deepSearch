@@ -478,44 +478,40 @@ public class ElasticsearchDataService {
 
     /**
      * 获取可搜索字段列表
+     * 使用通配符和常见字段相结合，支持更广泛的搜索
      */
     private List<String> getSearchableFields() {
-        // 常见的文本搜索字段
+        // 组合固定字段和通配符，支持各种字段名
         return Arrays.asList(
-            "title^2",      // title字段权重加倍
-            "content",
-            "description",
-            "name",
-            "text",
-            "category"      // 分类字段
+            // 常见英文字段名
+            "title^3.0", "name^2.5", "content^2.0", "description^1.8",
+            "text^1.5", "category^1.2",
+            // 常见中文字段名（需要使用引号包围）
+            "*名称^2.5", "*标题^2.5", "*内容^2.0", "*描述^1.5",
+            "*公司^2.0", "*地址^1.5", "*备注^1.2"
         );
     }
 
     /**
      * 获取拼音字段列表
+     * 使用通配符搜索所有拼音字段，解决字段名不匹配问题
      */
     private List<String> getPinyinFields() {
+        // 使用通配符匹配所有字段的拼音子字段
         return Arrays.asList(
-            "title.pinyin^2",
-            "content.pinyin",
-            "description.pinyin",
-            "name.pinyin",
-            "text.pinyin",
-            "category.pinyin"
+            "*.pinyin^2.0",           // 匹配所有字段的 pinyin 子字段，权重2.0
+            "*.chinese_pinyin^1.5"    // 匹配所有字段的 chinese_pinyin 子字段，权重1.5
         );
     }
 
     /**
      * 获取首字母字段列表
+     * 使用通配符搜索所有首字母字段，解决字段名不匹配问题
      */
     private List<String> getFirstLetterFields() {
+        // 使用通配符匹配所有字段的首字母子字段
         return Arrays.asList(
-            "title.first_letter^2",
-            "content.first_letter",
-            "description.first_letter",
-            "name.first_letter",
-            "text.first_letter",
-            "category.first_letter"
+            "*.first_letter^1.0"      // 匹配所有字段的 first_letter 子字段，权重1.0
         );
     }
 

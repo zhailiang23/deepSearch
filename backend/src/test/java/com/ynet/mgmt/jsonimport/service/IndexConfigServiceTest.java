@@ -385,6 +385,9 @@ class IndexConfigServiceTest {
                 .suggestAsId(false)
                 .suggestIndex(true)
                 .importance(85)
+                .hasChineseContent(true)
+                .chineseContentRatio(1.0)
+                .chineseContentSamples(List.of("张三", "李四", "王五", "赵六", "陈七"))
                 .build();
 
         Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
@@ -503,6 +506,9 @@ class IndexConfigServiceTest {
                 .suggestAsId(false)
                 .suggestIndex(true)
                 .importance(75)
+                .hasChineseContent(true)
+                .chineseContentRatio(0.6)
+                .chineseContentSamples(List.of("产品介绍", "用户手册", "技术文档"))
                 .build();
 
         Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
@@ -579,6 +585,9 @@ class IndexConfigServiceTest {
                 .suggestAsId(false)
                 .suggestIndex(true)
                 .importance(80)
+                .hasChineseContent(true)
+                .chineseContentRatio(1.0)
+                .chineseContentSamples(List.of("北京科技有限公司", "上海贸易公司", "深圳软件公司"))
                 .build();
 
         Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
@@ -656,8 +665,11 @@ class IndexConfigServiceTest {
                 .statistics(FieldStatistics.builder().build())
                 .sampleValues(List.of("test remark", "another remark"))  // 使用英文样本数据，确保不触发拼音
                 .suggestAsId(false)
-                .suggestIndex(false)  // 不建议索引
+                .suggestIndex(true)  // 建议索引，这样会生成 first_letter 子字段
                 .importance(40)  // 低重要性
+                .hasChineseContent(false)  // 样本数据是英文，所以没有中文内容
+                .chineseContentRatio(0.0)
+                .chineseContentSamples(List.of())
                 .build();
 
         Map<String, FieldAnalysisResult> fieldAnalysis = Map.of(
@@ -677,15 +689,14 @@ class IndexConfigServiceTest {
         IndexMappingConfig.FieldMapping remarkMapping = config.getFieldMappings().get("备注");
         assertNotNull(remarkMapping);
 
-        // 由于样本数据是英文，即使字段名是中文，也不应该使用拼音分析器
-        assertEquals("standard", remarkMapping.getAnalyzer());
-        assertNull(remarkMapping.getSearchAnalyzer());
+        // 由于字段名是中文，按照简化逻辑应该使用拼音分析器
+        assertEquals("chinese_pinyin_analyzer", remarkMapping.getAnalyzer());
+        assertEquals("pinyin_search_analyzer", remarkMapping.getSearchAnalyzer());
 
-        // 不应该有拼音子字段
-        if (remarkMapping.getFields() != null) {
-            assertFalse(remarkMapping.getFields().containsKey("pinyin"));
-            assertFalse(remarkMapping.getFields().containsKey("chinese_pinyin"));
-            assertFalse(remarkMapping.getFields().containsKey("first_letter"));
-        }
+        // 应该有拼音子字段
+        assertNotNull(remarkMapping.getFields());
+        assertTrue(remarkMapping.getFields().containsKey("pinyin"));
+        assertTrue(remarkMapping.getFields().containsKey("chinese_pinyin"));
+        assertTrue(remarkMapping.getFields().containsKey("first_letter"));
     }
 }

@@ -466,23 +466,54 @@ public class DataImportService {
 
         // 创建新索引（索引不存在或者是替换模式）
         log.info("创建新索引: {}", indexName);
+
+        // 获取完整的Elasticsearch映射配置（包含分析器）
         Map<String, Object> mappingConfig = config.toElasticsearchMapping();
 
-        CreateIndexRequest request = CreateIndexRequest.of(builder -> builder
-                .index(indexName)
-                .settings(s -> s
-                        .numberOfShards(String.valueOf(config.getSettings().getNumberOfShards()))
-                        .numberOfReplicas(String.valueOf(config.getSettings().getNumberOfReplicas()))
-                        .refreshInterval(t -> t.time(config.getSettings().getRefreshInterval()))
-                )
-                .mappings(m -> m
-                        .dynamic(co.elastic.clients.elasticsearch._types.mapping.DynamicMapping.True)
-                        .properties(buildPropertiesFromConfig(config.getFieldMappings()))
-                )
-        );
+        CreateIndexRequest request = CreateIndexRequest.of(builder -> {
+            // 基础设置
+            builder.index(indexName);
+
+            // 应用完整的settings配置（包含分析器）
+            @SuppressWarnings("unchecked")
+            Map<String, Object> settings = (Map<String, Object>) mappingConfig.get("settings");
+            if (settings != null) {
+                builder.settings(s -> {
+                    // 应用基础索引设置
+                    s.numberOfShards(String.valueOf(config.getSettings().getNumberOfShards()))
+                     .numberOfReplicas(String.valueOf(config.getSettings().getNumberOfReplicas()))
+                     .refreshInterval(t -> t.time(config.getSettings().getRefreshInterval()));
+
+                    // 应用分析器配置（如果存在）
+                    if (settings.containsKey("analysis")) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> analysis = (Map<String, Object>) settings.get("analysis");
+
+                        // 直接将analysis作为JsonValue传递给ES客户端
+                        try {
+                            s.withJson(new java.io.StringReader(
+                                objectMapper.writeValueAsString(Map.of("analysis", analysis))
+                            ));
+                        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                            log.warn("Failed to serialize analysis configuration: {}", e.getMessage());
+                        }
+                    }
+
+                    return s;
+                });
+            }
+
+            // 应用字段映射
+            builder.mappings(m -> m
+                .dynamic(co.elastic.clients.elasticsearch._types.mapping.DynamicMapping.True)
+                .properties(buildPropertiesFromConfig(config.getFieldMappings()))
+            );
+
+            return builder;
+        });
 
         elasticsearchClient.indices().create(request);
-        log.info("Elasticsearch索引创建成功: {}", indexName);
+        log.info("Elasticsearch索引创建成功（包含拼音分析器配置）: {}", indexName);
     }
 
     /**
@@ -514,6 +545,12 @@ public class DataImportService {
             case "text" -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
                     .text(t -> {
                         t.analyzer(mapping.getAnalyzer());
+
+                        // 添加搜索分析器支持
+                        if (mapping.getSearchAnalyzer() != null) {
+                            t.searchAnalyzer(mapping.getSearchAnalyzer());
+                        }
+
                         if (mapping.getFields() != null) {
                             Map<String, co.elastic.clients.elasticsearch._types.mapping.Property> fields = new HashMap<>();
                             for (Map.Entry<String, IndexMappingConfig.FieldMapping> fieldEntry : mapping.getFields().entrySet()) {

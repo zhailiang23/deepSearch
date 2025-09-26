@@ -64,6 +64,21 @@ public class FieldAnalysisResult {
     private int importance;
 
     /**
+     * 是否包含中文内容
+     */
+    private boolean hasChineseContent;
+
+    /**
+     * 中文内容占比（0.0-1.0）
+     */
+    private double chineseContentRatio;
+
+    /**
+     * 包含中文内容的样本值
+     */
+    private List<String> chineseContentSamples;
+
+    /**
      * 类型推断过程中的候选类型及其置信度
      */
     private List<TypeCandidate> typeCandidates;

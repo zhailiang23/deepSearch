@@ -140,13 +140,16 @@ public class JsonAnalysisService {
         // 提取样本值
         List<String> sampleValues = extractSampleValues(values);
 
+        // 分析中文内容
+        ChineseContentAnalysis chineseAnalysis = analyzeChineseContent(values);
+
         // 检测问题
         List<String> issues = detectFieldIssues(fieldName, values, typeResult, statistics);
 
-        // 生成建议
+        // 生成建议（考虑中文内容）
         boolean suggestAsId = suggestAsIdField(fieldName, statistics, typeResult.getType());
-        boolean suggestIndex = suggestIndexField(fieldName, statistics, typeResult.getType());
-        int importance = calculateFieldImportance(fieldName, statistics, typeResult.getType());
+        boolean suggestIndex = suggestIndexField(fieldName, statistics, typeResult.getType(), chineseAnalysis);
+        int importance = calculateFieldImportance(fieldName, statistics, typeResult.getType(), chineseAnalysis);
 
         return FieldAnalysisResult.builder()
                 .fieldName(fieldName)
@@ -158,6 +161,9 @@ public class JsonAnalysisService {
                 .suggestAsId(suggestAsId)
                 .suggestIndex(suggestIndex)
                 .importance(importance)
+                .hasChineseContent(chineseAnalysis.isHasChineseContent())
+                .chineseContentRatio(chineseAnalysis.getChineseContentRatio())
+                .chineseContentSamples(chineseAnalysis.getChineseContentSamples())
                 .typeCandidates(typeResult.getCandidates())
                 .build();
     }
@@ -278,9 +284,9 @@ public class JsonAnalysisService {
     }
 
     /**
-     * 建议建立索引
+     * 建议建立索引（考虑中文内容）
      */
-    private boolean suggestIndexField(String fieldName, FieldStatistics statistics, FieldType fieldType) {
+    private boolean suggestIndexField(String fieldName, FieldStatistics statistics, FieldType fieldType, ChineseContentAnalysis chineseAnalysis) {
         // 高查询价值字段
         String lowerFieldName = fieldName.toLowerCase();
         boolean highQueryValue = lowerFieldName.contains("id") ||
@@ -295,13 +301,25 @@ public class JsonAnalysisService {
         boolean lowNullRatio = statistics.getNullRatio() < 0.3;
         boolean indexableType = fieldType != FieldType.UNKNOWN;
 
+        // 中文内容特征 - 如果字段包含足够比例的中文内容，提高索引建议的权重
+        boolean hasSignificantChineseContent = chineseAnalysis.isHasChineseContent() &&
+                                              chineseAnalysis.getChineseContentRatio() >= 0.3;
+
+        // 如果有中文内容，更积极地建议建立索引（因为需要拼音搜索支持）
+        if (hasSignificantChineseContent) {
+            // 对于中文内容，降低其他条件的要求
+            return (highQueryValue || goodCardinality || statistics.getUniqueRatio() > 0.05) &&
+                   statistics.getNullRatio() < 0.5 &&
+                   indexableType;
+        }
+
         return (highQueryValue || goodCardinality) && lowNullRatio && indexableType;
     }
 
     /**
-     * 计算字段重要性
+     * 计算字段重要性（考虑中文内容）
      */
-    private int calculateFieldImportance(String fieldName, FieldStatistics statistics, FieldType fieldType) {
+    private int calculateFieldImportance(String fieldName, FieldStatistics statistics, FieldType fieldType, ChineseContentAnalysis chineseAnalysis) {
         int importance = 50; // 基础分
 
         // 字段名重要性
@@ -323,6 +341,23 @@ public class JsonAnalysisService {
 
         // 数据质量
         importance += statistics.getQualityScore() / 10;
+
+        // 中文内容特征加分
+        if (chineseAnalysis.isHasChineseContent()) {
+            // 中文内容比例越高，重要性越高
+            int chineseBonus = (int) (chineseAnalysis.getChineseContentRatio() * 20);
+            importance += chineseBonus;
+
+            // 如果字段名暗示是文本类字段且包含中文，额外加分
+            if (lowerFieldName.contains("name") || lowerFieldName.contains("title") ||
+                lowerFieldName.contains("content") || lowerFieldName.contains("description") ||
+                lowerFieldName.contains("text") || lowerFieldName.contains("comment")) {
+                importance += 10;
+            }
+
+            log.debug("字段 {} 包含中文内容，占比 {:.2f}，获得重要性加分 {}",
+                     fieldName, chineseAnalysis.getChineseContentRatio(), chineseBonus + 10);
+        }
 
         return Math.max(0, Math.min(100, importance));
     }
@@ -443,6 +478,9 @@ public class JsonAnalysisService {
                 .suggestAsId(false)
                 .suggestIndex(false)
                 .importance(0)
+                .hasChineseContent(false)
+                .chineseContentRatio(0.0)
+                .chineseContentSamples(Collections.emptyList())
                 .typeCandidates(Collections.emptyList())
                 .build();
     }
@@ -487,5 +525,86 @@ public class JsonAnalysisService {
         stats.put("cacheSize", analysisCache.size());
         stats.put("cacheKeys", analysisCache.keySet());
         return stats;
+    }
+
+    /**
+     * 分析字段值中的中文内容
+     *
+     * @param values 字段值列表
+     * @return 中文内容分析结果
+     */
+    private ChineseContentAnalysis analyzeChineseContent(List<Object> values) {
+        if (values == null || values.isEmpty()) {
+            return new ChineseContentAnalysis(false, 0.0, Collections.emptyList());
+        }
+
+        List<String> chineseContentSamples = new ArrayList<>();
+        int totalNonNullValues = 0;
+        int valuesWithChinese = 0;
+
+        for (Object value : values) {
+            if (value != null) {
+                totalNonNullValues++;
+                String stringValue = value.toString().trim();
+
+                if (containsChinese(stringValue)) {
+                    valuesWithChinese++;
+                    // 收集包含中文的样本值（限制数量）
+                    if (chineseContentSamples.size() < MAX_SAMPLE_VALUES) {
+                        chineseContentSamples.add(stringValue);
+                    }
+                }
+            }
+        }
+
+        boolean hasChineseContent = valuesWithChinese > 0;
+        double chineseContentRatio = totalNonNullValues > 0 ? (double) valuesWithChinese / totalNonNullValues : 0.0;
+
+        log.debug("中文内容分析完成: 总值={}, 含中文值={}, 占比={:.2f}",
+                 totalNonNullValues, valuesWithChinese, chineseContentRatio);
+
+        return new ChineseContentAnalysis(hasChineseContent, chineseContentRatio, chineseContentSamples);
+    }
+
+    /**
+     * 判断字符串是否包含中文字符
+     *
+     * @param text 待检测的字符串
+     * @return 是否包含中文
+     */
+    private boolean containsChinese(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+
+        // 检查是否包含中文字符（CJK统一表意文字）
+        return text.chars().anyMatch(ch ->
+            (ch >= 0x4E00 && ch <= 0x9FFF) ||     // CJK统一表意文字
+            (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK扩展A
+            (ch >= 0x20000 && ch <= 0x2A6DF) ||   // CJK扩展B
+            (ch >= 0x2A700 && ch <= 0x2B73F) ||   // CJK扩展C
+            (ch >= 0x2B740 && ch <= 0x2B81F) ||   // CJK扩展D
+            (ch >= 0x2B820 && ch <= 0x2CEAF)      // CJK扩展E
+        );
+    }
+
+    /**
+     * 中文内容分析结果的内部类
+     */
+    private static class ChineseContentAnalysis {
+        private final boolean hasChineseContent;
+        private final double chineseContentRatio;
+        private final List<String> chineseContentSamples;
+
+        public ChineseContentAnalysis(boolean hasChineseContent, double chineseContentRatio,
+                                     List<String> chineseContentSamples) {
+            this.hasChineseContent = hasChineseContent;
+            this.chineseContentRatio = chineseContentRatio;
+            this.chineseContentSamples = chineseContentSamples != null ? chineseContentSamples : Collections.emptyList();
+        }
+
+        public boolean isHasChineseContent() { return hasChineseContent; }
+        public double getChineseContentRatio() { return chineseContentRatio; }
+        public List<String> getChineseContentSamples() { return chineseContentSamples; }
     }
 }

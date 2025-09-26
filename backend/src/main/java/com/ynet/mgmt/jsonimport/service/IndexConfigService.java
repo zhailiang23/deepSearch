@@ -328,7 +328,7 @@ public class IndexConfigService {
 
     /**
      * 判断字段是否应该添加拼音字段支持
-     * 基于字段名称、内容特征和重要性进行智能判断
+     * 简化逻辑：只要包含中文就添加拼音字段支持
      *
      * @param fieldResult 字段分析结果
      * @return 是否需要拼音支持
@@ -336,43 +336,31 @@ public class IndexConfigService {
     private boolean shouldAddPinyinField(FieldAnalysisResult fieldResult) {
         // 首先检查拼音插件是否可用
         if (!isPinyinPluginAvailable()) {
+            log.debug("拼音插件不可用，跳过字段 {} 的拼音支持", fieldResult.getFieldName());
             return false;
         }
 
         // 只为字符串类型字段考虑拼音支持
         if (fieldResult.getInferredType() != FieldType.STRING) {
+            log.trace("字段 {} 不是字符串类型，跳过拼音支持", fieldResult.getFieldName());
             return false;
         }
 
+        // 简化逻辑：只要检测到中文内容就添加拼音支持
+        if (fieldResult.isHasChineseContent()) {
+            log.debug("字段 {} 包含中文内容（占比: {:.2f}），添加拼音支持",
+                     fieldResult.getFieldName(), fieldResult.getChineseContentRatio());
+            return true;
+        }
+
+        // 如果字段名暗示可能包含中文，也考虑添加拼音支持（作为备用策略）
         String fieldName = fieldResult.getFieldName().toLowerCase();
-        boolean hasSampleData = fieldResult.getSampleValues() != null && !fieldResult.getSampleValues().isEmpty();
-
-        // 1. 如果有样本数据，优先根据内容判断
-        if (hasSampleData) {
-            boolean hasChineseContent = containsChineseContent(fieldResult.getSampleValues());
-
-            // 如果样本数据包含中文，且字段符合条件，则启用拼音
-            if (hasChineseContent) {
-                // 有中文内容的文本字段，重要性达到阈值或建议索引时启用拼音
-                return fieldResult.getImportance() >= 60 || fieldResult.isSuggestIndex();
-            } else {
-                // 如果样本数据不包含中文，则不启用拼音（即使字段名是中文）
-                return false;
-            }
-        }
-
-        // 2. 没有样本数据时，根据字段名判断
         if (isChineseTextFieldCandidate(fieldName)) {
-            // 中文字段名，高重要性或建议索引时启用
-            return fieldResult.getImportance() >= 70 || fieldResult.isSuggestIndex();
+            log.debug("字段名 {} 暗示可能包含中文内容，添加拼音支持", fieldResult.getFieldName());
+            return true;
         }
 
-        // 3. 对于英文字段名但可能包含中文内容的字段，需要更高的阈值
-        if (isTextContentField(fieldName)) {
-            // 英文字段名但可能是文本内容字段，需要非常高的重要性才启用拼音（保守策略）
-            return fieldResult.getImportance() >= 90 && fieldResult.isSuggestIndex();
-        }
-
+        log.debug("字段 {} 不包含中文内容，跳过拼音支持", fieldResult.getFieldName());
         return false;
     }
 
@@ -409,27 +397,6 @@ public class IndexConfigService {
                fieldName.contains("corp") || fieldName.contains("organization") || fieldName.contains("org");
     }
 
-    /**
-     * 检查样本值中是否包含中文内容
-     */
-    private boolean containsChineseContent(List<String> sampleValues) {
-        if (sampleValues == null || sampleValues.isEmpty()) {
-            return false;
-        }
-
-        // 检查前几个样本值，如果超过30%包含中文，则认为需要拼音支持
-        int chineseContentCount = 0;
-        int totalSamples = Math.min(sampleValues.size(), 10); // 最多检查10个样本
-
-        for (int i = 0; i < totalSamples; i++) {
-            String value = sampleValues.get(i);
-            if (value != null && containsChinese(value.trim())) {
-                chineseContentCount++;
-            }
-        }
-
-        return totalSamples > 0 && (chineseContentCount * 1.0 / totalSamples) >= 0.3;
-    }
 
     /**
      * 判断字符串是否包含中文字符
