@@ -45,6 +45,18 @@
             <Edit class="h-4 w-4 mr-2 inline-block" />
             编辑配置
           </button>
+          <button
+            @click="activeTab = 'mapping'"
+            :class="[
+              'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+              activeTab === 'mapping'
+                ? 'border-green-500 text-green-600 dark:text-green-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            ]"
+          >
+            <Settings class="h-4 w-4 mr-2 inline-block" />
+            Mapping 配置
+          </button>
         </nav>
       </div>
 
@@ -167,6 +179,28 @@
             @cancel="() => activeTab = 'view'"
           />
         </div>
+
+        <!-- Mapping 配置 Tab -->
+        <div v-else-if="activeTab === 'mapping'" class="space-y-6">
+          <div class="text-center py-12">
+            <Settings class="h-16 w-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Mapping 配置
+            </h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              这里将显示 JSON 编辑器来配置索引映射
+            </p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 text-left">
+              <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">预留功能区域：</div>
+              <ul class="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                <li>• JSON 编辑器组件</li>
+                <li>• 映射字段可视化编辑</li>
+                <li>• 语法验证和错误提示</li>
+                <li>• 保存和应用配置</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -174,7 +208,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { X, Eye, Edit } from 'lucide-vue-next'
+import { X, Eye, Edit, Settings } from 'lucide-vue-next'
 import SearchSpaceForm from './SearchSpaceForm.vue'
 import SearchSpaceStatusBadge from './SearchSpaceStatusBadge.vue'
 import type { SearchSpace, UpdateSearchSpaceRequest } from '@/types/searchSpace'
@@ -183,7 +217,7 @@ interface Props {
   open: boolean
   searchSpace: SearchSpace | null
   loading?: boolean
-  initialTab?: 'view' | 'edit'
+  initialTab?: 'view' | 'edit' | 'mapping'
 }
 
 interface Emits {
@@ -199,7 +233,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 // 当前激活的 Tab
-const activeTab = ref<'view' | 'edit'>(props.initialTab)
+const activeTab = ref<'view' | 'edit' | 'mapping'>(props.initialTab)
 
 // 监听 props 变化
 watch(() => props.open, (newOpen) => {
