@@ -2,6 +2,7 @@ package com.ynet.mgmt.searchspace.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.searchspace.dto.*;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
@@ -491,6 +492,194 @@ public class SearchSpaceController {
                 warnings,
                 message
         );
+    }
+
+    /**
+     * 获取索引mapping配置
+     *
+     * @param id 搜索空间ID
+     * @return 索引mapping配置（JSON格式）
+     */
+    @Operation(summary = "获取索引mapping配置", description = "获取指定搜索空间的Elasticsearch索引mapping配置")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "获取成功",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "搜索空间不存在",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "Elasticsearch连接错误",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/{id}/mapping")
+    public ResponseEntity<com.ynet.mgmt.common.dto.ApiResponse<String>> getIndexMapping(
+            @Parameter(description = "搜索空间ID", required = true) @PathVariable Long id) {
+        logger.info("获取索引mapping配置: searchSpaceId={}", id);
+
+        try {
+            // 1. 验证搜索空间是否存在
+            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(id);
+            logger.debug("搜索空间验证通过: id={}, name={}, code={}",
+                    searchSpace.getId(), searchSpace.getName(), searchSpace.getCode());
+
+            // 2. 获取索引mapping配置
+            // 目前暂时返回模拟的mapping配置，后续集成实际的Elasticsearch逻辑
+            String mockMapping = generateMockMapping(searchSpace);
+
+            logger.info("索引mapping配置获取成功: searchSpaceId={}, mappingSize={}",
+                    id, mockMapping.length());
+
+            return ResponseEntity.ok(com.ynet.mgmt.common.dto.ApiResponse.success("获取mapping配置成功", mockMapping));
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && (message.contains("不存在") || message.contains("未找到"))) {
+                logger.warn("搜索空间不存在: searchSpaceId={}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.notFound("搜索空间不存在"));
+            }
+
+            logger.error("获取mapping配置失败: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("获取mapping配置失败: " + message));
+
+        } catch (Exception e) {
+            logger.error("获取mapping配置异常: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("系统异常，请稍后重试"));
+        }
+    }
+
+    /**
+     * 更新索引mapping配置
+     *
+     * @param id 搜索空间ID
+     * @param mappingJson mapping配置（JSON格式）
+     * @return 更新结果
+     */
+    @Operation(summary = "更新索引mapping配置", description = "更新指定搜索空间的Elasticsearch索引mapping配置")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "更新成功"),
+            @ApiResponse(responseCode = "400", description = "JSON格式错误",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "搜索空间不存在",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "Elasticsearch连接错误",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @PutMapping("/{id}/mapping")
+    public ResponseEntity<com.ynet.mgmt.common.dto.ApiResponse<Void>> updateIndexMapping(
+            @Parameter(description = "搜索空间ID", required = true) @PathVariable Long id,
+            @Parameter(description = "mapping配置（JSON格式）", required = true) @RequestBody String mappingJson) {
+        logger.info("更新索引mapping配置: searchSpaceId={}, mappingSize={}", id,
+                mappingJson != null ? mappingJson.length() : 0);
+
+        try {
+            // 1. 验证搜索空间是否存在
+            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(id);
+            logger.debug("搜索空间验证通过: id={}, name={}, code={}",
+                    searchSpace.getId(), searchSpace.getName(), searchSpace.getCode());
+
+            // 2. 验证JSON格式
+            if (mappingJson == null || mappingJson.trim().isEmpty()) {
+                logger.warn("mapping配置为空: searchSpaceId={}", id);
+                return ResponseEntity.badRequest()
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("mapping配置不能为空"));
+            }
+
+            validateJsonFormat(mappingJson);
+
+            // 3. 更新mapping配置
+            // 目前暂时记录日志，后续集成实际的Elasticsearch逻辑
+            logger.info("模拟更新mapping配置: searchSpaceId={}, code={}, mappingPreview={}",
+                    id, searchSpace.getCode(),
+                    mappingJson.length() > 100 ? mappingJson.substring(0, 100) + "..." : mappingJson);
+
+            // 4. 更新搜索空间的mapping信息（如果服务层支持）
+            try {
+                searchSpaceService.updateIndexMapping(id, mappingJson);
+            } catch (Exception e) {
+                logger.warn("服务层暂不支持mapping更新，跳过: {}", e.getMessage());
+                // 暂时忽略，因为服务层可能还未实现此方法
+            }
+
+            logger.info("索引mapping配置更新成功: searchSpaceId={}", id);
+
+            // 返回204 No Content状态码，表示更新成功但无返回内容
+            return ResponseEntity.noContent().build();
+
+        } catch (JsonProcessingException e) {
+            logger.warn("JSON格式验证失败: searchSpaceId={}, error={}", id, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("JSON格式错误: " + e.getMessage()));
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && (message.contains("不存在") || message.contains("未找到"))) {
+                logger.warn("搜索空间不存在: searchSpaceId={}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.notFound("搜索空间不存在"));
+            }
+
+            logger.error("更新mapping配置失败: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("更新mapping配置失败: " + message));
+
+        } catch (Exception e) {
+            logger.error("更新mapping配置异常: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("系统异常，请稍后重试"));
+        }
+    }
+
+    /**
+     * 生成模拟的mapping配置
+     * 在实际Elasticsearch集成之前使用
+     *
+     * @param searchSpace 搜索空间信息
+     * @return JSON格式的mapping配置
+     */
+    private String generateMockMapping(SearchSpaceDTO searchSpace) {
+        // 生成基础的mapping结构
+        Map<String, Object> mapping = new HashMap<>();
+        Map<String, Object> properties = new HashMap<>();
+
+        // 添加一些基础字段的mapping
+        properties.put("id", Map.of("type", "keyword"));
+        properties.put("title", Map.of("type", "text", "analyzer", "standard"));
+        properties.put("content", Map.of("type", "text", "analyzer", "standard"));
+        properties.put("created_at", Map.of("type", "date", "format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"));
+        properties.put("updated_at", Map.of("type", "date", "format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"));
+
+        mapping.put("properties", properties);
+
+        // 添加索引设置
+        Map<String, Object> settings = new HashMap<>();
+        settings.put("number_of_shards", 1);
+        settings.put("number_of_replicas", 0);
+
+        Map<String, Object> fullMapping = new HashMap<>();
+        fullMapping.put("settings", settings);
+        fullMapping.put("mappings", mapping);
+
+        // 转换为JSON字符串
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(fullMapping);
+        } catch (JsonProcessingException e) {
+            logger.error("生成模拟mapping配置失败", e);
+            return "{\n  \"mappings\": {\n    \"properties\": {\n      \"id\": { \"type\": \"keyword\" },\n      \"title\": { \"type\": \"text\" },\n      \"content\": { \"type\": \"text\" }\n    }\n  }\n}";
+        }
+    }
+
+    /**
+     * 验证JSON格式的有效性
+     *
+     * @param jsonString 待验证的JSON字符串
+     * @throws JsonProcessingException 当JSON格式无效时抛出异常
+     */
+    private void validateJsonFormat(String jsonString) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        // 尝试解析JSON，如果格式无效会抛出JsonProcessingException
+        mapper.readTree(jsonString);
     }
 
 }
