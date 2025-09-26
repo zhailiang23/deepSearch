@@ -1,8 +1,9 @@
 ---
 name: channel-manage
-status: backlog
+status: completed
 created: 2025-09-25T11:28:25Z
-progress: 0%
+completed: 2025-09-26T00:39:19Z
+progress: 100%
 prd: .claude/prds/channel-manage.md
 github: https://github.com/zhailiang23/deepSearch/issues/49
 ---
