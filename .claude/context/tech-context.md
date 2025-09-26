@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-25T07:55:40Z
-version: 1.5
+last_updated: 2025-09-26T08:28:18Z
+version: 1.6
 author: Claude Code PM System
 ---
 
@@ -63,6 +63,14 @@ author: Claude Code PM System
 - **Vue.js:** 3.5.18 (Composition API)
 - **TypeScript:** 5.8.0 (Strict mode)
 - **Vite:** 7.0.6 (Build tool and dev server)
+
+**代码编辑器组件** ⭐ **NEW**
+- **CodeMirror:** 6.0.2 (核心编辑器)
+- **@codemirror/lang-json:** 6.0.2 (JSON语言支持)
+- **@codemirror/autocomplete:** 6.18.7 (自动完成)
+- **@codemirror/commands:** 6.8.1 (编辑器命令)
+- **@codemirror/search:** 6.5.11 (搜索功能)
+- **@codemirror/theme-one-dark:** 6.1.3 (暗色主题)
 
 **搜索数据管理组件系统** ⭐ **NEW**
 - **DynamicResultsTable:** 725行响应式表格组件
