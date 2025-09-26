@@ -2,12 +2,14 @@ package com.ynet.mgmt.searchspace.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.searchspace.dto.*;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
 import com.ynet.mgmt.searchspace.service.FileValidationService;
 import com.ynet.mgmt.searchspace.service.FileStorageService;
 import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
+import com.ynet.mgmt.searchspace.exception.SearchSpaceException;
 import com.ynet.mgmt.jsonimport.service.DataImportService;
 import com.ynet.mgmt.jsonimport.service.JsonAnalysisService;
 import com.ynet.mgmt.jsonimport.service.IndexConfigService;
@@ -492,5 +494,164 @@ public class SearchSpaceController {
                 message
         );
     }
+
+    /**
+     * 获取索引mapping配置
+     *
+     * @param id 搜索空间ID
+     * @return 索引mapping配置（JSON格式）
+     */
+    @Operation(summary = "获取索引mapping配置", description = "获取指定搜索空间的Elasticsearch索引mapping配置")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "获取成功",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "搜索空间不存在",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "Elasticsearch连接错误",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/{id}/mapping")
+    public ResponseEntity<com.ynet.mgmt.common.dto.ApiResponse<String>> getIndexMapping(
+            @Parameter(description = "搜索空间ID", required = true) @PathVariable Long id) {
+        logger.info("获取索引mapping配置: searchSpaceId={}", id);
+
+        try {
+            // 调用服务层获取真实的索引mapping配置
+            String mappingJson = searchSpaceService.getIndexMapping(id);
+
+            logger.info("索引mapping配置获取成功: searchSpaceId={}, mappingSize={}",
+                    id, mappingJson.length());
+
+            return ResponseEntity.ok(com.ynet.mgmt.common.dto.ApiResponse.success("获取mapping配置成功", mappingJson));
+
+        } catch (SearchSpaceException e) {
+            logger.warn("获取mapping配置业务异常: searchSpaceId={}, error={}", id, e.getMessage());
+
+            // 根据异常类型返回不同的HTTP状态码
+            if (e.getErrorCode() != null) {
+                switch (e.getErrorCode()) {
+                    case "SEARCH_SPACE_NOT_FOUND":
+                    case "INDEX_NOT_FOUND":
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.notFound(e.getMessage()));
+                    case "ELASTICSEARCH_CONNECTION_FAILED":
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error("Elasticsearch服务不可用"));
+                    default:
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && (message.contains("不存在") || message.contains("未找到"))) {
+                logger.warn("搜索空间不存在: searchSpaceId={}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.notFound("搜索空间不存在"));
+            }
+
+            logger.error("获取mapping配置失败: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("获取mapping配置失败: " + message));
+
+        } catch (Exception e) {
+            logger.error("获取mapping配置异常: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("系统异常，请稍后重试"));
+        }
+    }
+
+    /**
+     * 更新索引mapping配置
+     *
+     * @param id 搜索空间ID
+     * @param mappingJson mapping配置（JSON格式）
+     * @return 更新结果
+     */
+    @Operation(summary = "更新索引mapping配置", description = "更新指定搜索空间的Elasticsearch索引mapping配置")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "更新成功"),
+            @ApiResponse(responseCode = "400", description = "JSON格式错误",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "搜索空间不存在",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "Elasticsearch连接错误",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @PutMapping("/{id}/mapping")
+    public ResponseEntity<com.ynet.mgmt.common.dto.ApiResponse<Void>> updateIndexMapping(
+            @Parameter(description = "搜索空间ID", required = true) @PathVariable Long id,
+            @Parameter(description = "mapping配置（JSON格式）", required = true) @RequestBody String mappingJson) {
+        logger.info("更新索引mapping配置: searchSpaceId={}, mappingSize={}", id,
+                mappingJson != null ? mappingJson.length() : 0);
+
+        try {
+            // 基本验证
+            if (mappingJson == null || mappingJson.trim().isEmpty()) {
+                logger.warn("mapping配置为空: searchSpaceId={}", id);
+                return ResponseEntity.badRequest()
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("mapping配置不能为空"));
+            }
+
+            // 调用服务层更新索引mapping配置
+            searchSpaceService.updateIndexMapping(id, mappingJson);
+
+            logger.info("索引mapping配置更新成功: searchSpaceId={}", id);
+
+            // 返回204 No Content状态码，表示更新成功但无返回内容
+            return ResponseEntity.noContent().build();
+
+        } catch (SearchSpaceException e) {
+            logger.warn("更新mapping配置业务异常: searchSpaceId={}, error={}", id, e.getMessage());
+
+            // 根据异常类型返回不同的HTTP状态码
+            if (e.getErrorCode() != null) {
+                switch (e.getErrorCode()) {
+                    case "SEARCH_SPACE_NOT_FOUND":
+                    case "INDEX_NOT_FOUND":
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.notFound(e.getMessage()));
+                    case "MAPPING_VALIDATION_FAILED":
+                        return ResponseEntity.badRequest()
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest(e.getMessage()));
+                    case "ELASTICSEARCH_CONNECTION_FAILED":
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error("Elasticsearch服务不可用"));
+                    case "MAPPING_UPDATE_FAILED":
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error("映射更新失败: " + e.getMessage()));
+                    default:
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+                }
+            }
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error(e.getMessage()));
+
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && (message.contains("不存在") || message.contains("未找到"))) {
+                logger.warn("搜索空间不存在: searchSpaceId={}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.notFound("搜索空间不存在"));
+            }
+
+            logger.error("更新mapping配置失败: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("更新mapping配置失败: " + message));
+
+        } catch (Exception e) {
+            logger.error("更新mapping配置异常: searchSpaceId={}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("系统异常，请稍后重试"));
+        }
+    }
+
 
 }

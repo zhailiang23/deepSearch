@@ -58,6 +58,14 @@ const routes = [
           requiresAuth: true,
           title: '设置'
         }
+      },
+      {
+        path: 'codemirror-test',
+        name: 'CodeMirrorTest',
+        component: () => import('@/components/CodeMirrorTest.vue'),
+        meta: {
+          title: 'CodeMirror 测试'
+        }
       }
     ]
   },

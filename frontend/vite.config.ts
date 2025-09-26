@@ -102,6 +102,16 @@ export default defineConfig({
           'ui-vendor': ['reka-ui', 'lucide-vue-next'],
           // 工具库
           'utils-vendor': ['axios', '@vueuse/core'],
+          // CodeMirror编辑器
+          'codemirror-vendor': [
+            'codemirror',
+            '@codemirror/view',
+            '@codemirror/state',
+            '@codemirror/commands',
+            '@codemirror/language',
+            '@codemirror/lang-json',
+            '@codemirror/theme-one-dark'
+          ],
         },
         // 文件命名
         chunkFileNames: (chunkInfo) => {
@@ -133,7 +143,14 @@ export default defineConfig({
       'axios',
       '@vueuse/core',
       'reka-ui',
-      'lucide-vue-next'
+      'lucide-vue-next',
+      'codemirror',
+      '@codemirror/view',
+      '@codemirror/state',
+      '@codemirror/commands',
+      '@codemirror/language',
+      '@codemirror/lang-json',
+      '@codemirror/theme-one-dark'
     ]
   },
   // 缓存目录

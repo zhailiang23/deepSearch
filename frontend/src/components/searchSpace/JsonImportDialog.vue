@@ -497,7 +497,8 @@ import { useSearchSpaceStore } from '@/stores/searchSpace'
 console.log('🔥🔥🔥 JsonImportDialog组件正在重新加载！时间戳:', new Date().toISOString())
 console.log('🚀 JsonImportDialog组件已加载！版本：v2.0')
 
-const { searchSpace: searchSpaceRef } = useSearchSpaceStore()
+const searchSpaceStore = useSearchSpaceStore()
+const { searchSpaces } = searchSpaceStore
 
 // 组件props和emits
 interface Props {
