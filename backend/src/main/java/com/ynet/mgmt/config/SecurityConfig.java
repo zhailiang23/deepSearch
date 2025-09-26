@@ -62,6 +62,8 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                // 临时允许映射配置接口不需要认证（用于测试）
+                .requestMatchers("/search-spaces/*/mapping").permitAll()
 
                 // 其他所有请求都需要认证
                 .anyRequest().authenticated()

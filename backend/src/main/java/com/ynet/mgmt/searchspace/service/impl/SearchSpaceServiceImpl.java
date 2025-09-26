@@ -1,7 +1,10 @@
 package com.ynet.mgmt.searchspace.service.impl;
 
+import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -367,12 +370,106 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
 
             // 获取第一个（也是唯一的）索引的映射
             var mappingEntry = indexMappings.entrySet().iterator().next();
-            TypeMapping typeMapping = mappingEntry.getValue().mappings();
+            var indexMappingRecord = mappingEntry.getValue();
 
-            // 将 TypeMapping 转换为 JSON 字符串
-            ObjectMapper objectMapper = new ObjectMapper();
-            String mappingJson = objectMapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsString(typeMapping);
+            // 获取TypeMapping对象，这包含了实际的映射信息
+            var typeMapping = indexMappingRecord.mappings();
+            log.debug("TypeMapping获取成功: indexName={}", indexName);
+
+            // 尝试多种序列化方法
+            String mappingJson;
+            try {
+                // 方法1：手动构建映射JSON
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, Object> mappingMap = new HashMap<>();
+
+                // 获取properties
+                var properties = typeMapping.properties();
+                if (properties != null && !properties.isEmpty()) {
+                    Map<String, Object> propertiesMap = new HashMap<>();
+                    properties.forEach((fieldName, property) -> {
+                        try {
+                            // 获取字段的基本信息
+                            Map<String, Object> fieldMap = new HashMap<>();
+
+                            // 尝试获取字段类型信息
+                            if (property._kind() != null) {
+                                fieldMap.put("_kind", property._kind().toString());
+                            }
+
+                            // 根据属性类型获取具体信息
+                            switch (property._kind()) {
+                                case Text:
+                                    var textProperty = property.text();
+                                    fieldMap.put("type", "text");
+                                    if (textProperty.analyzer() != null) {
+                                        fieldMap.put("analyzer", textProperty.analyzer());
+                                    }
+                                    break;
+                                case Keyword:
+                                    fieldMap.put("type", "keyword");
+                                    break;
+                                case Long:
+                                    fieldMap.put("type", "long");
+                                    break;
+                                case Integer:
+                                    fieldMap.put("type", "integer");
+                                    break;
+                                case Date:
+                                    var dateProperty = property.date();
+                                    fieldMap.put("type", "date");
+                                    if (dateProperty.format() != null) {
+                                        fieldMap.put("format", dateProperty.format());
+                                    }
+                                    break;
+                                case Boolean:
+                                    fieldMap.put("type", "boolean");
+                                    break;
+                                case Object:
+                                    var objectProperty = property.object();
+                                    fieldMap.put("type", "object");
+                                    if (objectProperty.properties() != null && !objectProperty.properties().isEmpty()) {
+                                        // 递归处理子属性
+                                        Map<String, Object> subProperties = new HashMap<>();
+                                        objectProperty.properties().forEach((subFieldName, subProperty) -> {
+                                            Map<String, Object> subFieldMap = new HashMap<>();
+                                            subFieldMap.put("type", subProperty._kind().toString().toLowerCase());
+                                            subProperties.put(subFieldName, subFieldMap);
+                                        });
+                                        fieldMap.put("properties", subProperties);
+                                    }
+                                    break;
+                                default:
+                                    fieldMap.put("type", property._kind().toString().toLowerCase());
+                            }
+
+                            propertiesMap.put(fieldName, fieldMap);
+                        } catch (Exception ex) {
+                            log.warn("处理字段 {} 失败: {}", fieldName, ex.getMessage());
+                            propertiesMap.put(fieldName, Map.of("type", "unknown", "error", ex.getMessage()));
+                        }
+                    });
+                    mappingMap.put("properties", propertiesMap);
+                }
+
+                // 添加其他映射元数据
+                if (typeMapping.meta() != null) {
+                    mappingMap.put("_meta", typeMapping.meta());
+                }
+                if (typeMapping.source() != null && typeMapping.source().enabled() != null) {
+                    Map<String, Object> sourceMap = new HashMap<>();
+                    sourceMap.put("enabled", typeMapping.source().enabled());
+                    mappingMap.put("_source", sourceMap);
+                }
+
+                mappingJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(mappingMap);
+                log.debug("手动构建映射成功，包含 {} 个字段", properties != null ? properties.size() : 0);
+
+            } catch (Exception e) {
+                log.error("映射序列化失败: {}", e.getMessage(), e);
+                // 备用方案：返回错误信息
+                mappingJson = String.format("{ \"error\": \"映射序列化失败\", \"message\": \"%s\", \"properties\": {} }", e.getMessage().replace("\"", "\\\""));
+            }
 
             log.info("获取索引映射配置成功: spaceId={}, indexName={}, mappingSize={}",
                 spaceId, indexName, mappingJson.length());
