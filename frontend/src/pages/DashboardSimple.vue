@@ -69,6 +69,22 @@
           </SidebarGroup>
 
           <SidebarGroup>
+            <SidebarGroupLabel>演示</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton as-child>
+                  <router-link to="/mobile-search-demo" class="flex items-center gap-2">
+                    <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>移动搜索演示</span>
+                  </router-link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+
+          <SidebarGroup>
             <SidebarGroupLabel>设置</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarMenuItem>

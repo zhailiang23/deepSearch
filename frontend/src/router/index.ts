@@ -66,6 +66,15 @@ const routes = [
         meta: {
           title: 'CodeMirror 测试'
         }
+      },
+      {
+        path: 'mobile-search-demo',
+        name: 'MobileSearchDemo',
+        component: () => import('@/pages/MobileSearchDemo.vue'),
+        meta: {
+          requiresAuth: false,
+          title: '移动搜索演示'
+        }
       }
     ]
   },
