@@ -75,6 +75,15 @@ const routes = [
           requiresAuth: false,
           title: '移动搜索演示'
         }
+      },
+      {
+        path: 'phone-simulator-test',
+        name: 'PhoneSimulatorTest',
+        component: () => import('@/views/PhoneSimulatorTest.vue'),
+        meta: {
+          requiresAuth: false,
+          title: 'iPhone设备模拟器测试'
+        }
       }
     ]
   },

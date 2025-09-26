@@ -1,22 +1,28 @@
 <template>
   <div class="mobile-search-demo-container">
-    <!-- 页面头部 -->
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">移动搜索界面演示</h1>
-      <p class="text-gray-600">基于 Elasticsearch 的移动端搜索界面演示工具</p>
-    </div>
+    
+    <!-- 主要内容区域 - 双栏布局 -->
+    <div class="main-content bg-white rounded-lg shadow-sm border border-gray-200 p-6 w-full">
+      <!-- 使用 Flexbox 横向布局，让手机占用固定宽度，参数区域占用剩余空间 -->
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- 手机模拟器区域 - 固定宽度 -->
+        <div class="flex-shrink-0">
+          <MobileSearchInterface
+            :config="searchConfig"
+            :real-time-sync="true"
+          />
+        </div>
 
-    <!-- 主要内容区域 -->
-    <div class="main-content bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-      <div class="flex items-center justify-center h-96 text-gray-500">
-        <div class="text-center">
-          <div class="mb-4">
-            <svg class="w-16 h-16 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-medium mb-2">演示界面准备中</h3>
-          <p class="text-sm text-gray-400">双栏布局和移动端模拟器即将在这里显示</p>
+        <!-- 参数控制区域 - 占用剩余空间，固定高度 -->
+        <div class="flex-1 h-[814px] overflow-hidden">
+          <ParameterPanel
+            v-model="searchConfig"
+            :show-presets="true"
+            :allow-reset="true"
+            :sync-status="syncStatus"
+            @parameter-change="handleParameterChange"
+            @sync-status="handleSyncStatusChange"
+          />
         </div>
       </div>
     </div>
@@ -24,27 +30,122 @@
     <!-- 页面信息 -->
     <div class="mt-6 text-sm text-gray-500">
       <p>技术栈：Vue 3 + TypeScript + TailwindCSS + Elasticsearch</p>
+      <p>设备规格：iPhone 16 模拟器 (375x814px, 19.5:9 长宽比)</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
+import ParameterPanel from '@/components/demo/ParameterPanel.vue'
+import MobileSearchInterface from '@/components/mobile/MobileSearchInterface.vue'
+import { useBreakpoints } from '@/composables/useBreakpoints'
+import { useMobileSearchDemoStore } from '@/stores/mobileSearchDemo'
+import { useParameterSync } from '@/composables/useParameterSync'
+import type { ParameterChangeEvent, SyncStatus } from '@/types/demo'
 
 // 页面元信息
 defineOptions({
   name: 'MobileSearchDemo'
 })
 
+// 使用Store
+const store = useMobileSearchDemoStore()
+
+// 使用参数同步
+const paramSync = useParameterSync({
+  enableUrlSync: true,
+  enableRealtimeSync: true,
+  syncDebounceMs: 300,
+  defaultConflictResolution: 'usePanel',
+  enableChangeHistory: true
+})
+
+// 响应式断点检测
+const breakpoints = useBreakpoints()
+const isMobile = ref(breakpoints.isMobile)
+
+// 从store获取状态
+const searchConfig = computed(() => store.config)
+const syncStatus = computed(() => paramSync.syncStatus.value)
+
+// 监听配置变化并同步到移动端
+watch(searchConfig, (newConfig, oldConfig) => {
+  if (oldConfig && JSON.stringify(newConfig) !== JSON.stringify(oldConfig)) {
+    console.log('配置变更，同步到移动端:', newConfig)
+    console.log('拼音配置状态:', newConfig.pinyinSearch)
+    console.log('高级设置状态:', newConfig.searchBehavior, newConfig.resultDisplay)
+    paramSync.syncToMobile(newConfig)
+  }
+}, { deep: true })
+
+// 事件处理
+const handleParameterChange = (event: ParameterChangeEvent) => {
+  console.log('参数变更:', event)
+  console.log('当前 store.config:', store.config)
+
+  // 记录变更到同步系统 (变更历史记录)
+  // paramSync 系统会自动记录变更历史
+
+  // 实时应用变更
+  if (event.type === 'searchSpace') {
+    console.log('更新搜索空间:', event.value)
+    store.selectSearchSpaces(event.value)
+  } else if (event.type === 'pinyin') {
+    console.log('更新拼音配置:', event.value)
+    store.updateConfig({ pinyinSearch: event.value })
+  } else if (event.type === 'pagination') {
+    console.log('更新分页配置:', event.value)
+    store.updateConfig({ pagination: event.value })
+  } else if (event.type === 'behavior') {
+    console.log('更新行为配置:', event.value)
+    store.updateConfig({ searchBehavior: event.value })
+  } else if (event.type === 'display') {
+    console.log('更新显示配置:', event.value)
+    store.updateConfig({ resultDisplay: event.value })
+  }
+
+  console.log('更新后 store.config:', store.config)
+}
+
+const handleSyncStatusChange = (status: SyncStatus) => {
+  console.log('同步状态变更:', status)
+  // 可以在这里添加同步状态的UI反馈
+}
+
 // 页面初始化
-onMounted(() => {
+onMounted(async () => {
   console.log('MobileSearchDemo 页面已加载')
+  console.log('当前设备类型:', isMobile.value ? '移动端' : '桌面端')
+  console.log('窗口尺寸:', window.innerWidth, 'x', window.innerHeight)
+  console.log('断点状态:', breakpoints)
+  console.log('初始 searchConfig:', searchConfig.value)
+
+  // 搜索空间数据现在由 SearchSpaceSelector 组件直接从后端加载
+  // 不再需要在这里设置模拟数据
+
+  // 尝试从URL恢复配置
+  try {
+    const urlConfig = paramSync.syncFromUrl()
+    if (urlConfig) {
+      console.log('从URL恢复配置:', urlConfig)
+      store.updateConfig(urlConfig)
+    }
+    // 搜索空间的初始选择现在由 SearchSpaceSelector 组件处理
+    // 在用户通过组件选择搜索空间后，会自动同步到 store
+  } catch (error) {
+    console.warn('URL配置恢复失败:', error)
+    // 使用默认配置，搜索空间选择由组件处理
+  }
+
+  console.log('初始化完成，当前配置:', store.config)
 })
 </script>
 
 <style scoped>
 .mobile-search-demo-container {
-  @apply min-h-full p-6;
+  min-height: 100vh;
+  padding: 1.5rem;
 }
 
 .main-content {
