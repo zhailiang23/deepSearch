@@ -185,18 +185,11 @@
                 </button>
 
                 <button
-                  @click="$emit('edit', space)"
+                  @click="$emit('config', space)"
                   class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-                  title="编辑"
+                  title="配置"
                 >
-                  <Edit class="h-4 w-4" />
-                </button>
-                <button
-                  @click="$emit('view', space)"
-                  class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/20 rounded-md transition-colors"
-                  title="查看详情"
-                >
-                  <Eye class="h-4 w-4" />
+                  <Settings class="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -242,8 +235,7 @@ import {
   RefreshCw,
   Plus,
   Database,
-  Edit,
-  Eye,
+  Settings,
   PlayCircle,
   PauseCircle,
   Upload
@@ -251,12 +243,11 @@ import {
 import { useSearchSpaceStore } from '@/stores/searchSpace'
 import SearchSpaceStatusBadge from './SearchSpaceStatusBadge.vue'
 import JsonImportDialog from './JsonImportDialog.vue'
-import type { SearchSpace, SearchSpaceStatistics } from '@/types/searchSpace'
+import type { SearchSpace } from '@/types/searchSpace'
 
 interface Emits {
   (e: 'create'): void
-  (e: 'edit', space: SearchSpace): void
-  (e: 'view', space: SearchSpace): void
+  (e: 'config', space: SearchSpace): void
   (e: 'enable', space: SearchSpace): void
   (e: 'disable', space: SearchSpace): void
   (e: 'import', space: SearchSpace): void
