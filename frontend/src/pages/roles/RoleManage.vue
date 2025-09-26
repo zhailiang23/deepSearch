@@ -246,23 +246,27 @@ const handleDelete = (role: Role) => {
 
 // 表单提交
 const handleFormSubmit = async (data: CreateRoleRequest | UpdateRoleRequest) => {
+  console.log('handleFormSubmit called with data:', data)
   try {
     formLoading.value = true
 
     if (currentRole.value) {
       // 更新
       const updateData = data as UpdateRoleRequest
+      console.log('Updating role with data:', updateData)
       await roleStore.updateRole(currentRole.value.id, updateData)
       showMessage('success', '角色更新成功')
     } else {
       // 创建
       const createData = data as CreateRoleRequest
+      console.log('Creating role with data:', createData)
       await roleStore.createRole(createData)
       showMessage('success', '角色创建成功')
     }
 
     closeFormDialog()
   } catch (error: any) {
+    console.error('Form submit error:', error)
     showMessage('error', error.message || '操作失败')
   } finally {
     formLoading.value = false

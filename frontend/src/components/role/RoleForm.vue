@@ -30,11 +30,11 @@
           required
           :disabled="loading || isEdit"
           class="block w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground placeholder:text-muted-foreground disabled:opacity-50 disabled:bg-muted"
-          placeholder="请输入角色代码（大写字母开头）"
+          placeholder="请输入角色代码"
         />
         <p v-if="errors.code" class="text-sm text-red-500">{{ errors.code }}</p>
         <p class="text-xs text-muted-foreground">
-          角色代码必须以大写字母开头，只能包含大写字母、数字和下划线
+          角色代码只能包含字母、数字和下划线
         </p>
       </div>
 
@@ -138,8 +138,8 @@ const validateCode = () => {
     errors.code = '角色代码长度必须在2-50个字符之间'
     return false
   }
-  if (!/^[A-Z][A-Z0-9_]*$/.test(formData.code)) {
-    errors.code = '角色代码必须以大写字母开头，只能包含大写字母、数字和下划线'
+  if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(formData.code)) {
+    errors.code = '角色代码必须以字母开头，只能包含字母、数字和下划线'
     return false
   }
   return true
@@ -163,7 +163,10 @@ const validateForm = () => {
 
 // 提交处理
 const handleSubmit = () => {
+  console.log('handleSubmit called', { formData: { ...formData } })
+
   if (!validateForm()) {
+    console.log('Form validation failed')
     return
   }
 
@@ -172,6 +175,7 @@ const handleSubmit = () => {
       name: formData.name,
       description: formData.description || undefined
     }
+    console.log('Emitting update data:', updateData)
     emit('submit', updateData)
   } else {
     const createData: CreateRoleRequest = {
@@ -179,6 +183,7 @@ const handleSubmit = () => {
       code: formData.code,
       description: formData.description || undefined
     }
+    console.log('Emitting create data:', createData)
     emit('submit', createData)
   }
 }

@@ -36,7 +36,6 @@ public class Role extends BaseEntity {
     @Column(name = "code", nullable = false, unique = true, length = 50)
     @NotBlank(message = "角色代码不能为空")
     @Size(min = 2, max = 50, message = "角色代码长度必须在2-50个字符之间")
-    @Pattern(regexp = "^[A-Z][A-Z0-9_]*$", message = "角色代码必须以大写字母开头，只能包含大写字母、数字和下划线")
     private String code;
 
     /**
