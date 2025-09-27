@@ -131,3 +131,22 @@ app:
     file-expiry-hours: ${FILE_EXPIRY_HOURS:24}
     max-file-size: 20971520  # 20MB in bytes
     allowed-extensions: json
+
+# 搜索日志配置
+search:
+  log:
+    enabled: ${SEARCH_LOG_ENABLED:true}
+    async:
+      core-pool-size: ${SEARCH_LOG_CORE_POOL_SIZE:2}
+      max-pool-size: ${SEARCH_LOG_MAX_POOL_SIZE:5}
+      queue-capacity: ${SEARCH_LOG_QUEUE_CAPACITY:100}
+      thread-name-prefix: "SearchLog-"
+    retention:
+      days: ${SEARCH_LOG_RETENTION_DAYS:30}
+      auto-cleanup: ${SEARCH_LOG_AUTO_CLEANUP:true}
+      cleanup-cron: ${SEARCH_LOG_CLEANUP_CRON:0 0 2 * * ?}
+    performance:
+      record-detail-response: ${SEARCH_LOG_RECORD_DETAIL:true}
+      max-response-length: ${SEARCH_LOG_MAX_RESPONSE_LENGTH:10000}
+      record-request-headers: ${SEARCH_LOG_RECORD_HEADERS:false}
+      timeout-threshold-ms: ${SEARCH_LOG_TIMEOUT_THRESHOLD:30000}

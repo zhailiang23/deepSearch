@@ -90,6 +90,7 @@
                   :index="index"
                   @edit="handleEdit(item)"
                   @delete="handleDelete(item)"
+                  @click="handleTableRowClick(item, index, $event)"
                 />
               </template>
 
@@ -112,6 +113,7 @@
                 :index="index"
                 @edit="handleEdit(row)"
                 @delete="handleDelete(row)"
+                @click="handleTableRowClick(row, index, $event)"
               />
 
               <!-- 空状态 -->
@@ -142,7 +144,7 @@
           @reach-bottom="handleReachBottom"
         >
           <template #item="{ item, index }">
-            <TableRowCard 
+            <TableRowCard
               :row="item"
               :columns="visibleColumns"
               :index="index"
@@ -151,6 +153,7 @@
               @edit="handleEdit(item)"
               @view="handleView(item)"
               @delete="handleDelete(item)"
+              @click="handleTableRowClick(item, index, $event)"
             />
           </template>
         </VirtualList>
@@ -167,6 +170,7 @@
             @edit="handleEdit(row)"
             @view="handleView(row)"
             @delete="handleDelete(row)"
+            @click="handleTableRowClick(row, index, $event)"
           />
         </div>
       </div>
@@ -224,6 +228,7 @@ import DocumentEditDialog from './DocumentEditDialog.vue'
 import DeleteConfirmDialog from './DeleteConfirmDialog.vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { debounce, throttle } from '@/utils/performance'
+import { useClickTracking } from '@/composables/useClickTracking'
 import type {
   TableColumn,
   TableRow,
@@ -232,6 +237,7 @@ import type {
   FilterConfig,
   ESIndexMapping
 } from '@/types/tableData'
+import type { SearchResult } from '@/types/searchLog'
 
 interface Props {
   data: TableRow[]
@@ -241,6 +247,8 @@ interface Props {
   defaultPageSize?: number
   enableVirtualScroll?: boolean
   height?: number
+  searchLogId?: number
+  enableClickTracking?: boolean
 }
 
 interface Emits {
@@ -254,13 +262,16 @@ interface Emits {
   (e: 'batch-delete', rows: TableRow[]): void
   (e: 'load-more'): void
   (e: 'update-document', document: TableRow): void
+  (e: 'result-click', result: SearchResult, position: number, event: MouseEvent | KeyboardEvent): void
+  (e: 'click-tracking-error', error: string): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   defaultPageSize: 20,
   enableVirtualScroll: false,
-  height: 600
+  height: 600,
+  enableClickTracking: true
 })
 
 const emit = defineEmits<Emits>()
@@ -294,6 +305,13 @@ const deleteLoading = ref(false)
 
 // Toast 初始化
 const { toast } = useToast()
+
+// 点击追踪
+const { trackClick, isTracking } = useClickTracking()
+const clickTrackingEnabled = computed(() => props.enableClickTracking && isTracking.value)
+
+// 行选择状态
+const selectedRows = ref(new Set<string>())
 
 // 计算属性
 const tableRows = computed(() => props.data)
@@ -489,6 +507,75 @@ function handleEdit(row: TableRow) {
 
 function handleView(row: TableRow) {
   emit('view', row)
+}
+
+/**
+ * 处理搜索结果点击事件
+ */
+function handleResultClick(result: SearchResult, position: number, event: MouseEvent | KeyboardEvent) {
+  // 触发点击事件给父组件
+  emit('result-click', result, position, event)
+
+  // 如果启用了点击追踪且有搜索日志ID，则记录点击
+  if (clickTrackingEnabled.value && props.searchLogId) {
+    trackResultClick(result, position, event)
+  }
+}
+
+/**
+ * 追踪搜索结果点击
+ */
+async function trackResultClick(result: SearchResult, position: number, event: MouseEvent | KeyboardEvent) {
+  if (!props.searchLogId) {
+    console.warn('无法追踪点击：缺少搜索日志ID')
+    return
+  }
+
+  try {
+    await trackClick(props.searchLogId, result, position, event)
+  } catch (error: any) {
+    console.error('点击追踪失败:', error)
+    emit('click-tracking-error', error.message || '点击追踪失败')
+  }
+}
+
+/**
+ * 将表格行转换为搜索结果格式
+ */
+function convertRowToSearchResult(row: TableRow): SearchResult {
+  return {
+    id: row._id || row.id || '',
+    title: row.title || row.name || '未知标题',
+    url: row.url || '',
+    summary: row.summary || row.description || '',
+    score: row._score || row.score || 0,
+    ...row
+  }
+}
+
+/**
+ * 处理表格行点击事件
+ */
+function handleTableRowClick(row: TableRow, index: number, event: MouseEvent | KeyboardEvent) {
+  // 将表格行转换为搜索结果格式
+  const searchResult = convertRowToSearchResult(row)
+
+  // 调用搜索结果点击处理
+  handleResultClick(searchResult, index, event)
+}
+
+/**
+ * 切换行选择状态
+ */
+function toggleRowSelection(rowId: string) {
+  if (selectedRows.value.has(rowId)) {
+    selectedRows.value.delete(rowId)
+  } else {
+    selectedRows.value.add(rowId)
+  }
+
+  // 触发选择变更事件
+  emit('selection-change', Array.from(selectedRows.value))
 }
 
 function handleDelete(row: TableRow) {

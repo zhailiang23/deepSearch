@@ -1,12 +1,19 @@
 <template>
-  <div 
+  <div
     :class="[
-      'table-row-card bg-white border border-gray-200 rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-shadow',
-      { 
+      'table-row-card bg-white border border-gray-200 rounded-lg p-4 mb-3 shadow-sm hover:shadow-md transition-all cursor-pointer',
+      {
         'border-emerald-300 bg-emerald-50': selected,
-        'opacity-75': row._score !== undefined && row._score < 0.5
+        'opacity-75': row._score !== undefined && row._score < 0.5,
+        'bg-green-50 border-green-300': isClicked
       }
     ]"
+    @click="handleCardClick"
+    @keydown.enter="handleKeyboardClick"
+    @keydown.space.prevent="handleKeyboardClick"
+    tabindex="0"
+    role="button"
+    :aria-label="`卡片 ${index + 1}`"
   >
     <!-- 卡片头部 -->
     <div class="card-header flex items-start justify-between mb-3">
@@ -220,6 +227,7 @@ interface Emits {
   (e: 'edit', row: TableRow): void
   (e: 'view', row: TableRow): void
   (e: 'delete', row: TableRow): void
+  (e: 'click', row: TableRow, index: number, event: MouseEvent | KeyboardEvent): void
 }
 
 const props = defineProps<Props>()
@@ -227,6 +235,7 @@ const emit = defineEmits<Emits>()
 
 // 响应式状态
 const expanded = ref(false)
+const isClicked = ref(false)
 
 // 字段分组
 const primaryColumns = computed(() => {
@@ -287,6 +296,44 @@ function toggleExpanded() {
   expanded.value = !expanded.value
 }
 
+/**
+ * 处理卡片点击事件
+ */
+function handleCardClick(event: MouseEvent) {
+  // 防止操作按钮、选择框和展开按钮触发卡片点击
+  const target = event.target as HTMLElement
+  if (
+    target.closest('button') ||
+    target.closest('input[type="checkbox"]') ||
+    target.closest('.dropdown-menu')
+  ) {
+    return
+  }
+
+  // 显示点击反馈
+  isClicked.value = true
+  setTimeout(() => {
+    isClicked.value = false
+  }, 200)
+
+  emit('click', props.row, props.index, event)
+}
+
+/**
+ * 处理键盘点击事件
+ */
+function handleKeyboardClick(event: KeyboardEvent) {
+  if (event.code === 'Enter' || event.code === 'Space') {
+    // 显示点击反馈
+    isClicked.value = true
+    setTimeout(() => {
+      isClicked.value = false
+    }, 200)
+
+    emit('click', props.row, props.index, event)
+  }
+}
+
 // 事件处理
 function handleSelect() {
   emit('select', props.row._id)
@@ -343,6 +390,24 @@ function exportJson() {
 /* 选中状态 */
 .table-row-card.border-emerald-300 {
   box-shadow: 0 0 0 1px #10b981;
+}
+
+/* 点击反馈样式 */
+.table-row-card.bg-green-50 {
+  background-color: #f0fdf4 !important;
+  border-color: #22c55e !important;
+  transform: scale(0.98);
+}
+
+/* 焦点样式 */
+.table-row-card:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #10b981;
+}
+
+/* 卡片点击动画 */
+.table-row-card:active {
+  transform: scale(0.995);
 }
 
 /* 字段行样式 */

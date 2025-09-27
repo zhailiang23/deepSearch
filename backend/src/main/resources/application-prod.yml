@@ -14,9 +14,48 @@ spring:
       ddl-auto: validate  # 生产环境不自动创建表
     show-sql: false
 
+# 搜索日志配置
+search:
+  log:
+    enabled: true
+    retention:
+      days: 90  # 生产环境保留90天
+    cleanup:
+      enabled: true
+      batch-size: 5000
+      schedule: "0 0 3 * * ?"  # 每天凌晨3点清理
+    async:
+      core-pool-size: 4
+      max-pool-size: 10
+      queue-capacity: 1000
+    monitor:
+      enabled: true
+
+# Actuator和监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: production
+
 # 生产环境日志级别
 logging:
   level:
     root: WARN
     com.ynet.mgmt: INFO
+    com.ynet.mgmt.searchlog: INFO
+    com.ynet.mgmt.monitor: INFO
     org.hibernate.SQL: WARN
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
