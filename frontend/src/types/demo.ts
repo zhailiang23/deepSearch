@@ -137,8 +137,8 @@ export const DEFAULT_SEARCH_DEMO_CONFIG: SearchDemoConfig = {
     allowMultiple: true
   },
   pinyinSearch: {
-    enabled: false,
-    mode: 'fuzzy',
+    enabled: true,
+    mode: 'both',
     toneIgnore: true,
     segmentMatch: true
   },

@@ -92,11 +92,6 @@
             </div>
 
             <div class="flex items-center justify-between">
-              <Label class="text-xs">自动搜索</Label>
-              <Switch v-model:checked="localConfig.searchBehavior.autoSearch" />
-            </div>
-
-            <div class="flex items-center justify-between">
               <Label class="text-xs">高亮匹配</Label>
               <Switch v-model:checked="localConfig.searchBehavior.highlightMatch" />
             </div>
@@ -116,11 +111,6 @@
                 step="50"
                 class="h-8 text-xs"
               />
-            </div>
-
-            <div class="flex items-center justify-between">
-              <Label class="text-xs">显示元数据</Label>
-              <Switch v-model:checked="localConfig.resultDisplay.showMetadata" />
             </div>
 
             <div class="flex items-center justify-between">
