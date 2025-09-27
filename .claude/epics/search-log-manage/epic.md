@@ -120,7 +120,7 @@ High-level task categories that will be created:
 5. 性能测试和优化调整
 
 ## Tasks Created
-- [ ] 084.md - 数据库表设计与创建 (parallel: true) - GitHub: #84
+- [x] 084.md - 数据库表设计与创建 (parallel: true) - GitHub: #84
 - [ ] 085.md - JPA实体类实现 (parallel: true) - GitHub: #85
 - [ ] 086.md - AOP日志记录切面实现 (parallel: true, depends_on: [085]) - GitHub: #86
 - [ ] 087.md - 搜索日志服务层实现 (parallel: true, depends_on: [085]) - GitHub: #87
