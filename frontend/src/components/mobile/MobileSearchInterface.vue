@@ -76,20 +76,6 @@
             </div>
           </div>
 
-          <!-- 搜索空间标签 -->
-          <div v-if="selectedSpaces.length > 0" class="search-spaces">
-            <div
-              v-for="space in selectedSpaces"
-              :key="space.id"
-              class="space-chip"
-              :class="{ 'active': activeSpace === space.id }"
-              @click="setActiveSpace(space.id)"
-            >
-              <div class="space-status" :class="`status-${space.indexStatus}`"></div>
-              <span class="space-name">{{ space.name }}</span>
-              <span class="space-count">({{ formatCount(space.docCount || 0) }})</span>
-            </div>
-          </div>
 
           <!-- 搜索结果区域 -->
           <div class="results-container">
@@ -99,12 +85,18 @@
               <p class="loading-text">搜索中...</p>
             </div>
 
+            <!-- 错误状态 -->
+            <div v-else-if="searchError" class="error-state">
+              <div class="error-icon">❌</div>
+              <h3 class="error-title">搜索失败</h3>
+              <p class="error-message">{{ searchError }}</p>
+              <button @click="retrySearch" class="retry-btn">
+                重试
+              </button>
+            </div>
+
             <!-- 搜索结果 -->
             <div v-else-if="results.length > 0" class="results-list">
-              <div class="results-header">
-                <span class="results-count">找到 {{ totalResults }} 条结果</span>
-                <span class="results-time">{{ searchDuration }}ms</span>
-              </div>
 
               <div
                 v-for="result in results"
@@ -113,17 +105,13 @@
                 @click="viewResult(result)"
               >
                 <div class="result-header">
-                  <h3 class="result-title" v-html="highlightText(result.title)"></h3>
+                  <div class="result-title-wrapper">
+                    <h3 class="result-title" v-html="highlightText(result.title)"></h3>
+                    <span v-if="result.source?.type" class="result-type-tag">{{ result.source.type }}</span>
+                  </div>
                   <span v-if="showScore" class="result-score">{{ result.score?.toFixed(2) }}</span>
                 </div>
-                <p class="result-summary" v-html="highlightText(result.summary)"></p>
-                <div class="result-meta">
-                  <span class="result-index">{{ result.index }}</span>
-                  <span v-if="result.type" class="result-type">{{ result.type }}</span>
-                  <span v-if="showMetadata && result.createdAt" class="result-date">
-                    {{ formatDate(result.createdAt) }}
-                  </span>
-                </div>
+                <p class="result-summary" v-html="highlightText(result.source?.descript || result.summary)"></p>
               </div>
 
               <!-- 加载更多 -->
@@ -187,7 +175,8 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useMobileSearchDemoStore } from '@/stores/mobileSearchDemo'
 import { useInfiniteScroll } from '@vueuse/core'
-import type { SearchResult } from '@/types/demo'
+import { SearchDataService, transformSearchResponse } from '@/api/searchData'
+import type { SearchResult, SearchResponse } from '@/types/demo'
 
 // 组件Props
 interface Props {
@@ -223,6 +212,7 @@ const hasMore = computed(() => store.searchState.hasMore)
 const totalResults = computed(() => store.searchState.total)
 const searchDuration = computed(() => store.searchState.duration)
 const searchHistory = computed(() => store.searchHistory)
+const searchError = computed(() => store.searchState.error)
 
 // 从配置获取显示选项
 const showScore = computed(() => store.config.resultDisplay.showScore)
@@ -259,9 +249,7 @@ const performSearch = async () => {
   showSuggestions.value = false
 
   try {
-    // 这里应该调用实际的搜索API
-    // 现在使用模拟数据
-    await mockSearch()
+    await realSearch()
 
     // 添加到搜索历史
     store.addToHistory({
@@ -272,40 +260,78 @@ const performSearch = async () => {
 
   } catch (error) {
     console.error('搜索失败:', error)
+    // 如果搜索失败，可以考虑fallback到模拟数据或显示错误信息
+    store.setSearchState({
+      loading: false,
+      error: error instanceof Error ? error.message : '搜索失败，请重试'
+    })
   }
 }
 
-const mockSearch = async () => {
+const realSearch = async () => {
+  // 检查是否选择了搜索空间
+  if (selectedSpaces.value.length === 0) {
+    throw new Error('请先选择搜索空间')
+  }
+
+  const startTime = Date.now()
   store.setSearchState({ loading: true, query: searchQuery.value })
 
-  // 模拟搜索延迟
-  await new Promise(resolve => setTimeout(resolve, 800))
+  try {
+    // 构建搜索请求参数
+    const searchRequest = {
+      searchSpaceId: selectedSpaces.value[0].id, // 目前只支持单个搜索空间
+      query: searchQuery.value,
+      page: 1,
+      size: store.config.pagination.pageSize,
+      enablePinyinSearch: store.config.pinyinSearch.enabled,
+      pinyinMode: store.config.pinyinSearch.enabled ?
+        (store.config.pinyinSearch.mode === 'fuzzy' ? 'FUZZY' as const :
+         store.config.pinyinSearch.mode === 'exact' ? 'STRICT' as const : 'AUTO' as const) : 'AUTO' as const
+    }
 
-  // 模拟搜索结果
-  const mockResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
-    id: `result-${i + 1}`,
-    title: `搜索结果 ${i + 1} - ${searchQuery.value}`,
-    summary: `这是关于"${searchQuery.value}"的搜索结果摘要，包含了相关的详细信息...`,
-    score: Math.random() * 10,
-    source: { type: 'document', category: 'general' },
-    index: selectedSpaces.value[0]?.id || 'default',
-    type: 'document',
-    createdAt: new Date().toISOString()
-  }))
+    console.log('搜索请求参数:', searchRequest)
 
-  store.setResults(mockResults)
-  store.setSearchState({
-    loading: false,
-    hasMore: true,
-    total: 156,
-    duration: Math.floor(Math.random() * 200) + 50,
-    page: 1
-  })
+    // 调用搜索API
+    const backendResponse = await SearchDataService.searchData(searchRequest)
+
+    // 转换响应格式
+    const searchResponse = transformSearchResponse(backendResponse)
+
+    // 计算搜索耗时
+    const duration = Date.now() - startTime
+
+    // 更新store状态
+    store.setResults(searchResponse.results)
+    store.setSearchState({
+      loading: false,
+      hasMore: searchResponse.hasMore,
+      total: searchResponse.total,
+      duration,
+      page: searchResponse.page
+    })
+
+    console.log('搜索完成:', {
+      total: searchResponse.total,
+      results: searchResponse.results.length,
+      duration
+    })
+
+  } catch (error) {
+    console.error('真实搜索失败:', error)
+    throw error
+  }
 }
 
 const clearSearch = () => {
   searchQuery.value = ''
   store.clearResults()
+}
+
+const retrySearch = () => {
+  if (searchQuery.value) {
+    performSearch()
+  }
 }
 
 const selectSuggestion = (suggestion: string) => {
@@ -322,32 +348,51 @@ const setActiveSpace = (spaceId: string) => {
 }
 
 const loadMore = async () => {
-  if (isLoadingMore.value || !hasMore.value) return
+  if (isLoadingMore.value || !hasMore.value || selectedSpaces.value.length === 0) return
 
   isLoadingMore.value = true
 
-  // 模拟加载延迟
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  try {
+    const nextPage = store.searchState.page + 1
 
-  // 模拟更多结果
-  const moreResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
-    id: `result-${results.value.length + i + 1}`,
-    title: `搜索结果 ${results.value.length + i + 1} - ${searchQuery.value}`,
-    summary: `这是关于"${searchQuery.value}"的更多搜索结果...`,
-    score: Math.random() * 10,
-    source: { type: 'document', category: 'general' },
-    index: selectedSpaces.value[0]?.id || 'default',
-    type: 'document',
-    createdAt: new Date().toISOString()
-  }))
+    // 构建加载更多的搜索请求参数
+    const searchRequest = {
+      searchSpaceId: selectedSpaces.value[0].id,
+      query: searchQuery.value,
+      page: nextPage,
+      size: store.config.pagination.pageSize,
+      enablePinyinSearch: store.config.pinyinSearch.enabled,
+      pinyinMode: store.config.pinyinSearch.enabled ?
+        (store.config.pinyinSearch.mode === 'fuzzy' ? 'FUZZY' as const :
+         store.config.pinyinSearch.mode === 'exact' ? 'STRICT' as const : 'AUTO' as const) : 'AUTO' as const
+    }
 
-  store.setResults(moreResults, true)
-  store.setSearchState({
-    hasMore: results.value.length < 50,
-    page: store.searchState.page + 1
-  })
+    console.log('加载更多请求参数:', searchRequest)
 
-  isLoadingMore.value = false
+    // 调用搜索API获取下一页数据
+    const backendResponse = await SearchDataService.searchData(searchRequest)
+
+    // 转换响应格式
+    const searchResponse = transformSearchResponse(backendResponse)
+
+    // 追加新结果到现有结果
+    store.setResults(searchResponse.results, true)
+    store.setSearchState({
+      hasMore: searchResponse.hasMore,
+      page: nextPage
+    })
+
+    console.log('加载更多完成:', {
+      page: nextPage,
+      newResults: searchResponse.results.length,
+      totalResults: store.results.length
+    })
+
+  } catch (error) {
+    console.error('加载更多失败:', error)
+  } finally {
+    isLoadingMore.value = false
+  }
 }
 
 const viewResult = (result: SearchResult) => {
@@ -481,6 +526,7 @@ watch(() => selectedSpaces.value, () => {
 /* 搜索应用 */
 .search-app {
   @apply flex-1 flex flex-col bg-gray-50;
+  min-height: 0; /* 确保flex容器高度正确 */
 }
 
 .app-header {
@@ -557,6 +603,7 @@ watch(() => selectedSpaces.value, () => {
 /* 结果容器 */
 .results-container {
   @apply flex-1 overflow-y-auto;
+  min-height: 0; /* 确保flex子元素可以滚动 */
 }
 
 .loading-state {
@@ -587,8 +634,16 @@ watch(() => selectedSpaces.value, () => {
   @apply flex items-start justify-between gap-2 mb-2;
 }
 
+.result-title-wrapper {
+  @apply flex items-center gap-2 flex-1;
+}
+
 .result-title {
-  @apply text-sm font-semibold text-gray-900 flex-1;
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.result-type-tag {
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800 flex-shrink-0;
 }
 
 .result-score {
@@ -647,6 +702,27 @@ watch(() => selectedSpaces.value, () => {
 
 .empty-message, .welcome-message {
   @apply text-sm text-gray-600 text-center;
+}
+
+/* 错误状态 */
+.error-state {
+  @apply flex flex-col items-center justify-center py-12 px-6;
+}
+
+.error-icon {
+  @apply text-4xl mb-4;
+}
+
+.error-title {
+  @apply text-lg font-semibold text-red-600 mb-2;
+}
+
+.error-message {
+  @apply text-sm text-red-500 text-center mb-4;
+}
+
+.retry-btn {
+  @apply px-6 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors;
 }
 
 .search-history {

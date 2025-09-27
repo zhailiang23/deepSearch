@@ -1,0 +1,2002 @@
+[
+  {
+    "id": "func_001",
+    "name": "转账汇款",
+    "type": "功能",
+    "descript": "支持本行及跨行转账汇款服务，实时到账安全便捷",
+    "link": "/function/transfer",
+    "category": "资金管理",
+    "permission": "TRANSFER",
+    "frequency": 95
+  },
+  {
+    "id": "func_002",
+    "name": "账户查询",
+    "type": "功能",
+    "descript": "查看账户余额、交易明细、资产概览等信息",
+    "link": "/function/account-inquiry",
+    "category": "账户服务",
+    "permission": "INQUIRY",
+    "frequency": 100
+  },
+  {
+    "id": "func_003",
+    "name": "信用卡还款",
+    "type": "功能",
+    "descript": "支持本行及他行信用卡还款，手续费优惠",
+    "link": "/function/credit-card-repay",
+    "category": "信用卡服务",
+    "permission": "PAYMENT",
+    "frequency": 88
+  },
+  {
+    "id": "func_004",
+    "name": "理财购买",
+    "type": "功能",
+    "descript": "在线购买各类理财产品，收益稳健安全可靠",
+    "link": "/function/wealth-purchase",
+    "category": "投资理财",
+    "permission": "INVESTMENT",
+    "frequency": 75
+  },
+  {
+    "id": "func_005",
+    "name": "贷款申请",
+    "type": "功能",
+    "descript": "在线申请个人贷款、房贷、车贷等各类贷款产品",
+    "link": "/function/loan-apply",
+    "category": "贷款服务",
+    "permission": "LOAN",
+    "frequency": 65
+  },
+  {
+    "id": "func_006",
+    "name": "外汇买卖",
+    "type": "功能",
+    "descript": "实时外汇牌价查询，支持多币种兑换交易",
+    "link": "/function/forex-trading",
+    "category": "外汇服务",
+    "permission": "FOREX",
+    "frequency": 45
+  },
+  {
+    "id": "func_007",
+    "name": "手机充值",
+    "type": "功能",
+    "descript": "支持三大运营商手机话费充值，秒到账",
+    "link": "/function/mobile-recharge",
+    "category": "生活缴费",
+    "permission": "RECHARGE",
+    "frequency": 82
+  },
+  {
+    "id": "func_008",
+    "name": "水电燃气缴费",
+    "type": "功能",
+    "descript": "便民缴费服务，支持水费、电费、燃气费缴纳",
+    "link": "/function/utility-payment",
+    "category": "生活缴费",
+    "permission": "UTILITY",
+    "frequency": 78
+  },
+  {
+    "id": "func_009",
+    "name": "定期存款",
+    "type": "功能",
+    "descript": "办理定期存款业务，期限灵活利率优惠",
+    "link": "/function/term-deposit",
+    "category": "存款服务",
+    "permission": "DEPOSIT",
+    "frequency": 85
+  },
+  {
+    "id": "func_010",
+    "name": "活期存款",
+    "type": "功能",
+    "descript": "活期存款账户管理，随存随取方便快捷",
+    "link": "/function/current-deposit",
+    "category": "存款服务",
+    "permission": "DEPOSIT",
+    "frequency": 92
+  },
+  {
+    "id": "func_011",
+    "name": "基金购买",
+    "type": "功能",
+    "descript": "代销各类基金产品，专业投资顾问服务",
+    "link": "/function/fund-purchase",
+    "category": "投资理财",
+    "permission": "INVESTMENT",
+    "frequency": 68
+  },
+  {
+    "id": "func_012",
+    "name": "保险购买",
+    "type": "功能",
+    "descript": "代理销售保险产品，保障您的美好生活",
+    "link": "/function/insurance-purchase",
+    "category": "保险服务",
+    "permission": "INSURANCE",
+    "frequency": 55
+  },
+  {
+    "id": "func_013",
+    "name": "密码修改",
+    "type": "功能",
+    "descript": "修改登录密码、交易密码等安全设置",
+    "link": "/function/password-change",
+    "category": "安全设置",
+    "permission": "SECURITY",
+    "frequency": 72
+  },
+  {
+    "id": "func_014",
+    "name": "预约取号",
+    "type": "功能",
+    "descript": "网点排队预约取号，节省您的宝贵时间",
+    "link": "/function/queue-booking",
+    "category": "网点服务",
+    "permission": "BOOKING",
+    "frequency": 58
+  },
+  {
+    "id": "func_015",
+    "name": "积分查询",
+    "type": "功能",
+    "descript": "查询账户积分余额及积分明细记录",
+    "link": "/function/points-inquiry",
+    "category": "积分服务",
+    "permission": "INQUIRY",
+    "frequency": 63
+  },
+  {
+    "id": "func_016",
+    "name": "汇率查询",
+    "type": "功能",
+    "descript": "实时汇率查询，支持多种货币汇率比较",
+    "link": "/function/exchange-rate",
+    "category": "外汇服务",
+    "permission": "INQUIRY",
+    "frequency": 71
+  },
+  {
+    "id": "func_017",
+    "name": "网点查询",
+    "type": "功能",
+    "descript": "查找附近营业网点及ATM位置信息",
+    "link": "/function/branch-locator",
+    "category": "网点服务",
+    "permission": "INQUIRY",
+    "frequency": 66
+  },
+  {
+    "id": "func_018",
+    "name": "客服咨询",
+    "type": "功能",
+    "descript": "在线客服咨询，7x24小时专业服务",
+    "link": "/function/customer-service",
+    "category": "客户服务",
+    "permission": "INQUIRY",
+    "frequency": 74
+  },
+  {
+    "id": "func_019",
+    "name": "投诉建议",
+    "type": "功能",
+    "descript": "提交投诉建议，我们将及时处理回复",
+    "link": "/function/complaint",
+    "category": "客户服务",
+    "permission": "COMPLAINT",
+    "frequency": 35
+  },
+  {
+    "id": "func_020",
+    "name": "电子回单",
+    "type": "功能",
+    "descript": "下载打印电子回单，交易凭证安全保存",
+    "link": "/function/e-receipt",
+    "category": "账户服务",
+    "permission": "INQUIRY",
+    "frequency": 59
+  },
+  {
+    "id": "func_021",
+    "name": "限额设置",
+    "type": "功能",
+    "descript": "设置转账限额、消费限额等安全保护",
+    "link": "/function/limit-setting",
+    "category": "安全设置",
+    "permission": "SECURITY",
+    "frequency": 52
+  },
+  {
+    "id": "func_022",
+    "name": "绑定设备",
+    "type": "功能",
+    "descript": "绑定常用设备，提升账户安全等级",
+    "link": "/function/device-binding",
+    "category": "安全设置",
+    "permission": "SECURITY",
+    "frequency": 48
+  },
+  {
+    "id": "func_023",
+    "name": "消息通知",
+    "type": "功能",
+    "descript": "设置交易提醒、活动通知等消息推送",
+    "link": "/function/notification",
+    "category": "账户服务",
+    "permission": "SETTING",
+    "frequency": 61
+  },
+  {
+    "id": "func_024",
+    "name": "信用报告",
+    "type": "功能",
+    "descript": "查询个人信用报告，了解信用状况",
+    "link": "/function/credit-report",
+    "category": "信用服务",
+    "permission": "CREDIT",
+    "frequency": 42
+  },
+  {
+    "id": "func_025",
+    "name": "证书管理",
+    "type": "功能",
+    "descript": "数字证书下载安装，保障交易安全",
+    "link": "/function/certificate",
+    "category": "安全设置",
+    "permission": "SECURITY",
+    "frequency": 38
+  },
+  {
+    "id": "func_026",
+    "name": "收款码",
+    "type": "功能",
+    "descript": "生成个人收款二维码，便捷收款服务",
+    "link": "/function/qr-payment",
+    "category": "支付服务",
+    "permission": "PAYMENT",
+    "frequency": 76
+  },
+  {
+    "id": "func_027",
+    "name": "年费查询",
+    "type": "功能",
+    "descript": "查询银行卡年费、管理费等费用信息",
+    "link": "/function/fee-inquiry",
+    "category": "账户服务",
+    "permission": "INQUIRY",
+    "frequency": 44
+  },
+  {
+    "id": "func_028",
+    "name": "流水打印",
+    "type": "功能",
+    "descript": "打印账户流水明细，支持多种格式导出",
+    "link": "/function/statement-print",
+    "category": "账户服务",
+    "permission": "INQUIRY",
+    "frequency": 67
+  },
+  {
+    "id": "func_029",
+    "name": "约定转账",
+    "type": "功能",
+    "descript": "设置定期自动转账，工资理财更便捷",
+    "link": "/function/scheduled-transfer",
+    "category": "资金管理",
+    "permission": "TRANSFER",
+    "frequency": 41
+  },
+  {
+    "id": "func_030",
+    "name": "大额预约",
+    "type": "功能",
+    "descript": "大额现金取款预约，确保网点现金充足",
+    "link": "/function/large-withdrawal",
+    "category": "网点服务",
+    "permission": "BOOKING",
+    "frequency": 29
+  },
+  {
+    "id": "func_031",
+    "name": "数字钱包",
+    "type": "功能",
+    "descript": "开通数字人民币钱包，体验数字货币",
+    "link": "/function/digital-wallet",
+    "category": "支付服务",
+    "permission": "WALLET",
+    "frequency": 33
+  },
+  {
+    "id": "func_032",
+    "name": "结汇购汇",
+    "type": "功能",
+    "descript": "外汇结汇购汇业务，汇率优惠服务专业",
+    "link": "/function/forex-exchange",
+    "category": "外汇服务",
+    "permission": "FOREX",
+    "frequency": 39
+  },
+  {
+    "id": "func_033",
+    "name": "预约开户",
+    "type": "功能",
+    "descript": "网上预约开户服务，到店即办高效便捷",
+    "link": "/function/account-booking",
+    "category": "网点服务",
+    "permission": "BOOKING",
+    "frequency": 46
+  },
+  {
+    "id": "func_034",
+    "name": "企业服务",
+    "type": "功能",
+    "descript": "企业网银登录，企业金融服务专区",
+    "link": "/function/corporate",
+    "category": "企业服务",
+    "permission": "CORPORATE",
+    "frequency": 51
+  },
+  {
+    "id": "func_035",
+    "name": "征信查询",
+    "type": "功能",
+    "descript": "个人征信记录查询，信用状况一目了然",
+    "link": "/function/credit-inquiry",
+    "category": "信用服务",
+    "permission": "CREDIT",
+    "frequency": 47
+  },
+  {
+    "id": "func_036",
+    "name": "安全退出",
+    "type": "功能",
+    "descript": "安全退出网银系统，保护账户信息安全",
+    "link": "/function/logout",
+    "category": "安全设置",
+    "permission": "BASIC",
+    "frequency": 100
+  },
+  {
+    "id": "func_037",
+    "name": "登录历史",
+    "type": "功能",
+    "descript": "查看登录记录，监控账户安全状态",
+    "link": "/function/login-history",
+    "category": "安全设置",
+    "permission": "SECURITY",
+    "frequency": 54
+  },
+  {
+    "id": "func_038",
+    "name": "商城购物",
+    "type": "功能",
+    "descript": "积分商城购物，精选好物积分兑换",
+    "link": "/function/mall",
+    "category": "积分服务",
+    "permission": "MALL",
+    "frequency": 57
+  },
+  {
+    "id": "func_039",
+    "name": "理财顾问",
+    "type": "功能",
+    "descript": "专属理财顾问服务，个性化投资建议",
+    "link": "/function/wealth-advisor",
+    "category": "投资理财",
+    "permission": "ADVISOR",
+    "frequency": 36
+  },
+  {
+    "id": "func_040",
+    "name": "风险评估",
+    "type": "功能",
+    "descript": "投资风险承受能力评估，科学理财规划",
+    "link": "/function/risk-assessment",
+    "category": "投资理财",
+    "permission": "ASSESSMENT",
+    "frequency": 43
+  },
+  {
+    "id": "func_041",
+    "name": "生活助手",
+    "type": "功能",
+    "descript": "生活服务助手，缴费购物一站式服务",
+    "link": "/function/life-assistant",
+    "category": "生活服务",
+    "permission": "LIFE",
+    "frequency": 62
+  },
+  {
+    "id": "func_042",
+    "name": "智能客服",
+    "type": "功能",
+    "descript": "AI智能客服机器人，24小时在线服务",
+    "link": "/function/ai-service",
+    "category": "客户服务",
+    "permission": "INQUIRY",
+    "frequency": 69
+  },
+  {
+    "id": "func_043",
+    "name": "财富管理",
+    "type": "功能",
+    "descript": "高端财富管理服务，专业投资咨询",
+    "link": "/function/wealth-management",
+    "category": "投资理财",
+    "permission": "WEALTH",
+    "frequency": 31
+  },
+  {
+    "id": "func_044",
+    "name": "金融日历",
+    "type": "功能",
+    "descript": "金融事件提醒，重要日期不错过",
+    "link": "/function/finance-calendar",
+    "category": "资讯服务",
+    "permission": "INQUIRY",
+    "frequency": 34
+  },
+  {
+    "id": "func_045",
+    "name": "市场行情",
+    "type": "功能",
+    "descript": "实时金融市场行情，投资决策参考",
+    "link": "/function/market-data",
+    "category": "投资理财",
+    "permission": "MARKET",
+    "frequency": 56
+  },
+  {
+    "id": "func_046",
+    "name": "银行公告",
+    "type": "功能",
+    "descript": "银行重要公告通知，及时了解政策变化",
+    "link": "/function/announcements",
+    "category": "资讯服务",
+    "permission": "INQUIRY",
+    "frequency": 49
+  },
+  {
+    "id": "func_047",
+    "name": "优惠活动",
+    "type": "功能",
+    "descript": "最新优惠活动信息，享受更多金融福利",
+    "link": "/function/promotions",
+    "category": "营销服务",
+    "permission": "INQUIRY",
+    "frequency": 73
+  },
+  {
+    "id": "func_048",
+    "name": "账单分期",
+    "type": "功能",
+    "descript": "信用卡账单分期服务，减轻还款压力",
+    "link": "/function/installment",
+    "category": "信用卡服务",
+    "permission": "INSTALLMENT",
+    "frequency": 64
+  },
+  {
+    "id": "func_049",
+    "name": "额度查询",
+    "type": "功能",
+    "descript": "查询信用卡额度、贷款额度等信息",
+    "link": "/function/limit-inquiry",
+    "category": "信用服务",
+    "permission": "INQUIRY",
+    "frequency": 77
+  },
+  {
+    "id": "func_050",
+    "name": "快捷支付",
+    "type": "功能",
+    "descript": "开通快捷支付功能，支付更加便捷",
+    "link": "/function/quick-payment",
+    "category": "支付服务",
+    "permission": "PAYMENT",
+    "frequency": 81
+  },
+  {
+    "id": "activity_001",
+    "name": "新春理财节",
+    "type": "活动",
+    "descript": "新春特惠理财产品，年化收益率高达5.8%，限时抢购",
+    "link": "/activity/spring-finance",
+    "startDate": "2024-02-01",
+    "endDate": "2024-02-29",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_002",
+    "name": "积分兑换大促",
+    "type": "活动",
+    "descript": "积分兑换好礼，话费、油卡、购物卡等丰富奖品等你来",
+    "link": "/activity/points-exchange",
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_003",
+    "name": "开户有礼",
+    "type": "活动",
+    "descript": "新用户开户即享200元现金红包，更有精美礼品相送",
+    "link": "/activity/new-account-gift",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_004",
+    "name": "转账免手续费",
+    "type": "活动",
+    "descript": "手机银行转账免手续费，跨行转账也免费",
+    "link": "/activity/free-transfer",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_005",
+    "name": "理财节专享",
+    "type": "活动",
+    "descript": "专享理财产品年化收益6.2%，限额发售先到先得",
+    "link": "/activity/wealth-festival",
+    "startDate": "2024-03-01",
+    "endDate": "2024-03-15",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_006",
+    "name": "信用卡推广月",
+    "type": "活动",
+    "descript": "申请信用卡免年费，首刷即送500积分",
+    "link": "/activity/credit-card-promo",
+    "startDate": "2024-02-15",
+    "endDate": "2024-03-15",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_007",
+    "name": "存款送好礼",
+    "type": "活动",
+    "descript": "新增定期存款满10万元，即送价值千元家电",
+    "link": "/activity/deposit-gift",
+    "startDate": "2024-01-20",
+    "endDate": "2024-04-20",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_008",
+    "name": "消费返现活动",
+    "type": "活动",
+    "descript": "使用银行卡消费满额返现，最高返现5%",
+    "link": "/activity/cashback",
+    "startDate": "2024-02-01",
+    "endDate": "2024-02-29",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_009",
+    "name": "基金定投优惠",
+    "type": "活动",
+    "descript": "基金定投手续费全免，智能投资从这里开始",
+    "link": "/activity/fund-aip-promo",
+    "startDate": "2024-01-01",
+    "endDate": "2024-06-30",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_010",
+    "name": "外汇交易大赛",
+    "type": "活动",
+    "descript": "外汇模拟交易大赛，奖金池高达10万元",
+    "link": "/activity/forex-contest",
+    "startDate": "2024-03-01",
+    "endDate": "2024-05-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_011",
+    "name": "生活缴费优惠",
+    "type": "活动",
+    "descript": "水电燃气缴费9.5折优惠，生活服务更实惠",
+    "link": "/activity/utility-discount",
+    "startDate": "2024-02-10",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_012",
+    "name": "保险购买季",
+    "type": "活动",
+    "descript": "购买保险产品享受保费优惠，保障生活安心",
+    "link": "/activity/insurance-season",
+    "startDate": "2024-03-01",
+    "endDate": "2024-03-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_013",
+    "name": "青年专享福利",
+    "type": "活动",
+    "descript": "18-30岁青年客户专享低息贷款和理财优惠",
+    "link": "/activity/youth-benefit",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_014",
+    "name": "老客户回馈",
+    "type": "活动",
+    "descript": "老客户专享高收益理财产品，感恩一路相伴",
+    "link": "/activity/loyal-customer",
+    "startDate": "2024-02-01",
+    "endDate": "2024-05-01",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_015",
+    "name": "移动支付推广",
+    "type": "活动",
+    "descript": "使用手机银行支付享受随机立减优惠",
+    "link": "/activity/mobile-pay-promo",
+    "startDate": "2024-01-15",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_016",
+    "name": "企业金融服务月",
+    "type": "活动",
+    "descript": "企业客户专享贷款利率优惠和理财产品",
+    "link": "/activity/corporate-month",
+    "startDate": "2024-04-01",
+    "endDate": "2024-04-30",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_017",
+    "name": "数字货币体验",
+    "type": "活动",
+    "descript": "数字人民币体验活动，注册即送体验金",
+    "link": "/activity/digital-currency",
+    "startDate": "2024-02-20",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_018",
+    "name": "投资者教育月",
+    "type": "活动",
+    "descript": "免费投资理财讲座，专家传授投资技巧",
+    "link": "/activity/investor-education",
+    "startDate": "2024-03-01",
+    "endDate": "2024-03-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_019",
+    "name": "绿色金融倡议",
+    "type": "活动",
+    "descript": "支持绿色项目贷款享受利率优惠",
+    "link": "/activity/green-finance",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_020",
+    "name": "客户满意度调研",
+    "type": "活动",
+    "descript": "参与满意度调研，赢取精美礼品和现金奖励",
+    "link": "/activity/satisfaction-survey",
+    "startDate": "2024-02-01",
+    "endDate": "2024-02-28",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_021",
+    "name": "网点体验日",
+    "type": "活动",
+    "descript": "到网点体验智能设备，享受专属服务",
+    "link": "/activity/branch-experience",
+    "startDate": "2024-03-15",
+    "endDate": "2024-03-16",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_022",
+    "name": "财富管理沙龙",
+    "type": "活动",
+    "descript": "高端客户专享财富管理沙龙，投资大师分享",
+    "link": "/activity/wealth-salon",
+    "startDate": "2024-04-15",
+    "endDate": "2024-04-15",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_023",
+    "name": "安全知识竞赛",
+    "type": "活动",
+    "descript": "网络安全知识竞赛，学习防骗技巧赢奖品",
+    "link": "/activity/security-quiz",
+    "startDate": "2024-03-01",
+    "endDate": "2024-03-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_024",
+    "name": "季末冲量活动",
+    "type": "活动",
+    "descript": "季末存款冲量，存款利率上浮20%",
+    "link": "/activity/quarter-end",
+    "startDate": "2024-03-25",
+    "endDate": "2024-03-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_025",
+    "name": "新产品发布会",
+    "type": "活动",
+    "descript": "银行新产品发布会，首批用户享受特惠价格",
+    "link": "/activity/new-product-launch",
+    "startDate": "2024-04-01",
+    "endDate": "2024-04-01",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_026",
+    "name": "跨境支付优惠",
+    "type": "活动",
+    "descript": "跨境汇款手续费5折优惠，境外消费返现",
+    "link": "/activity/cross-border-promo",
+    "startDate": "2024-02-15",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_027",
+    "name": "理财经理推荐",
+    "type": "活动",
+    "descript": "理财经理一对一服务，制定专属理财方案",
+    "link": "/activity/advisor-service",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_028",
+    "name": "节假日特惠",
+    "type": "活动",
+    "descript": "节假日期间各类金融产品特别优惠",
+    "link": "/activity/holiday-special",
+    "startDate": "2024-04-04",
+    "endDate": "2024-04-06",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_029",
+    "name": "社区银行推广",
+    "type": "活动",
+    "descript": "社区银行服务升级，就近享受专业金融服务",
+    "link": "/activity/community-bank",
+    "startDate": "2024-03-01",
+    "endDate": "2024-12-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_030",
+    "name": "金融知识普及周",
+    "type": "活动",
+    "descript": "金融知识普及活动，提升全民金融素养",
+    "link": "/activity/financial-literacy",
+    "startDate": "2024-03-20",
+    "endDate": "2024-03-26",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_031",
+    "name": "VIP客户专享",
+    "type": "活动",
+    "descript": "VIP客户专享服务升级，尊享专属权益",
+    "link": "/activity/vip-exclusive",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_032",
+    "name": "手机银行升级",
+    "type": "活动",
+    "descript": "手机银行功能升级，体验更流畅的移动金融",
+    "link": "/activity/mobile-upgrade",
+    "startDate": "2024-02-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_033",
+    "name": "环保主题活动",
+    "type": "活动",
+    "descript": "支持环保项目，享受绿色金融优惠政策",
+    "link": "/activity/eco-friendly",
+    "startDate": "2024-04-22",
+    "endDate": "2024-04-22",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_034",
+    "name": "创业贷款扶持",
+    "type": "活动",
+    "descript": "创业者专享低息贷款，助力创业梦想实现",
+    "link": "/activity/startup-loan",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_035",
+    "name": "学生专属优惠",
+    "type": "活动",
+    "descript": "在校学生专享免费银行卡和优惠理财",
+    "link": "/activity/student-benefit",
+    "startDate": "2024-09-01",
+    "endDate": "2024-12-31",
+    "status": "未开始"
+  },
+  {
+    "id": "activity_036",
+    "name": "退休人员关爱",
+    "type": "活动",
+    "descript": "退休人员专享高息存款和健康保险优惠",
+    "link": "/activity/retiree-care",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_037",
+    "name": "线上直播讲座",
+    "type": "活动",
+    "descript": "理财专家线上直播，分享投资心得和技巧",
+    "link": "/activity/online-lecture",
+    "startDate": "2024-03-10",
+    "endDate": "2024-03-10",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_038",
+    "name": "反诈骗宣传月",
+    "type": "活动",
+    "descript": "提高反诈骗意识，保护资金安全",
+    "link": "/activity/anti-fraud",
+    "startDate": "2024-05-01",
+    "endDate": "2024-05-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_039",
+    "name": "员工推荐有奖",
+    "type": "活动",
+    "descript": "员工推荐新客户开户，双方都有奖励",
+    "link": "/activity/employee-referral",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "status": "进行中"
+  },
+  {
+    "id": "activity_040",
+    "name": "智能投顾体验",
+    "type": "活动",
+    "descript": "免费体验智能投顾服务，AI助力投资决策",
+    "link": "/activity/robo-advisor",
+    "startDate": "2024-03-01",
+    "endDate": "2024-12-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_041",
+    "name": "房贷优惠季",
+    "type": "活动",
+    "descript": "房屋贷款利率优惠，首套房更有特别折扣",
+    "link": "/activity/mortgage-promo",
+    "startDate": "2024-04-01",
+    "endDate": "2024-06-30",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_042",
+    "name": "汽车分期购车节",
+    "type": "活动",
+    "descript": "汽车贷款利率优惠，分期购车更轻松",
+    "link": "/activity/auto-loan-festival",
+    "startDate": "2024-05-01",
+    "endDate": "2024-05-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_043",
+    "name": "外币理财推广",
+    "type": "活动",
+    "descript": "外币理财产品新上线，享受汇率红利",
+    "link": "/activity/forex-wealth",
+    "startDate": "2024-03-15",
+    "endDate": "2024-12-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_044",
+    "name": "私人银行体验",
+    "type": "活动",
+    "descript": "高净值客户私人银行服务体验",
+    "link": "/activity/private-banking",
+    "startDate": "2024-06-01",
+    "endDate": "2024-06-30",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_045",
+    "name": "科技金融展示",
+    "type": "活动",
+    "descript": "最新金融科技产品展示和体验活动",
+    "link": "/activity/fintech-expo",
+    "startDate": "2024-07-01",
+    "endDate": "2024-07-03",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_046",
+    "name": "夏日理财嘉年华",
+    "type": "活动",
+    "descript": "夏日特别理财产品，收益更高更稳健",
+    "link": "/activity/summer-carnival",
+    "startDate": "2024-07-01",
+    "endDate": "2024-08-31",
+    "status": "即将开始"
+  },
+  {
+    "id": "activity_047",
+    "name": "中秋国庆双节惠",
+    "type": "活动",
+    "descript": "中秋国庆双节期间特别优惠活动",
+    "link": "/activity/autumn-festival",
+    "startDate": "2024-09-15",
+    "endDate": "2024-10-07",
+    "status": "未开始"
+  },
+  {
+    "id": "activity_048",
+    "name": "年终理财冲刺",
+    "type": "活动",
+    "descript": "年终理财产品冲刺，为新年财富增值",
+    "link": "/activity/year-end-sprint",
+    "startDate": "2024-11-01",
+    "endDate": "2024-12-31",
+    "status": "未开始"
+  },
+  {
+    "id": "activity_049",
+    "name": "客户答谢年会",
+    "type": "活动",
+    "descript": "年度客户答谢年会，感恩客户支持",
+    "link": "/activity/annual-appreciation",
+    "startDate": "2024-12-15",
+    "endDate": "2024-12-15",
+    "status": "未开始"
+  },
+  {
+    "id": "activity_050",
+    "name": "新年开门红",
+    "type": "活动",
+    "descript": "新年开门红活动，新年新气象新收益",
+    "link": "/activity/new-year-kickoff",
+    "startDate": "2025-01-01",
+    "endDate": "2025-02-28",
+    "status": "未开始"
+  },
+  {
+    "id": "product_001",
+    "name": "恒丰宝理财",
+    "type": "产品",
+    "descript": "稳健型理财产品，预期年化收益4.5%，1万元起购",
+    "link": "/product/hengfengbao",
+    "riskLevel": "R2",
+    "minAmount": 10000,
+    "expectedReturn": "4.5%"
+  },
+  {
+    "id": "product_002",
+    "name": "恒丰定期宝",
+    "type": "产品",
+    "descript": "定期存款产品，期限灵活，利率优惠，安全保障",
+    "link": "/product/term-deposit",
+    "riskLevel": "R1",
+    "minAmount": 1000,
+    "expectedReturn": "3.8%"
+  },
+  {
+    "id": "product_003",
+    "name": "恒丰增利宝",
+    "type": "产品",
+    "descript": "中等风险理财产品，预期年化收益5.2%，5万元起购",
+    "link": "/product/zenglibao",
+    "riskLevel": "R3",
+    "minAmount": 50000,
+    "expectedReturn": "5.2%"
+  },
+  {
+    "id": "product_004",
+    "name": "恒丰活期宝",
+    "type": "产品",
+    "descript": "活期理财产品，随存随取，年化收益2.8%",
+    "link": "/product/current-wealth",
+    "riskLevel": "R1",
+    "minAmount": 1000,
+    "expectedReturn": "2.8%"
+  },
+  {
+    "id": "product_005",
+    "name": "恒丰稳健增长",
+    "type": "产品",
+    "descript": "稳健增长型基金，适合长期投资，历史年化8%",
+    "link": "/product/stable-growth",
+    "riskLevel": "R3",
+    "minAmount": 1000,
+    "expectedReturn": "8.0%"
+  },
+  {
+    "id": "product_006",
+    "name": "恒丰货币基金",
+    "type": "产品",
+    "descript": "货币市场基金，流动性强，年化收益3.2%",
+    "link": "/product/money-market",
+    "riskLevel": "R1",
+    "minAmount": 100,
+    "expectedReturn": "3.2%"
+  },
+  {
+    "id": "product_007",
+    "name": "恒丰黄金投资",
+    "type": "产品",
+    "descript": "黄金投资产品，抗通胀保值，1克起购",
+    "link": "/product/gold-investment",
+    "riskLevel": "R3",
+    "minAmount": 500,
+    "expectedReturn": "市场价"
+  },
+  {
+    "id": "product_008",
+    "name": "恒丰保本理财",
+    "type": "产品",
+    "descript": "保本保息理财产品，零风险，年化收益3.5%",
+    "link": "/product/capital-guaranteed",
+    "riskLevel": "R1",
+    "minAmount": 10000,
+    "expectedReturn": "3.5%"
+  },
+  {
+    "id": "product_009",
+    "name": "恒丰高收益债券",
+    "type": "产品",
+    "descript": "企业债券投资，预期年化收益6.8%，100万起购",
+    "link": "/product/high-yield-bond",
+    "riskLevel": "R4",
+    "minAmount": 1000000,
+    "expectedReturn": "6.8%"
+  },
+  {
+    "id": "product_010",
+    "name": "恒丰混合基金",
+    "type": "产品",
+    "descript": "股债混合基金，平衡风险收益，适合中长期投资",
+    "link": "/product/mixed-fund",
+    "riskLevel": "R3",
+    "minAmount": 1000,
+    "expectedReturn": "10.2%"
+  },
+  {
+    "id": "product_011",
+    "name": "恒丰外汇理财",
+    "type": "产品",
+    "descript": "美元理财产品，享受汇率收益，1000美元起购",
+    "link": "/product/forex-wealth",
+    "riskLevel": "R3",
+    "minAmount": 1000,
+    "expectedReturn": "4.8%"
+  },
+  {
+    "id": "product_012",
+    "name": "恒丰智能投顾",
+    "type": "产品",
+    "descript": "AI智能投资顾问，个性化资产配置方案",
+    "link": "/product/robo-advisor",
+    "riskLevel": "R3",
+    "minAmount": 10000,
+    "expectedReturn": "9.5%"
+  },
+  {
+    "id": "product_013",
+    "name": "恒丰创新科技基金",
+    "type": "产品",
+    "descript": "投资科技创新企业，分享科技发展红利",
+    "link": "/product/tech-innovation",
+    "riskLevel": "R4",
+    "minAmount": 10000,
+    "expectedReturn": "15.2%"
+  },
+  {
+    "id": "product_014",
+    "name": "恒丰ESG绿色基金",
+    "type": "产品",
+    "descript": "环保可持续投资，支持绿色发展",
+    "link": "/product/esg-green",
+    "riskLevel": "R3",
+    "minAmount": 1000,
+    "expectedReturn": "7.8%"
+  },
+  {
+    "id": "product_015",
+    "name": "恒丰医疗健康基金",
+    "type": "产品",
+    "descript": "专注医疗健康行业投资，把握人口老龄化机遇",
+    "link": "/product/healthcare",
+    "riskLevel": "R4",
+    "minAmount": 5000,
+    "expectedReturn": "12.5%"
+  },
+  {
+    "id": "product_016",
+    "name": "恒丰消费升级基金",
+    "type": "产品",
+    "descript": "投资消费升级相关企业，分享消费增长红利",
+    "link": "/product/consumption-upgrade",
+    "riskLevel": "R3",
+    "minAmount": 1000,
+    "expectedReturn": "9.8%"
+  },
+  {
+    "id": "product_017",
+    "name": "恒丰新能源基金",
+    "type": "产品",
+    "descript": "新能源产业投资，把握能源转型机遇",
+    "link": "/product/new-energy",
+    "riskLevel": "R4",
+    "minAmount": 5000,
+    "expectedReturn": "14.2%"
+  },
+  {
+    "id": "product_018",
+    "name": "恒丰养老目标基金",
+    "type": "产品",
+    "descript": "养老投资专用基金，为退休生活做准备",
+    "link": "/product/pension-target",
+    "riskLevel": "R2",
+    "minAmount": 1000,
+    "expectedReturn": "6.5%"
+  },
+  {
+    "id": "product_019",
+    "name": "恒丰教育储蓄",
+    "type": "产品",
+    "descript": "教育专项储蓄，为孩子教育资金做准备",
+    "link": "/product/education-savings",
+    "riskLevel": "R1",
+    "minAmount": 1000,
+    "expectedReturn": "4.2%"
+  },
+  {
+    "id": "product_020",
+    "name": "恒丰房贷通",
+    "type": "产品",
+    "descript": "房屋抵押贷款产品，利率优惠额度高",
+    "link": "/product/mortgage-loan",
+    "riskLevel": "R1",
+    "minAmount": 100000,
+    "expectedReturn": "5.6%"
+  },
+  {
+    "id": "product_021",
+    "name": "恒丰车贷易",
+    "type": "产品",
+    "descript": "汽车贷款产品，审批快放款快",
+    "link": "/product/auto-loan",
+    "riskLevel": "R1",
+    "minAmount": 50000,
+    "expectedReturn": "6.2%"
+  },
+  {
+    "id": "product_022",
+    "name": "恒丰信用贷",
+    "type": "产品",
+    "descript": "无抵押信用贷款，凭信用即可申请",
+    "link": "/product/credit-loan",
+    "riskLevel": "R2",
+    "minAmount": 10000,
+    "expectedReturn": "8.5%"
+  },
+  {
+    "id": "product_023",
+    "name": "恒丰创业贷",
+    "type": "产品",
+    "descript": "创业专项贷款，支持创新创业",
+    "link": "/product/startup-loan",
+    "riskLevel": "R2",
+    "minAmount": 50000,
+    "expectedReturn": "7.2%"
+  },
+  {
+    "id": "product_024",
+    "name": "恒丰企业贷",
+    "type": "产品",
+    "descript": "企业经营贷款，助力企业发展",
+    "link": "/product/business-loan",
+    "riskLevel": "R2",
+    "minAmount": 500000,
+    "expectedReturn": "6.8%"
+  },
+  {
+    "id": "product_025",
+    "name": "恒丰装修贷",
+    "type": "产品",
+    "descript": "家装分期贷款，让家更美好",
+    "link": "/product/renovation-loan",
+    "riskLevel": "R1",
+    "minAmount": 30000,
+    "expectedReturn": "7.5%"
+  },
+  {
+    "id": "product_026",
+    "name": "恒丰白金信用卡",
+    "type": "产品",
+    "descript": "白金信用卡，尊享权益额度高",
+    "link": "/product/platinum-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "积分返现"
+  },
+  {
+    "id": "product_027",
+    "name": "恒丰金卡信用卡",
+    "type": "产品",
+    "descript": "金卡信用卡，优质服务中等额度",
+    "link": "/product/gold-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "积分返现"
+  },
+  {
+    "id": "product_028",
+    "name": "恒丰普通信用卡",
+    "type": "产品",
+    "descript": "普通信用卡，基础功能易申请",
+    "link": "/product/standard-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "积分返现"
+  },
+  {
+    "id": "product_029",
+    "name": "恒丰联名信用卡",
+    "type": "产品",
+    "descript": "与知名品牌联名，专享优惠权益",
+    "link": "/product/co-brand-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "专属优惠"
+  },
+  {
+    "id": "product_030",
+    "name": "恒丰数字信用卡",
+    "type": "产品",
+    "descript": "纯数字信用卡，秒批秒用",
+    "link": "/product/digital-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "数字权益"
+  },
+  {
+    "id": "product_031",
+    "name": "恒丰储蓄卡",
+    "type": "产品",
+    "descript": "普通储蓄卡，基础金融服务",
+    "link": "/product/debit-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "存款利息"
+  },
+  {
+    "id": "product_032",
+    "name": "恒丰VIP储蓄卡",
+    "type": "产品",
+    "descript": "VIP储蓄卡，专享高端服务",
+    "link": "/product/vip-debit-card",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "VIP权益"
+  },
+  {
+    "id": "product_033",
+    "name": "恒丰意外险",
+    "type": "产品",
+    "descript": "意外伤害保险，保障意外风险",
+    "link": "/product/accident-insurance",
+    "riskLevel": "R1",
+    "minAmount": 100,
+    "expectedReturn": "风险保障"
+  },
+  {
+    "id": "product_034",
+    "name": "恒丰健康险",
+    "type": "产品",
+    "descript": "健康医疗保险，保障医疗费用",
+    "link": "/product/health-insurance",
+    "riskLevel": "R1",
+    "minAmount": 500,
+    "expectedReturn": "医疗保障"
+  },
+  {
+    "id": "product_035",
+    "name": "恒丰旅游险",
+    "type": "产品",
+    "descript": "旅游保险，出行无忧",
+    "link": "/product/travel-insurance",
+    "riskLevel": "R1",
+    "minAmount": 50,
+    "expectedReturn": "旅行保障"
+  },
+  {
+    "id": "product_036",
+    "name": "恒丰寿险",
+    "type": "产品",
+    "descript": "人寿保险，保障家庭生活",
+    "link": "/product/life-insurance",
+    "riskLevel": "R1",
+    "minAmount": 1000,
+    "expectedReturn": "生命保障"
+  },
+  {
+    "id": "product_037",
+    "name": "恒丰年金险",
+    "type": "产品",
+    "descript": "年金保险，养老保障",
+    "link": "/product/annuity-insurance",
+    "riskLevel": "R1",
+    "minAmount": 5000,
+    "expectedReturn": "养老保障"
+  },
+  {
+    "id": "product_038",
+    "name": "恒丰财产险",
+    "type": "产品",
+    "descript": "财产保险，保障财产安全",
+    "link": "/product/property-insurance",
+    "riskLevel": "R1",
+    "minAmount": 200,
+    "expectedReturn": "财产保障"
+  },
+  {
+    "id": "product_039",
+    "name": "恒丰外汇买卖",
+    "type": "产品",
+    "descript": "外汇买卖服务，汇率优惠",
+    "link": "/product/forex-trading",
+    "riskLevel": "R3",
+    "minAmount": 100,
+    "expectedReturn": "汇率差价"
+  },
+  {
+    "id": "product_040",
+    "name": "恒丰外币存款",
+    "type": "产品",
+    "descript": "外币存款服务，多币种选择",
+    "link": "/product/foreign-deposit",
+    "riskLevel": "R2",
+    "minAmount": 100,
+    "expectedReturn": "外币利息"
+  },
+  {
+    "id": "product_041",
+    "name": "恒丰代发工资",
+    "type": "产品",
+    "descript": "企业代发工资服务，高效便捷",
+    "link": "/product/payroll-service",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "服务便利"
+  },
+  {
+    "id": "product_042",
+    "name": "恒丰现金管理",
+    "type": "产品",
+    "descript": "企业现金管理服务，资金增值",
+    "link": "/product/cash-management",
+    "riskLevel": "R1",
+    "minAmount": 100000,
+    "expectedReturn": "资金增值"
+  },
+  {
+    "id": "product_043",
+    "name": "恒丰供应链金融",
+    "type": "产品",
+    "descript": "供应链金融服务，助力产业发展",
+    "link": "/product/supply-chain",
+    "riskLevel": "R2",
+    "minAmount": 1000000,
+    "expectedReturn": "融资便利"
+  },
+  {
+    "id": "product_044",
+    "name": "恒丰贸易融资",
+    "type": "产品",
+    "descript": "国际贸易融资，支持进出口业务",
+    "link": "/product/trade-finance",
+    "riskLevel": "R2",
+    "minAmount": 500000,
+    "expectedReturn": "贸易便利"
+  },
+  {
+    "id": "product_045",
+    "name": "恒丰票据业务",
+    "type": "产品",
+    "descript": "银行承兑汇票等票据业务",
+    "link": "/product/bill-service",
+    "riskLevel": "R1",
+    "minAmount": 100000,
+    "expectedReturn": "信用支持"
+  },
+  {
+    "id": "product_046",
+    "name": "恒丰保理业务",
+    "type": "产品",
+    "descript": "应收账款保理，盘活企业资金",
+    "link": "/product/factoring",
+    "riskLevel": "R2",
+    "minAmount": 500000,
+    "expectedReturn": "资金周转"
+  },
+  {
+    "id": "product_047",
+    "name": "恒丰数字钱包",
+    "type": "产品",
+    "descript": "数字人民币钱包，体验数字货币",
+    "link": "/product/digital-wallet",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "支付便利"
+  },
+  {
+    "id": "product_048",
+    "name": "恒丰智能客服",
+    "type": "产品",
+    "descript": "AI智能客服系统，24小时在线",
+    "link": "/product/ai-service",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "服务便利"
+  },
+  {
+    "id": "product_049",
+    "name": "恒丰移动银行",
+    "type": "产品",
+    "descript": "手机银行APP，移动金融服务",
+    "link": "/product/mobile-banking",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "便民服务"
+  },
+  {
+    "id": "product_050",
+    "name": "恒丰网上银行",
+    "type": "产品",
+    "descript": "网上银行服务，在线金融管理",
+    "link": "/product/online-banking",
+    "riskLevel": "R1",
+    "minAmount": 0,
+    "expectedReturn": "在线便利"
+  },
+  {
+    "id": "news_001",
+    "name": "央行降准释放资金约1万亿元",
+    "type": "资讯",
+    "descript": "央行宣布下调存款准备金率0.5个百分点，释放长期资金约1万亿元",
+    "link": "/news/pboc-rrr-cut",
+    "publishTime": "2024-01-24 09:30:00",
+    "author": "恒丰银行研究院",
+    "readCount": 15680
+  },
+  {
+    "id": "news_002",
+    "name": "数字人民币试点范围再扩大",
+    "type": "资讯",
+    "descript": "数字人民币试点城市新增10个，覆盖更多消费场景和应用领域",
+    "link": "/news/digital-yuan-expansion",
+    "publishTime": "2024-01-20 14:15:00",
+    "author": "恒丰银行金融科技部",
+    "readCount": 12450
+  },
+  {
+    "id": "news_003",
+    "name": "银行业加强反洗钱监管力度",
+    "type": "资讯",
+    "descript": "监管部门要求银行业进一步完善反洗钱制度，提升风险识别能力",
+    "link": "/news/anti-money-laundering",
+    "publishTime": "2024-01-22 16:20:00",
+    "author": "恒丰银行合规部",
+    "readCount": 8930
+  },
+  {
+    "id": "news_004",
+    "name": "理财产品净值化改革持续推进",
+    "type": "资讯",
+    "descript": "银行理财产品净值化转型进展顺利，投资者接受度不断提升",
+    "link": "/news/wealth-management-reform",
+    "publishTime": "2024-01-19 10:45:00",
+    "author": "恒丰银行资管部",
+    "readCount": 11230
+  },
+  {
+    "id": "news_005",
+    "name": "绿色金融助力碳中和目标",
+    "type": "资讯",
+    "descript": "银行业积极发展绿色金融，支持清洁能源和环保项目发展",
+    "link": "/news/green-finance-carbon-neutral",
+    "publishTime": "2024-01-18 13:25:00",
+    "author": "恒丰银行可持续发展部",
+    "readCount": 9650
+  },
+  {
+    "id": "news_006",
+    "name": "小微企业贷款政策再优化",
+    "type": "资讯",
+    "descript": "监管部门出台新政策，进一步降低小微企业融资成本",
+    "link": "/news/sme-loan-policy",
+    "publishTime": "2024-01-17 11:30:00",
+    "author": "恒丰银行普惠金融部",
+    "readCount": 13540
+  },
+  {
+    "id": "news_007",
+    "name": "银行数字化转型加速发展",
+    "type": "资讯",
+    "descript": "银行业持续加大科技投入，推动数字化转型和智能化服务",
+    "link": "/news/digital-transformation",
+    "publishTime": "2024-01-16 15:40:00",
+    "author": "恒丰银行科技部",
+    "readCount": 10780
+  },
+  {
+    "id": "news_008",
+    "name": "房地产金融政策调整优化",
+    "type": "资讯",
+    "descript": "央行、银保监会发布房地产金融新政，支持刚性和改善性需求",
+    "link": "/news/real-estate-finance-policy",
+    "publishTime": "2024-01-15 09:15:00",
+    "author": "恒丰银行房贷部",
+    "readCount": 16890
+  },
+  {
+    "id": "news_009",
+    "name": "银行理财子公司业务快速增长",
+    "type": "资讯",
+    "descript": "理财子公司资产管理规模持续扩大，产品创新能力不断增强",
+    "link": "/news/wealth-subsidiary-growth",
+    "publishTime": "2024-01-14 14:50:00",
+    "author": "恒丰银行理财子公司",
+    "readCount": 7820
+  },
+  {
+    "id": "news_010",
+    "name": "跨境人民币业务持续发展",
+    "type": "资讯",
+    "descript": "跨境人民币结算规模创新高，助力企业降低汇率风险",
+    "link": "/news/cross-border-rmb",
+    "publishTime": "2024-01-13 12:35:00",
+    "author": "恒丰银行国际业务部",
+    "readCount": 9240
+  },
+  {
+    "id": "news_011",
+    "name": "银行保险业监管政策更新",
+    "type": "资讯",
+    "descript": "银保监会发布最新监管指导意见，完善行业监管体系",
+    "link": "/news/regulatory-update",
+    "publishTime": "2024-01-12 16:10:00",
+    "author": "恒丰银行法律合规部",
+    "readCount": 6750
+  },
+  {
+    "id": "news_012",
+    "name": "金融支持乡村振兴战略",
+    "type": "资讯",
+    "descript": "银行业加大对农业农村现代化的金融支持力度",
+    "link": "/news/rural-revitalization-finance",
+    "publishTime": "2024-01-11 10:20:00",
+    "author": "恒丰银行三农金融部",
+    "readCount": 8460
+  },
+  {
+    "id": "news_013",
+    "name": "银行客户信息保护新规实施",
+    "type": "资讯",
+    "descript": "个人信息保护法实施，银行业加强客户隐私保护措施",
+    "link": "/news/customer-privacy-protection",
+    "publishTime": "2024-01-10 13:45:00",
+    "author": "恒丰银行信息安全部",
+    "readCount": 11670
+  },
+  {
+    "id": "news_014",
+    "name": "金融科技创新监管试点扩围",
+    "type": "资讯",
+    "descript": "金融科技创新监管试点城市增加，促进金融科技健康发展",
+    "link": "/news/fintech-regulatory-sandbox",
+    "publishTime": "2024-01-09 11:55:00",
+    "author": "恒丰银行创新实验室",
+    "readCount": 7390
+  },
+  {
+    "id": "news_015",
+    "name": "银行同业存单发行规模增长",
+    "type": "资讯",
+    "descript": "同业存单发行规模稳步增长，银行间流动性保持合理充裕",
+    "link": "/news/interbank-cd-growth",
+    "publishTime": "2024-01-08 15:25:00",
+    "author": "恒丰银行金融市场部",
+    "readCount": 5890
+  },
+  {
+    "id": "news_016",
+    "name": "消费信贷政策持续优化",
+    "type": "资讯",
+    "descript": "银行业优化消费信贷服务，支持居民合理消费需求",
+    "link": "/news/consumer-credit-optimization",
+    "publishTime": "2024-01-07 09:40:00",
+    "author": "恒丰银行零售信贷部",
+    "readCount": 12380
+  },
+  {
+    "id": "news_017",
+    "name": "银行业ESG投资理念深入推广",
+    "type": "资讯",
+    "descript": "银行业积极践行ESG投资理念，促进可持续发展",
+    "link": "/news/esg-investment-promotion",
+    "publishTime": "2024-01-06 14:15:00",
+    "author": "恒丰银行ESG委员会",
+    "readCount": 6240
+  },
+  {
+    "id": "news_018",
+    "name": "金融助力制造业转型升级",
+    "type": "资讯",
+    "descript": "银行业加大对制造业的金融支持，推动产业转型升级",
+    "link": "/news/manufacturing-finance-support",
+    "publishTime": "2024-01-05 12:50:00",
+    "author": "恒丰银行制造业金融部",
+    "readCount": 9870
+  },
+  {
+    "id": "news_019",
+    "name": "银行反欺诈技术不断升级",
+    "type": "资讯",
+    "descript": "银行业运用人工智能等技术，提升反欺诈能力",
+    "link": "/news/anti-fraud-tech-upgrade",
+    "publishTime": "2024-01-04 16:30:00",
+    "author": "恒丰银行风控技术部",
+    "readCount": 8150
+  },
+  {
+    "id": "news_020",
+    "name": "养老金融服务体系日趋完善",
+    "type": "资讯",
+    "descript": "银行业完善养老金融服务，助力应对人口老龄化",
+    "link": "/news/pension-finance-system",
+    "publishTime": "2024-01-03 11:20:00",
+    "author": "恒丰银行养老金融部",
+    "readCount": 10560
+  },
+  {
+    "id": "news_021",
+    "name": "银行业支持新能源汽车发展",
+    "type": "资讯",
+    "descript": "银行业推出新能源汽车专项金融服务，助力绿色出行",
+    "link": "/news/new-energy-vehicle-finance",
+    "publishTime": "2024-01-02 13:35:00",
+    "author": "恒丰银行汽车金融部",
+    "readCount": 11920
+  },
+  {
+    "id": "news_022",
+    "name": "金融支持科技创新力度加大",
+    "type": "资讯",
+    "descript": "银行业创新金融产品，加大对科技企业的支持力度",
+    "link": "/news/tech-innovation-finance",
+    "publishTime": "2024-01-01 10:45:00",
+    "author": "恒丰银行科创金融部",
+    "readCount": 9430
+  },
+  {
+    "id": "news_023",
+    "name": "银行业数据治理能力持续提升",
+    "type": "资讯",
+    "descript": "银行业强化数据治理，提升数据质量和应用能力",
+    "link": "/news/data-governance-improvement",
+    "publishTime": "2023-12-31 15:10:00",
+    "author": "恒丰银行数据管理部",
+    "readCount": 7680
+  },
+  {
+    "id": "news_024",
+    "name": "普惠金融服务覆盖面不断扩大",
+    "type": "资讯",
+    "descript": "银行业持续推进普惠金融，服务更多小微企业和个人",
+    "link": "/news/inclusive-finance-expansion",
+    "publishTime": "2023-12-30 12:25:00",
+    "author": "恒丰银行普惠金融部",
+    "readCount": 13240
+  },
+  {
+    "id": "news_025",
+    "name": "银行业加强网络安全防护",
+    "type": "资讯",
+    "descript": "银行业持续加强网络安全建设，保障客户资金安全",
+    "link": "/news/cybersecurity-enhancement",
+    "publishTime": "2023-12-29 14:40:00",
+    "author": "恒丰银行网络安全部",
+    "readCount": 8920
+  },
+  {
+    "id": "news_026",
+    "name": "银行理财产品投资者教育加强",
+    "type": "资讯",
+    "descript": "银行业加强投资者教育，提升客户风险识别能力",
+    "link": "/news/investor-education-enhancement",
+    "publishTime": "2023-12-28 11:15:00",
+    "author": "恒丰银行客户教育部",
+    "readCount": 6850
+  },
+  {
+    "id": "news_027",
+    "name": "银行业支持共同富裕示范区建设",
+    "type": "资讯",
+    "descript": "银行业积极参与共同富裕示范区建设，提供金融支持",
+    "link": "/news/common-prosperity-support",
+    "publishTime": "2023-12-27 16:55:00",
+    "author": "恒丰银行区域发展部",
+    "readCount": 9760
+  },
+  {
+    "id": "news_028",
+    "name": "金融消费者权益保护持续加强",
+    "type": "资讯",
+    "descript": "银行业完善消费者权益保护机制，提升服务质量",
+    "link": "/news/consumer-rights-protection",
+    "publishTime": "2023-12-26 13:20:00",
+    "author": "恒丰银行消保部",
+    "readCount": 11450
+  },
+  {
+    "id": "news_029",
+    "name": "银行业助力构建新发展格局",
+    "type": "资讯",
+    "descript": "银行业发挥金融支撑作用，助力构建新发展格局",
+    "link": "/news/new-development-pattern",
+    "publishTime": "2023-12-25 10:30:00",
+    "author": "恒丰银行战略规划部",
+    "readCount": 8370
+  },
+  {
+    "id": "news_030",
+    "name": "银行业务流程数字化改造加速",
+    "type": "资讯",
+    "descript": "银行业加快业务流程数字化改造，提升运营效率",
+    "link": "/news/digital-process-transformation",
+    "publishTime": "2023-12-24 15:45:00",
+    "author": "恒丰银行运营管理部",
+    "readCount": 7590
+  },
+  {
+    "id": "news_031",
+    "name": "银行业加强合规风险管控",
+    "type": "资讯",
+    "descript": "银行业持续完善合规管理体系，防范各类风险",
+    "link": "/news/compliance-risk-management",
+    "publishTime": "2023-12-23 12:10:00",
+    "author": "恒丰银行风险管理部",
+    "readCount": 9180
+  },
+  {
+    "id": "news_032",
+    "name": "金融支持区域协调发展",
+    "type": "资讯",
+    "descript": "银行业加大对重点区域的金融支持，促进区域协调发展",
+    "link": "/news/regional-development-finance",
+    "publishTime": "2023-12-22 14:25:00",
+    "author": "恒丰银行区域金融部",
+    "readCount": 6940
+  },
+  {
+    "id": "news_033",
+    "name": "银行业人才培养体系不断完善",
+    "type": "资讯",
+    "descript": "银行业加强人才队伍建设，完善培养体系",
+    "link": "/news/talent-development-system",
+    "publishTime": "2023-12-21 11:40:00",
+    "author": "恒丰银行人力资源部",
+    "readCount": 5670
+  },
+  {
+    "id": "news_034",
+    "name": "银行业绿色信贷规模持续扩大",
+    "type": "资讯",
+    "descript": "银行业绿色信贷投放量稳步增长，支持绿色发展",
+    "link": "/news/green-credit-expansion",
+    "publishTime": "2023-12-20 16:15:00",
+    "author": "恒丰银行绿色金融部",
+    "readCount": 10830
+  },
+  {
+    "id": "news_035",
+    "name": "银行业国际化发展步伐加快",
+    "type": "资讯",
+    "descript": "银行业积极拓展海外业务，提升国际化服务能力",
+    "link": "/news/internationalization-development",
+    "publishTime": "2023-12-19 13:50:00",
+    "author": "恒丰银行国际部",
+    "readCount": 7420
+  },
+  {
+    "id": "news_036",
+    "name": "银行业科技赋能效果显著",
+    "type": "资讯",
+    "descript": "银行业科技投入效果显现，业务效率大幅提升",
+    "link": "/news/technology-empowerment-results",
+    "publishTime": "2023-12-18 10:05:00",
+    "author": "恒丰银行科技创新部",
+    "readCount": 8960
+  },
+  {
+    "id": "news_037",
+    "name": "银行业支持高质量发展",
+    "type": "资讯",
+    "descript": "银行业调整信贷结构，支持经济高质量发展",
+    "link": "/news/high-quality-development-support",
+    "publishTime": "2023-12-17 15:30:00",
+    "author": "恒丰银行发展规划部",
+    "readCount": 12510
+  },
+  {
+    "id": "news_038",
+    "name": "银行业风险防控能力不断增强",
+    "type": "资讯",
+    "descript": "银行业持续完善风险防控体系，资产质量保持稳定",
+    "link": "/news/risk-control-capability",
+    "publishTime": "2023-12-16 12:45:00",
+    "author": "恒丰银行首席风险官",
+    "readCount": 9340
+  },
+  {
+    "id": "news_039",
+    "name": "银行业服务实体经济力度加大",
+    "type": "资讯",
+    "descript": "银行业坚持服务实体经济，加大对重点领域支持",
+    "link": "/news/real-economy-service",
+    "publishTime": "2023-12-15 14:20:00",
+    "author": "恒丰银行公司业务部",
+    "readCount": 11680
+  },
+  {
+    "id": "news_040",
+    "name": "银行业客户体验持续优化",
+    "type": "资讯",
+    "descript": "银行业持续改善客户体验，提升服务满意度",
+    "link": "/news/customer-experience-optimization",
+    "publishTime": "2023-12-14 11:35:00",
+    "author": "恒丰银行客户体验部",
+    "readCount": 8750
+  },
+  {
+    "id": "news_041",
+    "name": "银行业数字化转型成效初显",
+    "type": "资讯",
+    "descript": "银行业数字化转型取得阶段性成果，业务模式创新",
+    "link": "/news/digital-transformation-results",
+    "publishTime": "2023-12-13 16:50:00",
+    "author": "恒丰银行数字化转型办公室",
+    "readCount": 10270
+  },
+  {
+    "id": "news_042",
+    "name": "银行业加强产业链金融服务",
+    "type": "资讯",
+    "descript": "银行业创新产业链金融产品，服务产业链上下游企业",
+    "link": "/news/industrial-chain-finance",
+    "publishTime": "2023-12-12 13:25:00",
+    "author": "恒丰银行产业金融部",
+    "readCount": 7890
+  },
+  {
+    "id": "news_043",
+    "name": "银行业助力乡村产业振兴",
+    "type": "资讯",
+    "descript": "银行业加大对乡村产业的金融支持，助力乡村振兴",
+    "link": "/news/rural-industry-revitalization",
+    "publishTime": "2023-12-11 10:40:00",
+    "author": "恒丰银行乡村振兴金融部",
+    "readCount": 9560
+  },
+  {
+    "id": "news_044",
+    "name": "银行业监管科技应用深化",
+    "type": "资讯",
+    "descript": "银行业深化监管科技应用，提升合规管理效率",
+    "link": "/news/regtech-application-deepening",
+    "publishTime": "2023-12-10 15:15:00",
+    "author": "恒丰银行监管科技部",
+    "readCount": 6430
+  },
+  {
+    "id": "news_045",
+    "name": "银行业支持创新创业发展",
+    "type": "资讯",
+    "descript": "银行业推出创新创业专项金融服务，支持双创发展",
+    "link": "/news/innovation-entrepreneurship-support",
+    "publishTime": "2023-12-09 12:00:00",
+    "author": "恒丰银行创新创业金融部",
+    "readCount": 8140
+  },
+  {
+    "id": "news_046",
+    "name": "银行业财富管理业务快速发展",
+    "type": "资讯",
+    "descript": "银行业财富管理规模持续增长，服务能力不断提升",
+    "link": "/news/wealth-management-development",
+    "publishTime": "2023-12-08 14:35:00",
+    "author": "恒丰银行私人银行部",
+    "readCount": 11290
+  },
+  {
+    "id": "news_047",
+    "name": "银行业加强与金融科技公司合作",
+    "type": "资讯",
+    "descript": "银行业深化与金融科技公司合作，推动业务创新",
+    "link": "/news/fintech-cooperation",
+    "publishTime": "2023-12-07 11:20:00",
+    "author": "恒丰银行合作发展部",
+    "readCount": 7650
+  },
+  {
+    "id": "news_048",
+    "name": "银行业支持文化产业发展",
+    "type": "资讯",
+    "descript": "银行业推出文化产业专项金融产品，支持文化事业发展",
+    "link": "/news/cultural-industry-finance",
+    "publishTime": "2023-12-06 16:45:00",
+    "author": "恒丰银行文化金融部",
+    "readCount": 5920
+  },
+  {
+    "id": "news_049",
+    "name": "银行业环境信息披露不断完善",
+    "type": "资讯",
+    "descript": "银行业加强环境信息披露，提升可持续发展透明度",
+    "link": "/news/environmental-disclosure",
+    "publishTime": "2023-12-05 13:10:00",
+    "author": "恒丰银行可持续发展部",
+    "readCount": 6780
+  },
+  {
+    "id": "news_050",
+    "name": "银行业数字货币研发持续推进",
+    "type": "资讯",
+    "descript": "银行业积极参与数字货币研发，推动金融创新发展",
+    "link": "/news/digital-currency-development",
+    "publishTime": "2023-12-04 10:55:00",
+    "author": "恒丰银行数字货币研究院",
+    "readCount": 9870
+  }
+]

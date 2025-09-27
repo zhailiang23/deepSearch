@@ -28,6 +28,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
 import http from '@/utils/http'
+import { useMobileSearchDemoStore } from '@/stores/mobileSearchDemo'
 
 // Types
 interface SearchSpaceOption {
@@ -67,6 +68,9 @@ const emits = defineEmits<{
   'loading': [loading: boolean]
   'error': [error: string | null]
 }>()
+
+// Store
+const store = useMobileSearchDemoStore()
 
 // Local state
 const selectedValue = ref<string>(props.modelValue[0] || '')
@@ -124,12 +128,21 @@ async function loadAvailableSearchSpaces() {
 
     // 处理后端返回的ApiResponse格式
     if (result.success && result.data && result.data.content) {
-      availableOptions.value = result.data.content.map((space: BackendSearchSpace) => ({
+      const spaces = result.data.content.map((space: BackendSearchSpace) => ({
         id: space.id.toString(),
         name: space.name,
         description: space.description,
-        enabled: true
+        fields: [], // 后端可能没有提供字段信息
+        enabled: true,
+        indexStatus: 'healthy' as const,
+        docCount: 0
       }))
+
+      availableOptions.value = spaces
+
+      // 重要：将搜索空间同步到store中
+      store.setSearchSpaces(spaces)
+
       console.log('SearchSpaceSelector: 搜索空间列表加载成功:', availableOptions.value)
     } else {
       console.warn('SearchSpaceSelector: 搜索空间API返回格式异常:', result)
@@ -142,10 +155,31 @@ async function loadAvailableSearchSpaces() {
     error.value = errorMessage
 
     // 使用备用数据
-    availableOptions.value = [
-      { id: '1', name: '示例搜索空间1', description: '这是第一个示例搜索空间', enabled: true },
-      { id: '2', name: '示例搜索空间2', description: '这是第二个示例搜索空间', enabled: true }
+    const fallbackSpaces = [
+      {
+        id: '1',
+        name: '示例搜索空间1',
+        description: '这是第一个示例搜索空间',
+        fields: [],
+        enabled: true,
+        indexStatus: 'healthy' as const,
+        docCount: 0
+      },
+      {
+        id: '2',
+        name: '示例搜索空间2',
+        description: '这是第二个示例搜索空间',
+        fields: [],
+        enabled: true,
+        indexStatus: 'healthy' as const,
+        docCount: 0
+      }
     ]
+
+    availableOptions.value = fallbackSpaces
+
+    // 同时更新store
+    store.setSearchSpaces(fallbackSpaces)
   } finally {
     loading.value = false
   }
