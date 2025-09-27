@@ -135,3 +135,17 @@ export interface TrackingError {
   timestamp: string
   data?: ClickTrackingData
 }
+
+// 搜索统计数据接口
+export interface SearchLogStatistics {
+  totalSearches: number
+  successRate: number
+  avgResponseTime: number
+  totalClicks: number
+  topKeywords: Array<{ keyword: string; count: number }>
+  searchTrends: Array<{ date: string; count: number }>
+  searchTrend?: { direction: 'up' | 'down' | 'stable'; value: number }
+  successTrend?: { direction: 'up' | 'down' | 'stable'; value: number }
+  responseTrend?: { direction: 'up' | 'down' | 'stable'; value: number }
+  clickTrend?: { direction: 'up' | 'down' | 'stable'; value: number }
+}

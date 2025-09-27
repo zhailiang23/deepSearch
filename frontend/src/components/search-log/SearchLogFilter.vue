@@ -214,7 +214,7 @@
       <div v-if="hasActiveFilters" class="filter-summary">
         <div class="summary-header">
           <span class="summary-title">当前筛选条件</span>
-          <Button @click="handleReset" variant="ghost" size="xs">
+          <Button @click="handleReset" variant="ghost" size="sm">
             清除全部
           </Button>
         </div>
@@ -242,7 +242,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { debounce } from 'lodash-es'
+// 简单的防抖函数实现
+function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
+  let timeout: ReturnType<typeof setTimeout>
+  return ((...args: Parameters<T>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }) as T
+}
 import type { SearchLogQuery } from '@/types/searchLog'
 
 // 组件导入
