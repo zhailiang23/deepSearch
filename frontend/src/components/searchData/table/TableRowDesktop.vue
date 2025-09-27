@@ -1,11 +1,18 @@
 <template>
   <div
     :class="[
-      'table-row border-b border-gray-200 hover:bg-gray-50 transition-colors',
+      'table-row border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer',
       {
-        'opacity-75': row._score !== undefined && row._score < 0.5
+        'opacity-75': row._score !== undefined && row._score < 0.5,
+        'bg-green-50 border-green-200': isClicked
       }
     ]"
+    @click="handleRowClick"
+    @keydown.enter="handleKeyboardClick"
+    @keydown.space.prevent="handleKeyboardClick"
+    tabindex="0"
+    role="button"
+    :aria-label="`表格行 ${index + 1}`"
   >
     <div class="flex items-center" :style="{ width: getCalculatedTableWidth() }">
       <!-- 动态数据列 -->
@@ -69,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Edit,
@@ -87,10 +94,64 @@ interface Props {
 interface Emits {
   (e: 'edit', row: TableRow): void
   (e: 'delete', row: TableRow): void
+  (e: 'click', row: TableRow, index: number, event: MouseEvent | KeyboardEvent): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+// 点击状态
+const isClicked = ref(false)
+
+/**
+ * 处理行点击事件
+ */
+const handleRowClick = (event: MouseEvent) => {
+  // 防止编辑和删除按钮触发行点击
+  const target = event.target as HTMLElement
+  if (target.closest('button')) {
+    return
+  }
+
+  // 显示点击反馈
+  isClicked.value = true
+  setTimeout(() => {
+    isClicked.value = false
+  }, 200)
+
+  emit('click', props.row, props.index, event)
+}
+
+/**
+ * 处理键盘点击事件
+ */
+const handleKeyboardClick = (event: KeyboardEvent) => {
+  if (event.code === 'Enter' || event.code === 'Space') {
+    // 显示点击反馈
+    isClicked.value = true
+    setTimeout(() => {
+      isClicked.value = false
+    }, 200)
+
+    emit('click', props.row, props.index, event)
+  }
+}
+
+/**
+ * 处理编辑按钮点击
+ */
+const handleEdit = (event: MouseEvent) => {
+  event.stopPropagation()
+  emit('edit', props.row)
+}
+
+/**
+ * 处理删除按钮点击
+ */
+const handleDelete = (event: MouseEvent) => {
+  event.stopPropagation()
+  emit('delete', props.row)
+}
 
 // 获取列宽度
 function getColumnWidth(column: TableColumn): string {
@@ -160,20 +221,34 @@ function getCellValue(row: TableRow, column: TableColumn): any {
 }
 
 
-// 事件处理
-function handleEdit() {
-  emit('edit', props.row)
-}
-
-function handleDelete() {
-  emit('delete', props.row)
-}
+// 事件处理方法已在上面定义
 </script>
 
 <style scoped>
 /* 表格行样式 */
 .table-row {
   min-height: 60px;
+}
+
+/* 点击反馈样式 */
+.table-row.bg-green-50 {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* 行焦点样式 */
+.table-row:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #10b981;
+}
+
+/* 行点击动画 */
+.table-row {
+  transition: all 0.2s ease-in-out;
+}
+
+.table-row:active {
+  transform: scale(0.995);
 }
 
 
