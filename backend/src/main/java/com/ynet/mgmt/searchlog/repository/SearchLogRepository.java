@@ -312,4 +312,41 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      */
     @Query("DELETE FROM SearchLog s WHERE s.createdAt < :beforeTime")
     int deleteByCreatedAtBefore(@Param("beforeTime") LocalDateTime beforeTime);
+
+    /**
+     * 批量删除过期的搜索日志
+     *
+     * @param cutoffDate 截止日期
+     * @param batchSize  批次大小
+     * @return 删除的记录数
+     */
+    @Query(value = "DELETE FROM search_logs WHERE created_at < :cutoffDate " +
+                   "AND id IN (SELECT id FROM search_logs WHERE created_at < :cutoffDate LIMIT :batchSize)",
+           nativeQuery = true)
+    int deleteExpiredSearchLogsBatch(@Param("cutoffDate") LocalDateTime cutoffDate, @Param("batchSize") int batchSize);
+
+    /**
+     * 统计过期日志数量
+     *
+     * @param cutoffDate 截止日期
+     * @return 过期日志数量
+     */
+    long countByCreatedAtBefore(LocalDateTime cutoffDate);
+
+    /**
+     * 统计过期日志数量
+     *
+     * @param cutoffDate 截止日期
+     * @return 过期日志数量
+     */
+    @Query("SELECT COUNT(s) FROM SearchLog s WHERE s.createdAt < :cutoffDate")
+    long countExpiredLogs(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    /**
+     * 统计最近时间内的日志数量
+     *
+     * @param afterTime 时间点
+     * @return 日志数量
+     */
+    long countByCreatedAtAfter(LocalDateTime afterTime);
 }

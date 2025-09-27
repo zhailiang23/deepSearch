@@ -322,4 +322,27 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      */
     @Query("DELETE FROM SearchClickLog c WHERE c.searchLog.id IN :searchLogIds")
     long deleteBySearchLogIdIn(@Param("searchLogIds") List<Long> searchLogIds);
+
+    /**
+     * 批量删除过期的点击日志
+     *
+     * @param cutoffDate 截止日期
+     * @param batchSize  批次大小
+     * @return 删除的记录数
+     */
+    @Query(value = "DELETE FROM search_click_logs WHERE id IN (" +
+                   "SELECT id FROM search_click_logs c " +
+                   "INNER JOIN search_logs s ON c.search_log_id = s.id " +
+                   "WHERE s.created_at < :cutoffDate LIMIT :batchSize)",
+           nativeQuery = true)
+    int deleteExpiredClickLogsBatch(@Param("cutoffDate") LocalDateTime cutoffDate, @Param("batchSize") int batchSize);
+
+    /**
+     * 统计过期点击日志数量
+     *
+     * @param cutoffDate 截止日期
+     * @return 过期点击日志数量
+     */
+    @Query("SELECT COUNT(c) FROM SearchClickLog c WHERE c.searchLog.createdAt < :cutoffDate")
+    long countExpiredClicks(@Param("cutoffDate") LocalDateTime cutoffDate);
 }
