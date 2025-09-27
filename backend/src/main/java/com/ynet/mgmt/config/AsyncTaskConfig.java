@@ -71,4 +71,25 @@ public class AsyncTaskConfig {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * 搜索日志记录任务执行器
+     * 用于异步记录搜索日志，确保不影响搜索性能
+     */
+    @Bean("searchLogExecutor")
+    public Executor searchLogExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(100);
+        executor.setKeepAliveSeconds(60);
+        executor.setThreadNamePrefix("SearchLog-");
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+
+        executor.initialize();
+        return executor;
+    }
 }

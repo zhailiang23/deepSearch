@@ -34,6 +34,13 @@ import java.util.Objects;
 public class SearchLog extends BaseEntity {
 
     /**
+     * 主键ID
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
      * 链路追踪ID
      */
     @Column(name = "trace_id", length = 64)
@@ -532,6 +539,14 @@ public class SearchLog extends BaseEntity {
 
     public void setClickLogs(List<SearchClickLog> clickLogs) {
         this.clickLogs = clickLogs;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     // ========== equals, hashCode, toString ==========

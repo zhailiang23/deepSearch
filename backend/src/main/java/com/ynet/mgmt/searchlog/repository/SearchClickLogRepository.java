@@ -304,4 +304,22 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      */
     @Query("DELETE FROM SearchClickLog c WHERE c.clickTime < :beforeTime")
     int deleteByClickTimeBefore(@Param("beforeTime") LocalDateTime beforeTime);
+
+    /**
+     * 根据搜索日志创建时间删除点击记录
+     *
+     * @param beforeTime 时间点
+     * @return 删除的记录数
+     */
+    @Query("DELETE FROM SearchClickLog c WHERE c.searchLog.createdAt < :beforeTime")
+    long deleteBySearchLogCreatedAtBefore(@Param("beforeTime") LocalDateTime beforeTime);
+
+    /**
+     * 根据搜索日志ID列表批量删除点击记录
+     *
+     * @param searchLogIds 搜索日志ID列表
+     * @return 删除的记录数
+     */
+    @Query("DELETE FROM SearchClickLog c WHERE c.searchLog.id IN :searchLogIds")
+    long deleteBySearchLogIdIn(@Param("searchLogIds") List<Long> searchLogIds);
 }

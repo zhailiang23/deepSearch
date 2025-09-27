@@ -42,7 +42,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param pageable 分页信息
      * @return 搜索日志分页列表
      */
-    Page<SearchLog> findByUserId(Long userId, Pageable pageable);
+    Page<SearchLog> findByUserId(String userId, Pageable pageable);
 
     /**
      * 根据用户ID和时间范围查找搜索日志
@@ -53,7 +53,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param pageable  分页信息
      * @return 搜索日志分页列表
      */
-    Page<SearchLog> findByUserIdAndCreatedAtBetween(Long userId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
+    Page<SearchLog> findByUserIdAndCreatedAtBetween(String userId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
 
     /**
      * 根据会话ID查找搜索日志列表
@@ -71,7 +71,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param pageable      分页信息
      * @return 搜索日志分页列表
      */
-    Page<SearchLog> findBySearchSpaceId(Long searchSpaceId, Pageable pageable);
+    Page<SearchLog> findBySearchSpaceId(String searchSpaceId, Pageable pageable);
 
     /**
      * 根据状态查找搜索日志
@@ -103,7 +103,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param pageable      分页信息
      * @return 搜索日志分页列表
      */
-    Page<SearchLog> findBySearchSpaceIdAndCreatedAtBetween(Long searchSpaceId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
+    Page<SearchLog> findBySearchSpaceIdAndCreatedAtBetween(String searchSpaceId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
 
     /**
      * 根据状态和时间范围查找搜索日志
@@ -124,7 +124,17 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param userId 用户ID
      * @return 搜索次数
      */
-    long countByUserId(Long userId);
+    long countByUserId(String userId);
+
+    /**
+     * 统计指定状态和时间范围内的搜索次数
+     *
+     * @param status    搜索状态
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 搜索次数
+     */
+    long countByStatusAndCreatedAtBetween(SearchLogStatus status, LocalDateTime startTime, LocalDateTime endTime);
 
     /**
      * 统计时间范围内的搜索次数
@@ -149,7 +159,39 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param searchSpaceId 搜索空间ID
      * @return 使用次数
      */
-    long countBySearchSpaceId(Long searchSpaceId);
+    long countBySearchSpaceId(String searchSpaceId);
+
+    /**
+     * 计算指定时间范围内的平均响应时间
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 平均响应时间（毫秒）
+     */
+    @Query("SELECT AVG(s.totalTimeMs) FROM SearchLog s WHERE s.status = 'SUCCESS' AND s.createdAt BETWEEN :startTime AND :endTime")
+    Double getAverageResponseTimeByPeriod(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 查找指定时间范围内的热门查询关键词
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param pageable  分页参数
+     * @return 热门查询列表（查询词，搜索次数）
+     */
+    @Query("SELECT s.searchQuery, COUNT(s) FROM SearchLog s WHERE s.createdAt BETWEEN :startTime AND :endTime GROUP BY s.searchQuery ORDER BY COUNT(s) DESC")
+    List<Object[]> findTopQueriesByPeriod(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, Pageable pageable);
+
+    /**
+     * 查找指定时间范围内的热门搜索空间
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param pageable  分页参数
+     * @return 热门搜索空间列表（搜索空间ID，搜索次数）
+     */
+    @Query("SELECT s.searchSpaceId, COUNT(s) FROM SearchLog s WHERE s.createdAt BETWEEN :startTime AND :endTime GROUP BY s.searchSpaceId ORDER BY COUNT(s) DESC")
+    List<Object[]> findTopSearchSpacesByPeriod(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, Pageable pageable);
 
     // ========== 存在性查询方法 ==========
 
@@ -167,7 +209,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param userId 用户ID
      * @return 是否有搜索记录
      */
-    boolean existsByUserId(Long userId);
+    boolean existsByUserId(String userId);
 
     // ========== 自定义查询方法 ==========
 
@@ -200,9 +242,9 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param endTime   结束时间
      * @return 搜索空间使用统计列表（搜索空间ID、名称、使用次数）
      */
-    @Query("SELECT s.searchSpaceId, s.searchSpaceName, COUNT(s) FROM SearchLog s " +
+    @Query("SELECT s.searchSpaceId, s.searchSpaceCode, COUNT(s) FROM SearchLog s " +
            "WHERE s.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY s.searchSpaceId, s.searchSpaceName ORDER BY COUNT(s) DESC")
+           "GROUP BY s.searchSpaceId, s.searchSpaceCode ORDER BY COUNT(s) DESC")
     List<Object[]> findSearchSpaceUsageStatistics(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
     /**
@@ -212,9 +254,9 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param endTime   结束时间
      * @return 错误统计列表（错误类型、错误次数）
      */
-    @Query("SELECT s.errorType, COUNT(s) FROM SearchLog s " +
+    @Query("SELECT s.errorMessage, COUNT(s) FROM SearchLog s " +
            "WHERE s.status IN ('ERROR', 'TIMEOUT') AND s.createdAt BETWEEN :startTime AND :endTime " +
-           "GROUP BY s.errorType ORDER BY COUNT(s) DESC")
+           "GROUP BY s.errorMessage ORDER BY COUNT(s) DESC")
     List<Object[]> findErrorStatistics(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
     /**
@@ -228,7 +270,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
     @Query("SELECT COUNT(s), AVG(s.totalResults), " +
            "COUNT(CASE WHEN SIZE(s.clickLogs) > 0 THEN 1 END) FROM SearchLog s " +
            "WHERE s.userId = :userId AND s.createdAt BETWEEN :startTime AND :endTime")
-    Object[] findUserSearchBehavior(@Param("userId") Long userId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    Object[] findUserSearchBehavior(@Param("userId") String userId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
     /**
      * 查找慢搜索日志

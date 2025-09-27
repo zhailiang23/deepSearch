@@ -30,6 +30,13 @@ import java.util.Objects;
 public class SearchClickLog extends BaseEntity {
 
     /**
+     * 主键ID
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
      * 关联的搜索日志
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -309,6 +316,14 @@ public class SearchClickLog extends BaseEntity {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     // ========== equals, hashCode, toString ==========
