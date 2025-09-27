@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-26T08:28:18Z
-version: 1.4
+last_updated: 2025-09-27T01:30:13Z
+version: 1.5
 author: Claude Code PM System
 ---
 
@@ -14,7 +14,8 @@ author: Claude Code PM System
 ## Core Value Proposition
 
 **主要价值：**
-- **索引映射编辑器：** 完整的映射配置和管理功能，包含后端API和前端界面 ⭐ **NEW**
+- **移动端搜索演示：** 完整的移动端搜索界面演示系统，包含手机模拟器和真实搜索体验 ⭐⭐⭐ **NEW**
+- **索引映射编辑器：** 完整的映射配置和管理功能，包含后端API和前端界面 ⭐
 - **实时搜索数据管理：** 高性能Elasticsearch全文检索，动态表格展示，实时编辑和删除
 - **智能JSON导入：** 自动分析JSON文件结构，推断字段类型，生成统计信息
 - **灵活索引配置：** 用户可自定义Elasticsearch索引映射和搜索配置
@@ -48,6 +49,12 @@ author: Claude Code PM System
 - **Goals:** 快速查找业务数据，编辑记录，导出结果
 - **Pain Points:** 搜索界面复杂，编辑功能不够直观，缺乏移动端支持
 - **Usage Patterns:** 业务数据查询，记录更新，结果导出，移动端使用
+
+**移动端用户** ⭐⭐⭐ **NEW**
+- **Role:** 移动设备上的搜索和演示用户
+- **Goals:** 在移动设备上体验搜索功能，演示搜索能力，移动端数据访问
+- **Pain Points:** 缺乏移动端优化界面，移动搜索体验不佳，演示功能缺失
+- **Usage Patterns:** 移动端搜索演示，手机界面体验，拼音搜索测试，搜索性能评估
 
 **End Users**
 - **Role:** Standard application users

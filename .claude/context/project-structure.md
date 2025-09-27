@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-25T07:55:40Z
-version: 1.4
+last_updated: 2025-09-27T01:30:13Z
+version: 1.5
 author: Claude Code PM System
 ---
 
@@ -195,30 +195,50 @@ frontend/
 │   │   └── index.ts
 │   ├── stores/              # Pinia state management
 │   │   ├── auth.ts          # Authentication store
-│   │   └── searchSpace.ts   # Search space store
+│   │   ├── searchSpace.ts   # Search space store
+│   │   └── mobileSearchDemo.ts # **NEW: 571行移动搜索演示状态管理** ⭐
 │   ├── composables/         # **NEW: Composition API utilities** ⭐
-│   │   └── useMediaQuery.ts # 318行媒体查询工具 (响应式设计)
+│   │   ├── useMediaQuery.ts # 318行媒体查询工具 (响应式设计)
+│   │   ├── useMobileSearchDemo.ts # **NEW: 813行移动搜索演示逻辑** ⭐
+│   │   ├── useParameterSync.ts    # **NEW: 769行参数同步管理** ⭐
+│   │   ├── useSearchCache.ts      # **NEW: 554行搜索缓存管理** ⭐
+│   │   ├── useSearchHistory.ts    # **NEW: 530行搜索历史管理** ⭐
+│   │   └── useSearchPerformance.ts # **NEW: 1022行搜索性能监控** ⭐
 │   ├── utils/               # **NEW: Utility functions** ⭐
-│   │   └── performance.ts   # 422行性能优化工具
+│   │   ├── performance.ts   # 422行性能优化工具
+│   │   └── searchOptimization.ts # **NEW: 515行搜索优化工具** ⭐
 │   ├── types/               # TypeScript type definitions
 │   │   ├── auth.ts          # Authentication types
 │   │   ├── searchSpace.ts   # Search space types
-│   │   └── tableData.ts     # **NEW: 110行表格数据类型定义** ⭐
+│   │   ├── tableData.ts     # **NEW: 110行表格数据类型定义** ⭐
+│   │   └── demo.ts         # **NEW: 409行演示数据类型定义** ⭐
 │   ├── services/            # API service layer
 │   │   ├── api.ts           # Base API configuration
 │   │   ├── authService.ts   # Authentication API
 │   │   ├── searchSpaceApi.ts # Search space API
-│   │   └── searchDataService.ts # **NEW: 129行搜索数据API服务** ⭐
+│   │   ├── searchDataService.ts # **NEW: 129行搜索数据API服务** ⭐
+│   │   └── searchData.ts    # **NEW: 157行搜索数据API** ⭐
 │   ├── components/          # Reusable components
 │   │   ├── layout/          # Layout components
 │   │   │   ├── TopNav.vue
 │   │   │   ├── SidebarNav.vue
-│   │   │   └── ResponsiveLayout.vue
+│   │   │   ├── ResponsiveLayout.vue
+│   │   │   └── DualPaneLayout.vue # **NEW: 253行双面板布局** ⭐
 │   │   ├── ui/              # Base UI components
 │   │   │   ├── Button.vue
 │   │   │   ├── Dropdown.vue
 │   │   │   ├── UserMenu.vue
-│   │   │   └── VirtualList.vue  # **NEW: 249行虚拟化列表组件** ⭐
+│   │   │   ├── VirtualList.vue  # **NEW: 249行虚拟化列表组件** ⭐
+│   │   │   ├── select/      # **NEW: 选择器组件系统** ⭐
+│   │   │   │   ├── Select.vue        # 19行主选择器
+│   │   │   │   ├── SelectContent.vue # 43行选择器内容
+│   │   │   │   ├── SelectItem.vue    # 36行选择器项目
+│   │   │   │   ├── SelectTrigger.vue # 31行选择器触发器
+│   │   │   │   ├── SelectValue.vue   # 21行选择器值
+│   │   │   │   └── index.ts         # 5行导出文件
+│   │   │   └── switch/      # **NEW: 开关组件系统** ⭐
+│   │   │       ├── Switch.vue       # 41行开关组件
+│   │   │       └── index.ts        # 1行导出文件
 │   │   ├── searchSpace/     # Search space components
 │   │   │   ├── SearchSpaceList.vue
 │   │   │   ├── SearchSpaceForm.vue
@@ -236,17 +256,50 @@ frontend/
 │   │           ├── CellRenderer.vue        # 428行单元格渲染器
 │   │           ├── TableRowCard.vue        # 500行移动端表格行
 │   │           └── TableRowDesktop.vue     # 383行桌面端表格行
+│   │   ├── mobile/           # **NEW: 移动端组件系统** ⭐⭐⭐
+│   │   │   ├── DeviceFrame.vue           # 251行设备框架组件
+│   │   │   ├── EmptyState.vue            # 487行空状态组件
+│   │   │   ├── ErrorState.vue            # 615行错误状态组件
+│   │   │   ├── LoadingState.vue          # 456行加载状态组件
+│   │   │   ├── MobileSearchApp.vue       # 326行移动搜索应用
+│   │   │   ├── MobileSearchInterface.vue # 1278行移动搜索界面
+│   │   │   ├── PhoneSimulator.vue        # 248行手机模拟器
+│   │   │   ├── SearchInput.vue           # 462行搜索输入框
+│   │   │   ├── SearchResultItem.vue      # 472行搜索结果项
+│   │   │   ├── SearchResults.vue         # 345行搜索结果
+│   │   │   ├── StatusBar.vue             # 78行状态栏
+│   │   │   ├── __tests__/                # 移动端组件测试
+│   │   │   │   ├── DeviceFrame.spec.ts   # 132行设备框架测试
+│   │   │   │   ├── PhoneSimulator.spec.ts # 133行手机模拟器测试
+│   │   │   │   └── StatusBar.spec.ts     # 154行状态栏测试
+│   │   │   ├── README.md                # 138行移动端组件文档
+│   │   │   └── index.ts                 # 23行导出文件
+│   │   └── demo/             # **NEW: 演示组件系统** ⭐⭐
+│   │       ├── ConfigManager.vue         # 457行配置管理器
+│   │       ├── DemoContainer.vue         # 296行演示容器
+│   │       ├── PagingConfig.vue          # 319行分页配置
+│   │       ├── ParameterPanel.vue        # 350行参数面板
+│   │       ├── PinyinSearchConfig.vue    # 174行拼音搜索配置
+│   │       └── SearchSpaceSelector.vue   # 196行搜索空间选择器
+│   ├── pages/               # **NEW: 页面组件** ⭐
+│   │   ├── DashboardSimple.vue      # **NEW: 16行简化仪表板** ⭐
+│   │   └── MobileSearchDemo.vue     # **NEW: 154行移动搜索演示页面** ⭐
 │   ├── views/               # Page components
 │   │   ├── LoginPage.vue
 │   │   ├── DashboardPage.vue
 │   │   ├── UserListPage.vue
 │   │   ├── UserSettingsPage.vue
 │   │   ├── SearchSpaceListPage.vue
-│   │   └── SearchDataManagePage.vue # **NEW: 936行搜索数据主管理页面** ⭐
-│   └── assets/              # Static assets
-│       ├── styles/
-│       │   └── globals.css
-│       └── images/
+│   │   ├── SearchDataManagePage.vue # **NEW: 936行搜索数据主管理页面** ⭐
+│   │   └── PhoneSimulatorTest.vue   # **NEW: 198行手机模拟器测试页面** ⭐
+│   ├── assets/              # Static assets
+│   │   ├── styles/
+│   │   │   └── globals.css
+│   │   └── images/
+│   └── test/                # **NEW: 前端测试组件** ⭐
+│       └── composables/     # Composition API测试
+│           └── __tests__/
+│               └── useMobileSearchDemo.test.ts # **NEW: 388行移动搜索演示测试** ⭐
 ├── public/                  # Public static files
 ├── components.json          # shadcn-vue component registry
 ├── index.html              # HTML template

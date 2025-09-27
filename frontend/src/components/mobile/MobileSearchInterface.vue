@@ -784,6 +784,7 @@ watch(() => availableTabs.value, (newTabs) => {
 .search-container-wrapper {
   @apply flex-1 flex flex-col;
   min-height: 0; /* 确保flex子容器可以正确计算高度 */
+  height: 100%; /* 占满可用空间 */
 }
 
 .app-header {
@@ -861,7 +862,7 @@ watch(() => availableTabs.value, (newTabs) => {
 .results-container {
   @apply flex-1 overflow-y-auto;
   min-height: 0; /* 确保flex子元素可以滚动 */
-  max-height: calc(100vh - 200px); /* 设置明确的最大高度 */
+  height: 100%; /* 占满可用高度 */
 }
 
 .loading-state {
@@ -991,7 +992,7 @@ watch(() => availableTabs.value, (newTabs) => {
 
 /* 空状态 */
 .empty-state, .initial-state {
-  @apply flex flex-col items-center justify-center py-6 px-6;
+  @apply flex flex-col justify-start py-6 px-6 h-full min-h-0;
 }
 
 .empty-icon, .welcome-icon {
@@ -1120,7 +1121,7 @@ watch(() => availableTabs.value, (newTabs) => {
 
 /* Home指示器 */
 .home-indicator {
-  @apply w-32 h-1 bg-gray-900 rounded-full mx-auto my-2;
+  @apply w-32 h-1 bg-gray-900 rounded-full mx-auto mb-1 mt-0;
 }
 
 /* 搜索高亮 */
