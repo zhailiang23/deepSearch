@@ -244,6 +244,83 @@ public class SearchLogController {
         }
     }
 
+    // ========== 热词统计 ==========
+
+    @GetMapping("/hot-words")
+    @Operation(summary = "获取热词统计",
+               description = "分析搜索日志中的关键词，统计出现频率最高的词汇，支持时间范围筛选和参数配置")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "获取成功",
+            content = @Content(schema = @Schema(implementation = HotWordResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "请求参数错误"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
+    public ResponseEntity<ApiResponse<List<HotWordResponse>>> getHotWords(
+            @Parameter(description = "开始时间 (格式: yyyy-MM-dd HH:mm:ss)")
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startDate,
+            @Parameter(description = "结束时间 (格式: yyyy-MM-dd HH:mm:ss)")
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endDate,
+            @Parameter(description = "返回热词数量限制", example = "10")
+            @RequestParam(defaultValue = "10") Integer limit,
+            @Parameter(description = "用户ID筛选")
+            @RequestParam(required = false) String userId,
+            @Parameter(description = "搜索空间ID筛选")
+            @RequestParam(required = false) String searchSpaceId,
+            @Parameter(description = "是否包含分词详情")
+            @RequestParam(defaultValue = "false") Boolean includeSegmentDetails,
+            @Parameter(description = "最小词长", example = "2")
+            @RequestParam(defaultValue = "2") Integer minWordLength,
+            @Parameter(description = "是否排除停用词")
+            @RequestParam(defaultValue = "true") Boolean excludeStopWords) {
+
+        try {
+            // 参数验证
+            if (limit <= 0 || limit > 100) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.badRequest("返回数量限制必须在1-100之间"));
+            }
+
+            if (minWordLength <= 0 || minWordLength > 20) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.badRequest("最小词长必须在1-20之间"));
+            }
+
+            if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.badRequest("开始时间不能晚于结束时间"));
+            }
+
+            // 构建请求对象
+            HotWordRequest request = HotWordRequest.builder()
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .limit(limit)
+                    .userId(userId)
+                    .searchSpaceId(searchSpaceId)
+                    .includeSegmentDetails(includeSegmentDetails)
+                    .minWordLength(minWordLength)
+                    .excludeStopWords(excludeStopWords)
+                    .build();
+
+            // 调用服务获取热词统计
+            List<HotWordResponse> hotWords = searchLogService.getHotWords(request);
+
+            log.info("获取热词统计成功，时间范围: {} 到 {}, 返回{}个热词",
+                     startDate, endDate, hotWords.size());
+            return ResponseEntity.ok(ApiResponse.success(hotWords));
+
+        } catch (IllegalArgumentException e) {
+            log.warn("获取热词统计参数错误: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.badRequest("请求参数错误: " + e.getMessage()));
+        } catch (Exception e) {
+            log.error("获取热词统计失败", e);
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.error("获取热词统计失败: " + e.getMessage()));
+        }
+    }
+
     // ========== 管理操作 ==========
 
     @DeleteMapping("/cleanup")
