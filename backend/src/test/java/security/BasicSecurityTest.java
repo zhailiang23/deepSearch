@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.*;
  * @version 1.0
  * @since 2025-09-28
  */
-@SpringBootTest
+@SpringBootTest(classes = com.ynet.mgmt.MgmtApplication.class)
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
     "spring.datasource.url=jdbc:h2:mem:basicsecuritytest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",

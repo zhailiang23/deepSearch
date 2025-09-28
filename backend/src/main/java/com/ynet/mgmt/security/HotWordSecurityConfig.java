@@ -32,37 +32,6 @@ import java.util.regex.Pattern;
 @EnableMethodSecurity(prePostEnabled = true)
 public class HotWordSecurityConfig {
 
-    /**
-     * 速率限制器Bean
-     */
-    @Bean
-    public RateLimiter hotWordApiRateLimiter() {
-        return new RateLimiter();
-    }
-
-    /**
-     * 参数验证器Bean
-     */
-    @Bean
-    public ParameterValidator hotWordParameterValidator() {
-        return new ParameterValidator();
-    }
-
-    /**
-     * 安全审计器Bean
-     */
-    @Bean
-    public SecurityAuditor hotWordSecurityAuditor() {
-        return new SecurityAuditor();
-    }
-
-    /**
-     * 数据访问控制器Bean
-     */
-    @Bean
-    public DataAccessController hotWordDataAccessController() {
-        return new DataAccessController();
-    }
 
     /**
      * API访问频率限制器
@@ -147,7 +116,7 @@ public class HotWordSecurityConfig {
 
         // SQL注入检测模式
         private static final Pattern SQL_INJECTION_PATTERN = Pattern.compile(
-            "(?i).*(union|select|insert|update|delete|drop|create|alter|exec|execute|script|declare|sp_|xp_).*"
+            "(?i).*(;\\s*(drop|delete|insert|update|create|alter)|(union|select)\\s+(\\*|\\w+)|(or|and)\\s+['\"]\\w+['\"]\\s*=\\s*['\"]\\w+['\"]).*"
         );
 
         // XSS攻击检测模式
