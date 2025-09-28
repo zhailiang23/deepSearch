@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * 基础管理系统主应用程序入口点
  *
- * @author system
+ * @author system	
  * @since 1.0.0
  */
 @SpringBootApplication

@@ -2,10 +2,10 @@
 name: statistics-mismatch-keyword
 status: backlog
 created: 2025-09-28T07:23:53Z
-updated: 2025-09-28T07:31:32Z
+updated: 2025-09-28T07:44:34Z
 progress: 0%
 prd: .claude/prds/statistics-mismatch-keyword.md
-github: [Will be updated when synced to GitHub]
+github: https://github.com/zhailiang23/deepSearch/issues/98
 ---
 
 # Epic: statistics-mismatch-keyword
@@ -36,7 +36,7 @@ github: [Will be updated when synced to GitHub]
 ### Backend Services
 - **统计计算服务** (`MismatchAnalysisService`):
   - 实现分层权重不匹配度算法（无结果权重1.0，少结果权重0.6）
-  - 集成现有的KeywordSegmentationService进行分词处理
+  - 集成现有的ChineseSegmentationService进行分词处理
   - 优化的SQL查询逻辑，支持时间范围筛选
 
 - **排行榜服务** (`RankingService`):
@@ -154,3 +154,21 @@ github: [Will be updated when synced to GitHub]
 - 预留15%时间用于性能优化和bug修复
 - 与现有服务集成可能需要额外1天调试
 - 大数据量测试和优化预留2天缓冲时间
+
+## Tasks Created
+- [ ] #102 - 数据库优化和索引创建 (parallel: true)
+- [ ] #104 - 统计计算服务开发 (parallel: false)
+- [ ] #105 - 排行榜服务开发 (parallel: false)
+- [ ] #101 - API接口开发 (parallel: false)
+- [ ] #103 - 前端排行榜界面开发 (parallel: false)
+- [ ] #99 - Redis缓存优化方案 (parallel: true)
+- [ ] #100 - 测试与部署 (parallel: false)
+
+**任务统计**:
+- **总任务数**: 7个
+- **并行任务**: 2个 (#102, #99)
+- **串行任务**: 5个 (#104, #105, #101, #103, #100)
+- **预估总工时**: 72-112小时 (9-14天)
+
+**关键路径**: #102 → #104 → #105 → #101 → #103 → #100 (约8-10天)
+**并行优化**: 任务#99可在任务#104完成后并行进行

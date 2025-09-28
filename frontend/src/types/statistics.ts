@@ -136,3 +136,28 @@ export interface ExportData {
   filename: string
   data: HotWordItem[]
 }
+
+// WordCloud尺寸配置
+export interface WordCloudDimensions {
+  width: number
+  height: number
+}
+
+// WordCloud状态
+export interface WordCloudState {
+  isRendering: boolean
+  hasError: boolean
+  errorMessage: string | null
+  renderProgress: number
+  lastRenderTime: number
+}
+
+// WordCloud统计信息
+export interface WordCloudStats {
+  totalWords: number
+  renderedWords: number
+  maxWeight: number
+  minWeight: number
+  averageWeight: number
+  renderTime: number
+}
