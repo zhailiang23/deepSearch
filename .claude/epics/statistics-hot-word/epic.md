@@ -2,8 +2,9 @@
 name: statistics-hot-word
 status: completed
 created: 2025-09-28T04:00:38Z
-updated: 2025-09-28T09:10:00Z
-progress: 100.0%
+updated: 2025-09-28T11:43:01Z
+completed: 2025-09-28T11:43:01Z
+progress: 100%
 prd: .claude/prds/statistics-hot-word.md
 github: https://github.com/zhailiang23/deepSearch/issues/92
 ---

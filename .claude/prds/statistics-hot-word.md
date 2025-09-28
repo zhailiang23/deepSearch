@@ -1,8 +1,9 @@
 ---
 name: statistics-hot-word
 description: 基于搜索日志的热词统计分析功能，为运营团队提供用户搜索行为洞察
-status: backlog
+status: complete
 created: 2025-09-28T03:45:32Z
+completed: 2025-09-28T11:43:01Z
 ---
 
 # PRD: statistics-hot-word
