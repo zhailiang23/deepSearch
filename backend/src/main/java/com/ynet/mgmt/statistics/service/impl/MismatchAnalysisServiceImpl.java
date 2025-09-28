@@ -11,9 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -64,8 +61,11 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
         logger.info("计算不匹配度统计 - startTime: {}, endTime: {}", startTime, endTime);
 
         try {
-            // 查询时间范围内的搜索日志
-            List<SearchLog> searchLogs = searchLogRepository.findByCreatedAtBetween(startTime, endTime);
+            // 查询时间范围内的搜索日志，不需要分页，使用自定义查询
+            List<SearchLog> searchLogs = searchLogRepository.findAll().stream()
+                    .filter(log -> log.getCreatedAt().isAfter(startTime.minusSeconds(1)) &&
+                                   log.getCreatedAt().isBefore(endTime.plusSeconds(1)))
+                    .collect(Collectors.toList());
 
             if (searchLogs.isEmpty()) {
                 return new RankingQueryResponse.StatisticsInfo(0, 0.0, 0.0, 0.0);
@@ -121,7 +121,10 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
             LocalDateTime startTime = endTime.minusDays(timeRange.getDays());
 
             // 查询搜索日志
-            List<SearchLog> searchLogs = searchLogRepository.findByCreatedAtBetween(startTime, endTime);
+            List<SearchLog> searchLogs = searchLogRepository.findAll().stream()
+                    .filter(log -> log.getCreatedAt().isAfter(startTime.minusSeconds(1)) &&
+                                   log.getCreatedAt().isBefore(endTime.plusSeconds(1)))
+                    .collect(Collectors.toList());
 
             // 按关键词分组
             Map<String, List<SearchLog>> keywordGroups = searchLogs.stream()
@@ -227,8 +230,11 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
             LocalDateTime startTime = endTime.minusDays(timeRange.getDays());
 
             // 查询指定关键词的搜索日志
-            List<SearchLog> searchLogs = searchLogRepository.findBySearchQueryAndCreatedAtBetween(
-                    keyword, startTime, endTime);
+            List<SearchLog> searchLogs = searchLogRepository.findAll().stream()
+                    .filter(log -> keyword.equals(log.getSearchQuery()) &&
+                                   log.getCreatedAt().isAfter(startTime.minusSeconds(1)) &&
+                                   log.getCreatedAt().isBefore(endTime.plusSeconds(1)))
+                    .collect(Collectors.toList());
 
             if (searchLogs.isEmpty()) {
                 return null;
@@ -291,7 +297,7 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
         double mismatchWeight = 0.0;
 
         for (SearchLog log : searchLogs) {
-            int resultCount = log.getTotalResults() != null ? log.getTotalResults() : 0;
+            int resultCount = log.getTotalResults() != null ? log.getTotalResults().intValue() : 0;
             double weight = calculateResultWeight(resultCount);
             totalWeight += weight;
 
@@ -341,8 +347,8 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
     private MismatchKeywordRankingDTO createRankingDTO(String keyword, List<SearchLog> searchLogs,
                                                       double mismatchRate, int rank) {
         int searchCount = searchLogs.size();
-        long mismatchCount = searchLogs.stream()
-                .mapToInt(log -> log.getTotalResults() != null ? log.getTotalResults() : 0)
+        int mismatchCount = (int) searchLogs.stream()
+                .mapToInt(log -> log.getTotalResults() != null ? log.getTotalResults().intValue() : 0)
                 .filter(count -> count <= LOW_RESULT_THRESHOLD)
                 .count();
 
@@ -352,7 +358,7 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
                 .orElse(null);
 
         MismatchKeywordRankingDTO dto = new MismatchKeywordRankingDTO(
-                rank, keyword, mismatchRate, searchCount, (int) mismatchCount, lastSearchTime);
+                rank, keyword, mismatchRate, searchCount, mismatchCount, lastSearchTime);
 
         // TODO: 计算趋势和排名变化
         dto.setTrend(calculateTrend(mismatchRate));
