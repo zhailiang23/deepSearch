@@ -132,6 +132,13 @@ app:
     max-file-size: 20971520  # 20MB in bytes
     allowed-extensions: json
 
+  # 缓存配置
+  cache:
+    default-ttl: ${CACHE_DEFAULT_TTL:PT30M}  # 默认缓存30分钟
+    hot-words-ttl: ${CACHE_HOT_WORDS_TTL:PT1H}  # 热词缓存1小时
+    statistics-ttl: ${CACHE_STATISTICS_TTL:PT15M}  # 统计数据缓存15分钟
+    search-spaces-ttl: ${CACHE_SEARCH_SPACES_TTL:PT2H}  # 搜索空间缓存2小时
+
 # 搜索日志配置
 search:
   log:

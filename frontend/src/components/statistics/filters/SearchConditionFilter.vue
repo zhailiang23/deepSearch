@@ -1,321 +1,596 @@
 <template>
   <div class="search-condition-filter">
-    <label class="label">搜索条件</label>
-    <div class="search-input-group">
-      <div class="relative">
+    <!-- 组件标题 -->
+    <div class="search-condition-filter__header">
+      <h4 class="search-condition-filter__title">搜索条件</h4>
+      <button
+        v-if="hasActiveFilters"
+        @click="clearAllFilters"
+        class="search-condition-filter__clear"
+        type="button"
+      >
+        清除全部
+      </button>
+    </div>
+
+    <!-- 关键词输入 -->
+    <div class="search-condition-filter__section">
+      <label for="keywords" class="section-label">关键词过滤</label>
+      <div class="keywords-input-group">
         <input
-          v-model="localSearchKeyword"
+          id="keywords"
+          v-model="keywordInput"
+          @keypress.enter="addKeyword"
           type="text"
-          placeholder="输入关键词进行过滤..."
-          class="search-input"
-          @input="handleSearchChange"
-          @keyup.enter="handleSearchSubmit"
-        >
-        <div class="search-icon">
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+          placeholder="输入关键词，按回车添加"
+          class="keywords-input"
+          :disabled="disabled"
+        />
         <button
-          v-if="localSearchKeyword"
-          @click="clearSearch"
-          class="clear-btn"
-          title="清除搜索"
+          @click="addKeyword"
+          :disabled="!keywordInput.trim() || disabled"
+          class="add-keyword-button"
+          type="button"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          添加
         </button>
       </div>
 
-      <!-- 搜索建议（如果有历史搜索记录） -->
-      <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
-        <ul class="suggestions-list">
-          <li
-            v-for="suggestion in suggestions"
-            :key="suggestion"
-            @click="selectSuggestion(suggestion)"
-            class="suggestion-item"
+      <!-- 关键词标签列表 -->
+      <div v-if="keywords.length > 0" class="keywords-list">
+        <div
+          v-for="(keyword, index) in keywords"
+          :key="index"
+          class="keyword-tag"
+        >
+          <span class="keyword-text">{{ keyword }}</span>
+          <button
+            @click="removeKeyword(index)"
+            class="keyword-remove"
+            type="button"
+            :disabled="disabled"
           >
-            <svg class="w-3 h-3 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {{ suggestion }}
-          </li>
-        </ul>
+            ×
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 搜索提示 -->
-    <div class="search-hint">
-      <span class="hint-text">
-        支持模糊匹配，按 Enter 键立即搜索
-      </span>
+    <!-- 搜索空间过滤 -->
+    <div class="search-condition-filter__section">
+      <label for="search-space" class="section-label">搜索空间</label>
+      <select
+        id="search-space"
+        v-model="selectedSearchSpace"
+        class="search-space-select"
+        :disabled="disabled"
+      >
+        <option value="">全部搜索空间</option>
+        <option
+          v-for="space in searchSpaceOptions"
+          :key="space.value"
+          :value="space.value"
+        >
+          {{ space.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- 用户类型过滤 -->
+    <div class="search-condition-filter__section">
+      <label class="section-label">用户类型</label>
+      <div class="user-type-options">
+        <label
+          v-for="userType in userTypeOptions"
+          :key="userType.value"
+          class="user-type-option"
+        >
+          <input
+            v-model="selectedUserTypes"
+            :value="userType.value"
+            type="checkbox"
+            class="user-type-checkbox"
+            :disabled="disabled"
+          />
+          <span class="user-type-label">{{ userType.label }}</span>
+          <span v-if="userType.description" class="user-type-description">
+            {{ userType.description }}
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 搜索频次过滤 -->
+    <div class="search-condition-filter__section">
+      <label class="section-label">搜索频次范围</label>
+      <div class="frequency-range">
+        <div class="frequency-input-group">
+          <label for="min-frequency" class="frequency-label">最小频次</label>
+          <input
+            id="min-frequency"
+            v-model.number="minFrequency"
+            type="number"
+            min="1"
+            :max="maxFrequency || undefined"
+            class="frequency-input"
+            placeholder="1"
+            :disabled="disabled"
+          />
+        </div>
+        <div class="frequency-separator">-</div>
+        <div class="frequency-input-group">
+          <label for="max-frequency" class="frequency-label">最大频次</label>
+          <input
+            id="max-frequency"
+            v-model.number="maxFrequency"
+            type="number"
+            :min="minFrequency || 1"
+            class="frequency-input"
+            placeholder="不限制"
+            :disabled="disabled"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- 排序方式 -->
+    <div class="search-condition-filter__section">
+      <label for="sort-order" class="section-label">排序方式</label>
+      <select
+        id="sort-order"
+        v-model="sortOrder"
+        class="sort-order-select"
+        :disabled="disabled"
+      >
+        <option
+          v-for="option in sortOptions"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <!-- 当前过滤条件总结 -->
+    <div v-if="hasActiveFilters" class="search-condition-filter__summary">
+      <div class="summary-header">
+        <span class="summary-title">当前过滤条件</span>
+      </div>
+      <div class="summary-content">
+        <div v-if="keywords.length > 0" class="summary-item">
+          <span class="summary-label">关键词:</span>
+          <span class="summary-value">{{ keywords.join(', ') }}</span>
+        </div>
+        <div v-if="selectedSearchSpace" class="summary-item">
+          <span class="summary-label">搜索空间:</span>
+          <span class="summary-value">{{ getSearchSpaceLabel(selectedSearchSpace) }}</span>
+        </div>
+        <div v-if="selectedUserTypes.length > 0" class="summary-item">
+          <span class="summary-label">用户类型:</span>
+          <span class="summary-value">{{ getUserTypesLabel() }}</span>
+        </div>
+        <div v-if="minFrequency || maxFrequency" class="summary-item">
+          <span class="summary-label">搜索频次:</span>
+          <span class="summary-value">{{ getFrequencyRangeLabel() }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
+
+export interface SearchCondition {
+  keywords: string[]
+  searchSpace?: string
+  userTypes: string[]
+  minFrequency?: number
+  maxFrequency?: number
+  sortOrder: string
+}
+
+interface SearchSpaceOption {
+  label: string
+  value: string
+  description?: string
+}
+
+interface UserTypeOption {
+  label: string
+  value: string
+  description?: string
+}
+
+interface SortOption {
+  label: string
+  value: string
+}
 
 interface Props {
-  searchKeyword: string
-  suggestions?: string[]
-  debounceMs?: number
+  modelValue?: SearchCondition | null
+  disabled?: boolean
+  searchSpaceOptions?: SearchSpaceOption[]
+  maxKeywords?: number
 }
 
 interface Emits {
-  (e: 'update:searchKeyword', value: string): void
-  (e: 'search', keyword: string): void
+  (e: 'update:modelValue', value: SearchCondition): void
+  (e: 'change', value: SearchCondition): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  suggestions: () => [],
-  debounceMs: 300
+  modelValue: null,
+  disabled: false,
+  searchSpaceOptions: () => [],
+  maxKeywords: 10
 })
 
 const emit = defineEmits<Emits>()
 
-const localSearchKeyword = ref(props.searchKeyword)
-const showSuggestions = ref(false)
-const debounceTimer = ref<number | null>(null)
+// 响应式数据
+const keywordInput = ref('')
+const keywords = ref<string[]>([])
+const selectedSearchSpace = ref('')
+const selectedUserTypes = ref<string[]>([])
+const minFrequency = ref<number | null>(null)
+const maxFrequency = ref<number | null>(null)
+const sortOrder = ref('frequency_desc')
 
-/**
- * 过滤后的建议列表
- */
-const suggestions = computed(() => {
-  if (!localSearchKeyword.value || !props.suggestions.length) {
-    return []
+// 静态选项数据
+const userTypeOptions: UserTypeOption[] = [
+  {
+    label: '普通用户',
+    value: 'normal',
+    description: '一般用户搜索行为'
+  },
+  {
+    label: '高频用户',
+    value: 'frequent',
+    description: '搜索频次较高的用户'
+  },
+  {
+    label: '新用户',
+    value: 'new',
+    description: '近期注册的新用户'
+  },
+  {
+    label: '活跃用户',
+    value: 'active',
+    description: '近期活跃度较高的用户'
   }
-  return props.suggestions
-    .filter(suggestion =>
-      suggestion.toLowerCase().includes(localSearchKeyword.value.toLowerCase()) &&
-      suggestion !== localSearchKeyword.value
-    )
-    .slice(0, 5) // 最多显示5个建议
+]
+
+const sortOptions: SortOption[] = [
+  { label: '搜索频次(高到低)', value: 'frequency_desc' },
+  { label: '搜索频次(低到高)', value: 'frequency_asc' },
+  { label: '最近搜索时间', value: 'recent_time' },
+  { label: '首次搜索时间', value: 'first_time' },
+  { label: '关键词长度', value: 'keyword_length' },
+  { label: '字母顺序', value: 'alphabetical' }
+]
+
+// 计算属性
+const hasActiveFilters = computed(() => {
+  return keywords.value.length > 0 ||
+         selectedSearchSpace.value ||
+         selectedUserTypes.value.length > 0 ||
+         minFrequency.value !== null ||
+         maxFrequency.value !== null ||
+         sortOrder.value !== 'frequency_desc'
 })
 
-/**
- * 处理搜索输入变化（防抖）
- */
-const handleSearchChange = () => {
-  if (debounceTimer.value) {
-    clearTimeout(debounceTimer.value)
+// 方法
+const addKeyword = () => {
+  const keyword = keywordInput.value.trim()
+  if (!keyword) return
+
+  if (keywords.value.includes(keyword)) {
+    keywordInput.value = ''
+    return
   }
 
-  debounceTimer.value = setTimeout(() => {
-    emit('update:searchKeyword', localSearchKeyword.value)
-    showSuggestions.value = localSearchKeyword.value.length > 0
-  }, props.debounceMs)
-}
-
-/**
- * 处理搜索提交（回车键）
- */
-const handleSearchSubmit = () => {
-  if (debounceTimer.value) {
-    clearTimeout(debounceTimer.value)
+  if (keywords.value.length >= props.maxKeywords) {
+    // 可以在这里添加提示逻辑
+    return
   }
-  emit('update:searchKeyword', localSearchKeyword.value)
-  emit('search', localSearchKeyword.value)
-  showSuggestions.value = false
+
+  keywords.value.push(keyword)
+  keywordInput.value = ''
+  emitChange()
 }
 
-/**
- * 清除搜索
- */
-const clearSearch = () => {
-  localSearchKeyword.value = ''
-  emit('update:searchKeyword', '')
-  emit('search', '')
-  showSuggestions.value = false
+const removeKeyword = (index: number) => {
+  keywords.value.splice(index, 1)
+  emitChange()
 }
 
-/**
- * 选择建议项
- */
-const selectSuggestion = (suggestion: string) => {
-  localSearchKeyword.value = suggestion
-  emit('update:searchKeyword', suggestion)
-  emit('search', suggestion)
-  showSuggestions.value = false
+const clearAllFilters = () => {
+  keywords.value = []
+  selectedSearchSpace.value = ''
+  selectedUserTypes.value = []
+  minFrequency.value = null
+  maxFrequency.value = null
+  sortOrder.value = 'frequency_desc'
+  keywordInput.value = ''
+  emitChange()
 }
 
-/**
- * 点击外部关闭建议列表
- */
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as Element
-  if (!target.closest('.search-condition-filter')) {
-    showSuggestions.value = false
+const getSearchSpaceLabel = (value: string): string => {
+  const option = props.searchSpaceOptions.find(opt => opt.value === value)
+  return option?.label || value
+}
+
+const getUserTypesLabel = (): string => {
+  return selectedUserTypes.value
+    .map(type => userTypeOptions.find(opt => opt.value === type)?.label || type)
+    .join(', ')
+}
+
+const getFrequencyRangeLabel = (): string => {
+  if (minFrequency.value && maxFrequency.value) {
+    return `${minFrequency.value} - ${maxFrequency.value}`
+  } else if (minFrequency.value) {
+    return `≥ ${minFrequency.value}`
+  } else if (maxFrequency.value) {
+    return `≤ ${maxFrequency.value}`
+  }
+  return ''
+}
+
+const emitChange = () => {
+  const condition: SearchCondition = {
+    keywords: [...keywords.value],
+    searchSpace: selectedSearchSpace.value || undefined,
+    userTypes: [...selectedUserTypes.value],
+    minFrequency: minFrequency.value || undefined,
+    maxFrequency: maxFrequency.value || undefined,
+    sortOrder: sortOrder.value
+  }
+
+  emit('update:modelValue', condition)
+  emit('change', condition)
+}
+
+// 初始化组件
+const initializeComponent = () => {
+  if (props.modelValue) {
+    keywords.value = [...(props.modelValue.keywords || [])]
+    selectedSearchSpace.value = props.modelValue.searchSpace || ''
+    selectedUserTypes.value = [...(props.modelValue.userTypes || [])]
+    minFrequency.value = props.modelValue.minFrequency || null
+    maxFrequency.value = props.modelValue.maxFrequency || null
+    sortOrder.value = props.modelValue.sortOrder || 'frequency_desc'
   }
 }
 
-// 监听props变化
-watch(() => props.searchKeyword, (newVal) => {
-  localSearchKeyword.value = newVal
-})
+// 监听数据变化
+watch([selectedSearchSpace, selectedUserTypes, minFrequency, maxFrequency, sortOrder], () => {
+  emitChange()
+}, { deep: true })
 
-// 生命周期
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-  if (debounceTimer.value) {
-    clearTimeout(debounceTimer.value)
+watch(() => props.modelValue, (newValue) => {
+  if (newValue) {
+    initializeComponent()
   }
-})
+}, { deep: true })
+
+// 组件挂载时初始化
+initializeComponent()
 </script>
 
 <style scoped>
 .search-condition-filter {
+  @apply bg-white rounded-lg border border-green-200 p-4 space-y-4;
+}
+
+/* 组件头部 */
+.search-condition-filter__header {
+  @apply flex items-center justify-between;
+}
+
+.search-condition-filter__title {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.search-condition-filter__clear {
+  @apply text-xs text-red-600 hover:text-red-700 font-medium;
+}
+
+/* 各个部分 */
+.search-condition-filter__section {
   @apply space-y-2;
 }
 
-.label {
-  @apply block text-sm font-medium text-gray-700;
+.section-label {
+  @apply block text-xs font-medium text-gray-600;
 }
 
-.search-input-group {
-  @apply relative;
+/* 关键词输入 */
+.keywords-input-group {
+  @apply flex space-x-2;
 }
 
-.search-input {
-  @apply
-    w-full
-    pl-10
-    pr-10
-    py-2
-    text-sm
-    border
-    border-gray-300
-    rounded-md
-    focus:outline-none
-    focus:ring-2
-    focus:ring-green-500
-    focus:border-green-500
-    transition-colors
-    duration-200
-    placeholder-gray-400;
+.keywords-input {
+  @apply flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500;
 }
 
-.search-icon {
-  @apply
-    absolute
-    left-3
-    top-1/2
-    transform
-    -translate-y-1/2
-    pointer-events-none;
+.add-keyword-button {
+  @apply px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed;
 }
 
-.clear-btn {
-  @apply
-    absolute
-    right-3
-    top-1/2
-    transform
-    -translate-y-1/2
-    text-gray-400
-    hover:text-gray-600
-    focus:outline-none
-    focus:text-gray-600
-    transition-colors
-    duration-200;
+/* 关键词标签列表 */
+.keywords-list {
+  @apply flex flex-wrap gap-2;
 }
 
-/* 建议下拉框样式 */
-.suggestions-dropdown {
-  @apply
-    absolute
-    top-full
-    left-0
-    right-0
-    mt-1
-    bg-white
-    border
-    border-gray-200
-    rounded-md
-    shadow-lg
-    z-50
-    max-h-40
-    overflow-y-auto;
+.keyword-tag {
+  @apply inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full;
 }
 
-.suggestions-list {
-  @apply py-1;
+.keyword-text {
+  @apply mr-1;
 }
 
-.suggestion-item {
-  @apply
-    flex
-    items-center
-    px-3
-    py-2
-    text-sm
-    text-gray-700
-    hover:bg-green-50
-    hover:text-green-800
-    cursor-pointer
-    transition-colors
-    duration-150;
+.keyword-remove {
+  @apply ml-1 text-green-600 hover:text-green-800 font-bold text-lg leading-none;
 }
 
-.suggestion-item:hover {
-  @apply bg-green-50 text-green-800;
+/* 选择器样式 */
+.search-space-select,
+.sort-order-select {
+  @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500;
 }
 
-/* 搜索提示样式 */
-.search-hint {
-  @apply mt-1;
+/* 用户类型选项 */
+.user-type-options {
+  @apply space-y-2;
 }
 
-.hint-text {
-  @apply text-xs text-gray-500;
+.user-type-option {
+  @apply flex items-start space-x-2 cursor-pointer;
 }
 
-/* 响应式优化 */
+.user-type-checkbox {
+  @apply mt-0.5 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500;
+}
+
+.user-type-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.user-type-description {
+  @apply text-xs text-gray-500 ml-1;
+}
+
+/* 频次范围 */
+.frequency-range {
+  @apply flex items-center space-x-2;
+}
+
+.frequency-input-group {
+  @apply flex-1 space-y-1;
+}
+
+.frequency-label {
+  @apply block text-xs text-gray-500;
+}
+
+.frequency-input {
+  @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500;
+}
+
+.frequency-separator {
+  @apply text-gray-500 font-medium;
+}
+
+/* 过滤条件总结 */
+.search-condition-filter__summary {
+  @apply border-t border-gray-100 pt-4 space-y-2;
+}
+
+.summary-header {
+  @apply flex items-center;
+}
+
+.summary-title {
+  @apply text-xs font-medium text-gray-600;
+}
+
+.summary-content {
+  @apply space-y-1;
+}
+
+.summary-item {
+  @apply flex items-start space-x-2;
+}
+
+.summary-label {
+  @apply text-xs font-medium text-gray-500 whitespace-nowrap;
+}
+
+.summary-value {
+  @apply text-xs text-green-700 font-medium;
+}
+
+/* 响应式设计 */
 @media (max-width: 640px) {
-  .search-input {
-    @apply text-base; /* 防止iOS缩放 */
+  .search-condition-filter {
+    @apply p-3 space-y-3;
   }
 
-  .suggestions-dropdown {
-    @apply max-h-32;
+  .keywords-input-group {
+    @apply flex-col space-x-0 space-y-2;
   }
 
-  .suggestion-item {
-    @apply py-3; /* 增加触摸目标大小 */
+  .frequency-range {
+    @apply flex-col space-x-0 space-y-2;
+  }
+
+  .frequency-separator {
+    @apply self-center;
+  }
+
+  .summary-item {
+    @apply flex-col space-x-0 space-y-1;
   }
 }
 
-/* 无障碍优化 */
-.search-input:focus + .search-icon {
-  @apply text-green-500;
+/* 动画效果 */
+.search-condition-filter {
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* 加载状态样式 */
-.search-input:disabled {
-  @apply bg-gray-50 cursor-not-allowed;
-}
-
-/* 动画优化 */
-.suggestions-dropdown {
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.keyword-tag {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 悬停效果 */
+.add-keyword-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.keyword-tag:hover {
+  @apply bg-green-200;
+}
+
+/* 焦点状态 */
+.keywords-input:focus,
+.frequency-input:focus,
+.search-space-select:focus,
+.sort-order-select:focus {
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* 禁用状态 */
+.search-condition-filter:has([disabled]) {
+  @apply opacity-60;
+}
+
+.search-condition-filter [disabled] {
+  @apply cursor-not-allowed;
 }
 </style>

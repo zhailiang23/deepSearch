@@ -1,791 +1,878 @@
 <template>
-  <div class="hot-word-cloud-chart" :class="{ 'loading': isLoading, 'error': hasError }">
-    <!-- 工具栏 -->
-    <div v-if="showToolbar" class="cloud-toolbar">
-      <div class="toolbar-left">
-        <h3 class="chart-title">{{ title || '热词云图' }}</h3>
-        <span v-if="wordCount > 0" class="word-count">{{ wordCount }} 个词语</span>
-      </div>
-      <div class="toolbar-right">
-        <Button
-          variant="outline"
-          size="sm"
-          @click="refreshChart"
-          :disabled="isLoading"
-          class="refresh-btn"
-        >
-          <RotateCcw class="h-4 w-4 mr-1" />
-          刷新
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          @click="downloadChart"
-          :disabled="isLoading || hasError"
-          class="download-btn"
-        >
-          <Download class="h-4 w-4 mr-1" />
-          下载
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          @click="toggleSettings"
-          class="settings-btn"
-        >
-          <Settings class="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
+  <div
+    ref="containerRef"
+    class="hot-word-cloud-chart w-full h-full relative"
+    :class="containerClasses"
+  >
+    <!-- 画布容器 -->
+    <div
+      class="canvas-wrapper relative w-full h-full overflow-hidden rounded-lg"
+      :style="containerStyle"
+    >
+      <!-- 主画布 -->
+      <canvas
+        ref="canvasRef"
+        class="word-cloud-canvas w-full h-full"
+        :class="canvasClasses"
+        @click="handleCanvasClick"
+        @mousemove="handleCanvasMouseMove"
+        @mouseleave="handleCanvasMouseLeave"
+      />
 
-    <!-- 主内容区域 -->
-    <div class="chart-container" :style="containerStyle">
-      <!-- 加载状态 -->
-      <div v-if="isLoading" class="loading-overlay">
-        <div class="loading-content">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">{{ loadingText }}</div>
-          <div v-if="renderProgress > 0" class="loading-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: renderProgress + '%' }"></div>
-            </div>
-            <span class="progress-text">{{ Math.round(renderProgress) }}%</span>
+      <!-- 加载状态遮罩 -->
+      <div
+        v-if="renderState.isRendering || loading"
+        class="absolute inset-0 bg-white/80 flex items-center justify-center z-10"
+      >
+        <div class="flex flex-col items-center space-y-3">
+          <!-- 加载动画 -->
+          <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+
+          <!-- 进度条 -->
+          <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-emerald-500 transition-all duration-300 ease-out"
+              :style="{ width: `${renderState.progress}%` }"
+            />
           </div>
+
+          <!-- 进度文本 -->
+          <p class="text-sm text-gray-600">
+            正在生成词云图... {{ Math.round(renderState.progress) }}%
+          </p>
         </div>
       </div>
 
       <!-- 错误状态 -->
-      <div v-if="hasError && !isLoading" class="error-overlay">
-        <div class="error-content">
-          <AlertCircle class="error-icon" />
-          <div class="error-message">{{ errorMessage }}</div>
-          <Button variant="outline" size="sm" @click="retryRender" class="retry-btn">
+      <div
+        v-if="renderState.error || error"
+        class="absolute inset-0 bg-red-50 flex items-center justify-center z-10"
+      >
+        <div class="text-center p-6">
+          <div class="w-16 h-16 mx-auto mb-4 text-red-500">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-red-800 mb-2">渲染失败</h3>
+          <p class="text-red-600 mb-4">{{ renderState.error || error }}</p>
+          <button
+            @click="handleRetry"
+            class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+          >
             重试
-          </Button>
+          </button>
         </div>
       </div>
 
       <!-- 空数据状态 -->
-      <div v-if="isEmpty && !isLoading && !hasError" class="empty-overlay">
-        <div class="empty-content">
-          <FileText class="empty-icon" />
-          <div class="empty-message">暂无词云数据</div>
-          <div class="empty-description">请选择时间范围或调整筛选条件</div>
-        </div>
-      </div>
-
-      <!-- 词云Canvas -->
-      <canvas
-        ref="canvasRef"
-        class="word-cloud-canvas"
-        :width="canvasWidth"
-        :height="canvasHeight"
-        :style="canvasStyle"
-      ></canvas>
-
-      <!-- 交互组件 -->
-      <WordCloudInteraction
-        v-if="interactive && !isEmpty"
-        :canvas-ref="canvasRef"
-        :config="interactionConfig"
-        :show-controls="showInteractionControls"
-        :show-status="showInteractionStatus"
-        :show-tooltip="showTooltip"
-        @word-click="handleWordClick"
-        @word-hover="handleWordHover"
-        @zoom="handleZoom"
-        @drag="handleDrag"
-        @config-change="handleInteractionConfigChange"
-      />
-
-      <!-- 配置面板 -->
-      <div v-if="showConfigPanel" class="config-panel-overlay">
-        <div class="config-panel">
-          <div class="panel-header">
-            <h4 class="panel-title">词云配置</h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              @click="toggleSettings"
-              class="h-6 w-6 p-0"
-            >
-              <X class="h-4 w-4" />
-            </Button>
+      <div
+        v-if="!loading && !renderState.isRendering && !renderState.error && !error && (!words || words.length === 0)"
+        class="absolute inset-0 bg-gray-50 flex items-center justify-center z-10"
+      >
+        <div class="text-center p-6">
+          <div class="w-16 h-16 mx-auto mb-4 text-gray-400">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.25l1.77-1.77L12 9.88l-3.5 3.5L4 9.88l1.77 1.77L9 15.88l3-3 6.5 6.5z"/>
+            </svg>
           </div>
-          <div class="panel-content">
-            <WordCloudConfig
-              :config="themeConfig"
-              :themes="availableThemes"
-              @config-change="handleThemeConfigChange"
-              @theme-change="handleThemeChange"
-              @reset="handleConfigReset"
-              @export="handleConfigExport"
-            />
-          </div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">暂无数据</h3>
+          <p class="text-gray-500">请配置词云数据后查看效果</p>
         </div>
       </div>
     </div>
 
-    <!-- 调试信息 -->
-    <div v-if="showDebugInfo && debugInfo" class="debug-info">
-      <details class="debug-details">
-        <summary class="debug-summary">调试信息</summary>
-        <div class="debug-content">
-          <div class="debug-item">
-            <span class="debug-label">渲染时间:</span>
-            <span class="debug-value">{{ debugInfo.renderTime }}ms</span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">词语数量:</span>
-            <span class="debug-value">{{ debugInfo.totalWords }}</span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">成功渲染:</span>
-            <span class="debug-value">{{ debugInfo.renderedWords }}</span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">最大权重:</span>
-            <span class="debug-value">{{ debugInfo.maxWeight }}</span>
-          </div>
-          <div class="debug-item">
-            <span class="debug-label">画布尺寸:</span>
-            <span class="debug-value">{{ canvasWidth }} × {{ canvasHeight }}</span>
-          </div>
+    <!-- 工具栏（可选） -->
+    <div
+      v-if="showToolbar"
+      class="absolute top-2 right-2 flex space-x-2 z-20"
+    >
+      <!-- 重新渲染按钮 -->
+      <button
+        @click="handleRefresh"
+        :disabled="renderState.isRendering"
+        class="p-2 bg-white/90 hover:bg-white rounded-md shadow-sm border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        title="重新渲染"
+      >
+        <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+      </button>
+
+      <!-- 下载按钮 -->
+      <button
+        @click="handleDownload"
+        :disabled="renderState.isRendering"
+        class="p-2 bg-white/90 hover:bg-white rounded-md shadow-sm border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        title="下载图片"
+      >
+        <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 悬停提示 -->
+    <div
+      v-if="hoveredWord"
+      ref="tooltipRef"
+      class="absolute pointer-events-none z-30 bg-gray-900 text-white px-3 py-2 rounded-md shadow-lg transform -translate-x-1/2 -translate-y-full"
+      :style="tooltipStyle"
+    >
+      <div class="text-sm font-medium">{{ hoveredWord.text }}</div>
+      <div class="text-xs text-gray-300">权重: {{ hoveredWord.weight }}</div>
+    </div>
+
+    <!-- 性能监控面板 -->
+    <div
+      v-if="showPerformanceMetrics && enablePerformanceOptimization"
+      class="absolute top-2 left-2 bg-black/80 text-white text-xs p-3 rounded-lg font-mono z-40"
+    >
+      <div class="space-y-1">
+        <div class="font-bold text-emerald-400">性能指标</div>
+        <div>FPS: {{ fpsStats.current }}fps</div>
+        <div>渲染: {{ getLastMeasurement('smart-render')?.duration.toFixed(0) || 0 }}ms</div>
+        <div>内存: {{ Math.round(memoryStats.usedJSHeapSize / 1024 / 1024) }}MB</div>
+        <div>词数: {{ optimizedWords.length }}/{{ props.words?.length || 0 }}</div>
+        <div :class="[
+          'text-xs',
+          degradedMode ? 'text-red-400' : 'text-green-400'
+        ]">
+          {{ degradedMode ? '降级模式' : '正常模式' }}
         </div>
-      </details>
+        <div class="text-xs text-gray-400">
+          设备: {{ devicePerformance }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 性能警告提示 -->
+    <div
+      v-if="degradedMode"
+      class="absolute bottom-2 left-2 bg-orange-600 text-white text-xs px-3 py-2 rounded-md z-40"
+    >
+      <div class="flex items-center space-x-2">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+        </svg>
+        <span>性能优化模式已启用</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { Button } from '@/components/ui/button'
-import { RotateCcw, Download, Settings, X, AlertCircle, FileText } from 'lucide-vue-next'
-
-import WordCloudInteraction from './cloud/WordCloudInteraction.vue'
-import WordCloudConfig from './cloud/WordCloudConfig.vue'
-
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, type PropType } from 'vue'
+import { useWordCloud, useWordCloudTheme } from '@/composables/useWordCloud'
+import { useWordCloudPerformance } from '@/composables/useWordCloudPerformance'
+import { usePerformanceMonitor } from '@/composables/usePerformanceMonitor'
+import {
+  generateOptimizedConfig,
+  detectDevicePerformance,
+  normalizeWordData,
+  filterWordsByImportance,
+  optimizeCanvasSettings,
+  debounce,
+  type OptimizationContext
+} from '@/utils/wordCloudOptimizations'
 import type {
-  WordCloudItem,
-  WordCloudConfig as WordCloudConfigType,
-  WordCloudDimension,
-  WordCloudStats
+  HotWordItem,
+  WordCloudOptions,
+  WordCloudTheme,
+  WordCloudEvents
 } from '@/types/statistics'
 
-import type {
-  WordCloudThemeConfig,
-  WordCloudInteractionConfig
-} from '@/types/wordCloudTypes'
+// ============= Props =============
 
-import {
-  PRESET_THEMES,
-  LIGHT_THEME_CONFIG,
-  DARK_THEME_CONFIG,
-  DEFAULT_WORDCLOUD_CONFIG
-} from '@/constants/wordCloudDefaults'
-
-import {
-  getCurrentThemeMode,
-  getThemeByName,
-  applyThemeToConfig,
-  createResponsiveConfig,
-  optimizeConfigForDataset
-} from '@/utils/wordCloudThemes'
-
-import { createDefaultInteractionConfig } from '@/composables/useWordCloudEvents'
-import { useWordCloud } from '@/composables/useWordCloud'
-
-// Props接口
-interface Props {
-  words: WordCloudItem[]
-  width?: number
-  height?: number
-  theme?: string
-  options?: Partial<WordCloudConfigType>
-  interactive?: boolean
-  showToolbar?: boolean
-  showInteractionControls?: boolean
-  showInteractionStatus?: boolean
-  showTooltip?: boolean
-  showDebugInfo?: boolean
-  title?: string
-  loading?: boolean
-  error?: string | null
-  loadingText?: string
-  responsive?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  width: 800,
-  height: 600,
-  theme: 'auto',
-  interactive: true,
-  showToolbar: true,
-  showInteractionControls: true,
-  showInteractionStatus: true,
-  showTooltip: true,
-  showDebugInfo: false,
-  loadingText: '正在生成词云...',
-  responsive: true
+const props = defineProps({
+  /** 词云数据 */
+  words: {
+    type: Array as PropType<HotWordItem[]>,
+    default: () => []
+  },
+  /** 画布宽度 */
+  width: {
+    type: Number,
+    default: undefined
+  },
+  /** 画布高度 */
+  height: {
+    type: Number,
+    default: undefined
+  },
+  /** 词云配置选项 */
+  options: {
+    type: Object as PropType<Partial<WordCloudOptions>>,
+    default: () => ({})
+  },
+  /** 主题名称 */
+  theme: {
+    type: String,
+    default: 'light-green'
+  },
+  /** 是否响应式 */
+  responsive: {
+    type: Boolean,
+    default: true
+  },
+  /** 外部加载状态 */
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  /** 外部错误状态 */
+  error: {
+    type: String,
+    default: null
+  },
+  /** 是否显示工具栏 */
+  showToolbar: {
+    type: Boolean,
+    default: true
+  },
+  /** 自定义CSS类 */
+  containerClass: {
+    type: String,
+    default: ''
+  },
+  /** 是否启用性能优化 */
+  enablePerformanceOptimization: {
+    type: Boolean,
+    default: true
+  },
+  /** 最大词语数量 */
+  maxWords: {
+    type: Number,
+    default: null
+  },
+  /** 性能监控模式 */
+  performanceMode: {
+    type: String as PropType<'auto' | 'performance' | 'quality' | 'balanced'>,
+    default: 'auto'
+  },
+  /** 是否启用虚拟化渲染 */
+  enableVirtualization: {
+    type: Boolean,
+    default: true
+  },
+  /** 是否显示性能指标 */
+  showPerformanceMetrics: {
+    type: Boolean,
+    default: false
+  }
 })
 
-// Emits
+// ============= Emits =============
+
 const emit = defineEmits<{
-  wordClick: [word: string, item: WordCloudItem, event: MouseEvent]
-  wordHover: [word: string | null, item: WordCloudItem | null]
+  /** 词语点击事件 */
+  wordClick: [word: HotWordItem, event: Event]
+  /** 词语悬停事件 */
+  wordHover: [word: HotWordItem, event: Event]
+  /** 渲染开始事件 */
   renderStart: []
-  renderComplete: [stats: WordCloudStats]
-  renderError: [error: Error]
+  /** 渲染完成事件 */
+  renderComplete: []
+  /** 渲染错误事件 */
+  renderError: [error: string]
+  /** 下载事件 */
   download: [canvas: HTMLCanvasElement]
-  configChange: [config: WordCloudConfigType]
-  themeChange: [theme: string]
+  /** 性能警告事件 */
+  performanceWarning: [metrics: any]
+  /** 内存阈值超出事件 */
+  memoryThresholdExceeded: [usage: number]
+  /** 渲染优化建议事件 */
+  optimizationSuggestion: [suggestions: string[]]
 }>()
 
-// 响应式数据
+// ============= 模板引用 =============
+
+const containerRef = ref<HTMLDivElement>()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const showConfigPanel = ref(false)
+const tooltipRef = ref<HTMLDivElement>()
 
-// 配置管理
-const themeConfig = reactive<WordCloudThemeConfig>({ ...LIGHT_THEME_CONFIG })
-const interactionConfig = reactive<WordCloudInteractionConfig>(createDefaultInteractionConfig())
-const availableThemes = ref(PRESET_THEMES)
+// ============= 状态管理 =============
 
-// 使用词云可组合函数
+/** 悬停的词语 */
+const hoveredWord = ref<HotWordItem | null>(null)
+
+/** 鼠标位置 */
+const mousePosition = ref({ x: 0, y: 0 })
+
+/** 设备性能等级 */
+const devicePerformance = ref(detectDevicePerformance())
+
+/** 优化后的词语数据 */
+const optimizedWords = ref<HotWordItem[]>([])
+
+/** 是否启用降级模式 */
+const degradedMode = ref(false)
+
+/** 渲染质量设置 */
+const renderQuality = ref<'low' | 'medium' | 'high'>('high')
+
+// ============= 主题管理 =============
+
+const { currentTheme, setTheme, getColorFunction } = useWordCloudTheme()
+
+// ============= 性能监控 =============
+
 const {
-  words: wordCloudWords,
+  startMeasure,
+  endMeasure,
+  getLastMeasurement,
+  fpsStats,
+  memoryStats,
+  isMonitoring,
+  startMonitoring,
+  stopMonitoring
+} = usePerformanceMonitor({
+  enableFPS: true,
+  enableMemory: true,
+  fpsSampleInterval: 1000,
+  memorySampleInterval: 3000
+})
+
+// ============= 词云性能优化 =============
+
+const {
+  metrics: performanceMetrics,
+  renderState: perfRenderState,
+  memoryState: perfMemoryState,
+  preprocessWordData,
+  getOptimalWordCount,
+  batchRenderWords,
+  measureRenderPerformance,
+  smartResponsiveRender,
+  virtualizeWordRendering,
+  adjustRenderQuality,
+  performMemoryCleanup,
+  getPerformanceReport,
+  getPerformanceRecommendations
+} = useWordCloudPerformance({
+  batchSize: computed(() => {
+    switch (devicePerformance.value) {
+      case 'low': return 20
+      case 'medium': return 40
+      case 'high': return 60
+      default: return 50
+    }
+  }).value,
+  renderDelay: computed(() => {
+    return degradedMode.value ? 20 : 10
+  }).value,
+  maxRenderTime: computed(() => {
+    switch (devicePerformance.value) {
+      case 'low': return 5000
+      case 'medium': return 8000
+      case 'high': return 12000
+      default: return 10000
+    }
+  }).value
+})
+
+// ============= 事件处理 =============
+
+const events: WordCloudEvents = {
+  onWordClick: (word: HotWordItem, event: Event) => {
+    emit('wordClick', word, event)
+  },
+  onWordHover: (word: HotWordItem, event: Event) => {
+    hoveredWord.value = word
+    emit('wordHover', word, event)
+  },
+  onRenderStart: () => {
+    emit('renderStart')
+  },
+  onRenderComplete: () => {
+    emit('renderComplete')
+  },
+  onRenderError: (error: string) => {
+    emit('renderError', error)
+  }
+}
+
+// ============= 词云逻辑 =============
+
+const {
   renderState,
   dimensions,
-  performanceConfig,
   canRender,
-  mergedOptions,
   renderWordCloud,
   stopRendering,
   clearCanvas,
   updateWords,
   updateDimensions,
-  debouncedRender,
-  setupResizeObserver,
-  getRenderStats,
-  cleanup
-} = useWordCloud(canvasRef, mergedWordCloudConfig)
+  checkWordCloudAvailability
+} = useWordCloud(canvasRef, {
+  ...props.options,
+  color: computed(() => {
+    const themeColorFunction = currentTheme.value ? getColorFunction(currentTheme.value) : undefined
+    return themeColorFunction
+  }).value,
+  fontFamily: computed(() => currentTheme.value?.fonts.family).value,
+  fontWeight: computed(() => currentTheme.value?.fonts.weight).value,
+  backgroundColor: computed(() => currentTheme.value?.colors.background).value
+}, events)
 
-// 状态管理（从useWordCloud获取）
-const isLoading = computed(() => props.loading || renderState.isRendering)
-const hasError = computed(() => !!props.error || renderState.hasError)
-const errorMessage = computed(() => props.error || renderState.errorMessage || '')
-const renderProgress = computed(() => renderState.renderProgress)
+// ============= 计算属性 =============
 
-// 调试信息
-const debugInfo = computed(() => getRenderStats())
+const containerClasses = computed(() => [
+  props.containerClass,
+  {
+    'cursor-wait': renderState.isRendering,
+    'cursor-default': !renderState.isRendering
+  }
+])
 
-// 计算属性
-const wordCount = computed(() => props.words?.length || 0)
-const isEmpty = computed(() => wordCount.value === 0)
-
-const containerStyle = computed(() => ({
-  width: props.responsive ? '100%' : `${props.width}px`,
-  height: props.responsive ? 'auto' : `${props.height}px`,
-  aspectRatio: props.responsive ? `${props.width} / ${props.height}` : undefined
+const canvasClasses = computed(() => ({
+  'opacity-0': renderState.isRendering && !props.loading,
+  'opacity-100': !renderState.isRendering || props.loading
 }))
 
-const canvasWidth = computed(() => {
-  if (props.responsive && canvasRef.value) {
-    const container = canvasRef.value.parentElement
-    return container ? container.clientWidth : props.width
+const containerStyle = computed(() => {
+  const style: Record<string, string> = {}
+
+  if (props.width) {
+    style.width = `${props.width}px`
   }
-  return props.width
+
+  if (props.height) {
+    style.height = `${props.height}px`
+  }
+
+  return style
 })
 
-const canvasHeight = computed(() => {
-  if (props.responsive && canvasRef.value) {
-    const container = canvasRef.value.parentElement
-    const aspectRatio = props.width / props.height
-    return Math.round(canvasWidth.value / aspectRatio)
-  }
-  return props.height
-})
-
-const canvasStyle = computed(() => ({
-  maxWidth: '100%',
-  height: 'auto',
-  display: isEmpty.value ? 'none' : 'block'
+const tooltipStyle = computed(() => ({
+  left: `${mousePosition.value.x}px`,
+  top: `${mousePosition.value.y}px`
 }))
 
-// WordCloud配置
-const mergedWordCloudConfig = computed(() => {
-  const baseConfig = applyThemeToConfig(props.options || {}, themeConfig)
-  const responsiveConfig = createResponsiveConfig(baseConfig, canvasWidth.value, canvasHeight.value)
-  const optimizedConfig = optimizeConfigForDataset(responsiveConfig, props.words)
+// ============= 方法 =============
 
-  // 添加交互回调
-  optimizedConfig.hover = handleWordCloudHover
-  optimizedConfig.click = handleWordCloudClick
+/** 处理画布点击 */
+const handleCanvasClick = (event: MouseEvent) => {
+  // wordcloud2.js 会自动处理点击事件
+  // 这里主要是为了兼容性和额外的处理逻辑
+}
 
-  return optimizedConfig
-})
-
-// 方法
-const initializeWordCloud = async () => {
-  if (isEmpty.value) return
-
-  try {
-    emit('renderStart')
-    await updateWords(props.words)
-  } catch (error) {
-    console.error('WordCloud渲染错误:', error)
-    emit('renderError', error instanceof Error ? error : new Error('Unknown error'))
+/** 处理画布鼠标移动 */
+const handleCanvasMouseMove = (event: MouseEvent) => {
+  const rect = canvasRef.value?.getBoundingClientRect()
+  if (rect) {
+    mousePosition.value = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    }
   }
 }
 
-const handleWordCloudClick = (item: WordCloudItem, dimension: any, event: MouseEvent) => {
-  const word = Array.isArray(item) ? item[0] : String(item)
-  emit('wordClick', word, item, event)
+/** 处理画布鼠标离开 */
+const handleCanvasMouseLeave = () => {
+  hoveredWord.value = null
 }
 
-const handleWordCloudHover = (item?: WordCloudItem, dimension?: any, event?: MouseEvent) => {
-  if (item) {
-    const word = Array.isArray(item) ? item[0] : String(item)
-    emit('wordHover', word, item)
-  } else {
-    emit('wordHover', null, null)
+/** 处理重新渲染 */
+const handleRefresh = async () => {
+  if (canRender.value) {
+    await renderWordCloud()
   }
 }
 
-const refreshChart = async () => {
-  await renderWordCloud()
+/** 处理重试 */
+const handleRetry = async () => {
+  clearCanvas()
+  await handleRefresh()
 }
 
-const retryRender = async () => {
-  await refreshChart()
-}
-
-const downloadChart = () => {
-  if (!canvasRef.value) return
-
-  try {
-    // 创建下载链接
-    const link = document.createElement('a')
-    link.download = `词云图-${new Date().getTime()}.png`
-    link.href = canvasRef.value.toDataURL('image/png')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
+/** 处理下载 */
+const handleDownload = () => {
+  if (canvasRef.value) {
     emit('download', canvasRef.value)
+
+    // 默认下载逻辑
+    const link = document.createElement('a')
+    link.download = `wordcloud-${Date.now()}.png`
+    link.href = canvasRef.value.toDataURL()
+    link.click()
+  }
+}
+
+/** 优化的数据处理 */
+const processWordsForRendering = async (words: HotWordItem[]): Promise<HotWordItem[]> => {
+  if (!props.enablePerformanceOptimization) {
+    return words
+  }
+
+  startMeasure('word-processing')
+
+  try {
+    // 1. 数据验证和归一化
+    const normalizedWords = normalizeWordData(words)
+
+    // 2. 根据设备性能和配置确定最优数量
+    const maxWordCount = props.maxWords || getOptimalWordCount()
+
+    // 3. 过滤重要词语
+    const filteredWords = filterWordsByImportance(
+      normalizedWords,
+      maxWordCount,
+      0 // 最小权重阈值
+    )
+
+    // 4. 虚拟化处理
+    const finalWords = props.enableVirtualization && containerRef.value
+      ? virtualizeWordRendering(
+          filteredWords,
+          containerRef.value.clientWidth,
+          containerRef.value.clientHeight
+        )
+      : filteredWords
+
+    // 5. 预处理数据
+    const processedWords = await preprocessWordData(finalWords)
+
+    optimizedWords.value = processedWords
+    endMeasure('word-processing')
+
+    return processedWords
   } catch (error) {
-    console.error('下载失败:', error)
+    endMeasure('word-processing')
+    console.error('词语处理失败:', error)
+    return words.slice(0, 50) // 回退到基础数量
   }
 }
 
-const toggleSettings = () => {
-  showConfigPanel.value = !showConfigPanel.value
+/** 生成优化的渲染配置 */
+const generateRenderConfig = (): Partial<WordCloudOptions> => {
+  if (!containerRef.value || !props.enablePerformanceOptimization) {
+    return props.options || {}
+  }
+
+  const context: OptimizationContext = {
+    containerWidth: containerRef.value.clientWidth,
+    containerHeight: containerRef.value.clientHeight,
+    devicePixelRatio: window.devicePixelRatio || 1,
+    availableMemory: memoryStats.value.jsHeapSizeLimit - memoryStats.value.usedJSHeapSize,
+    currentFPS: fpsStats.value.current
+  }
+
+  const optimizationResult = generateOptimizedConfig(context, props.options)
+
+  // 根据性能模式调整
+  const qualitySettings = adjustRenderQuality()
+
+  // 合并配置
+  const finalConfig = {
+    ...props.options,
+    ...optimizationResult.optimizedOptions,
+    ...qualitySettings
+  }
+
+  // 发送优化建议
+  if (optimizationResult.suggestions.length > 0) {
+    emit('optimizationSuggestion', optimizationResult.suggestions)
+  }
+
+  return finalConfig
 }
 
-// 事件处理
-const handleWordClick = (word: string, item: WordCloudItem, event: MouseEvent) => {
-  console.log(`词语点击: ${word}`)
-  emit('wordClick', word, item, event)
-}
+/** 智能渲染方法 */
+const smartRender = async () => {
+  if (!canvasRef.value || !props.words?.length) return
 
-const handleWordHover = (word: string | null, item: WordCloudItem | null) => {
-  emit('wordHover', word, item)
-}
+  const renderFunction = async () => {
+    startMeasure('smart-render')
 
-const handleZoom = (scale: number, event: WheelEvent) => {
-  console.log(`缩放: ${scale}`)
-}
+    try {
+      // 1. 处理词语数据
+      const processedWords = await processWordsForRendering(props.words)
 
-const handleDrag = (deltaX: number, deltaY: number, event: MouseEvent) => {
-  console.log(`拖拽: ${deltaX}, ${deltaY}`)
-}
+      // 2. 生成优化配置
+      const optimizedConfig = generateRenderConfig()
 
-const handleInteractionConfigChange = (config: WordCloudInteractionConfig) => {
-  Object.assign(interactionConfig, config)
-}
+      // 3. 优化Canvas设置
+      const context: OptimizationContext = {
+        containerWidth: containerRef.value?.clientWidth || 800,
+        containerHeight: containerRef.value?.clientHeight || 600,
+        devicePixelRatio: window.devicePixelRatio || 1,
+        availableMemory: memoryStats.value.jsHeapSizeLimit - memoryStats.value.usedJSHeapSize,
+        currentFPS: fpsStats.value.current
+      }
 
-const handleThemeConfigChange = (config: Partial<WordCloudThemeConfig>) => {
-  Object.assign(themeConfig, config)
-  nextTick(() => {
-    refreshChart()
-  })
-}
+      if (canvasRef.value) {
+        optimizeCanvasSettings(canvasRef.value, context)
+      }
 
-const handleThemeChange = (themeName: string) => {
-  const theme = getThemeByName(themeName)
-  Object.assign(themeConfig, theme)
-  emit('themeChange', themeName)
-  nextTick(() => {
-    refreshChart()
-  })
-}
+      // 4. 执行渲染
+      await updateWords(processedWords)
 
-const handleConfigReset = () => {
-  const currentMode = getCurrentThemeMode()
-  const defaultTheme = currentMode === 'dark' ? DARK_THEME_CONFIG : LIGHT_THEME_CONFIG
-  Object.assign(themeConfig, defaultTheme)
-  Object.assign(interactionConfig, createDefaultInteractionConfig())
-  nextTick(() => {
-    refreshChart()
-  })
-}
-
-const handleConfigExport = () => {
-  console.log('配置导出')
-}
-
-// Canvas事件监听器
-const setupCanvasEventListeners = () => {
-  if (!canvasRef.value) return
-
-  const canvas = canvasRef.value
-
-  // WordCloud生命周期事件
-  canvas.addEventListener('wordcloudstart', () => {
-    renderStartTime = Date.now()
-    renderProgress.value = 0
-  })
-
-  canvas.addEventListener('wordclouddrawn', () => {
-    const renderTime = Date.now() - renderStartTime
-    isLoading.value = false
-
-    // 更新调试信息
-    debugInfo.value = {
-      totalWords: wordCount.value,
-      renderedWords: wordCount.value, // 简化处理
-      maxWeight: Math.max(...props.words.map(item => Array.isArray(item) ? item[1] : 0)),
-      minWeight: Math.min(...props.words.map(item => Array.isArray(item) ? item[1] : 0)),
-      averageWeight: props.words.reduce((sum, item) => sum + (Array.isArray(item) ? item[1] : 0), 0) / wordCount.value,
-      renderTime
-    }
-
-    emit('renderComplete', debugInfo.value)
-  })
-
-  canvas.addEventListener('wordcloudabort', () => {
-    isLoading.value = false
-    hasError.value = true
-    errorMessage.value = '词云渲染被中断'
-  })
-}
-
-// 主题监听
-const watchThemeChanges = () => {
-  // 监听系统主题变化
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  const handleThemeChange = (e: MediaQueryListEvent) => {
-    if (props.theme === 'auto') {
-      const newTheme = e.matches ? DARK_THEME_CONFIG : LIGHT_THEME_CONFIG
-      Object.assign(themeConfig, newTheme)
-      nextTick(() => {
-        refreshChart()
-      })
+      endMeasure('smart-render')
+    } catch (error) {
+      endMeasure('smart-render')
+      throw error
     }
   }
 
-  mediaQuery.addEventListener('change', handleThemeChange)
-
-  // 返回清理函数
-  return () => {
-    mediaQuery.removeEventListener('change', handleThemeChange)
-  }
-}
-
-// 初始化主题
-const initializeTheme = () => {
-  if (props.theme === 'auto') {
-    const currentMode = getCurrentThemeMode()
-    const defaultTheme = currentMode === 'dark' ? DARK_THEME_CONFIG : LIGHT_THEME_CONFIG
-    Object.assign(themeConfig, defaultTheme)
+  // 使用响应式渲染
+  if (containerRef.value) {
+    await smartResponsiveRender(
+      containerRef.value.clientWidth,
+      containerRef.value.clientHeight,
+      renderFunction
+    )
   } else {
-    const theme = getThemeByName(props.theme)
-    Object.assign(themeConfig, theme)
+    await measureRenderPerformance(renderFunction)
   }
 }
 
-// 监听Props变化
+/** 性能监控的容器尺寸更新 */
+const updateContainerDimensions = debounce(() => {
+  if (!props.responsive || !containerRef.value) return
+
+  const rect = containerRef.value.getBoundingClientRect()
+  if (rect.width > 0 && rect.height > 0) {
+    updateDimensions(rect.width, rect.height)
+
+    // 触发智能重新渲染
+    if (props.enablePerformanceOptimization) {
+      smartRender()
+    }
+  }
+}, 250)
+
+/** 监控性能指标并调整 */
+const monitorAndAdjust = () => {
+  const report = getPerformanceReport()
+  const { renderTime, fps, memoryUsage } = performanceMetrics
+
+  // 性能警告
+  if (renderTime > 2000 || fps < 20 || memoryUsage > 100 * 1024 * 1024) {
+    emit('performanceWarning', report.metrics)
+  }
+
+  // 内存阈值检查
+  if (memoryStats.value.usagePercentage > 85) {
+    emit('memoryThresholdExceeded', memoryStats.value.usagePercentage)
+    performMemoryCleanup()
+  }
+
+  // 自动降级
+  if (renderTime > 3000 || fps < 15) {
+    if (!degradedMode.value) {
+      degradedMode.value = true
+      renderQuality.value = 'low'
+      console.warn('启用性能降级模式')
+    }
+  } else if (degradedMode.value && renderTime < 1000 && fps > 40) {
+    degradedMode.value = false
+    renderQuality.value = devicePerformance.value === 'high' ? 'high' : 'medium'
+    console.info('退出性能降级模式')
+  }
+
+  // 发送优化建议
+  const recommendations = getPerformanceRecommendations()
+  if (recommendations.length > 0) {
+    emit('optimizationSuggestion', recommendations)
+  }
+}
+
+// ============= 监听器 =============
+
+// 监听词云数据变化
 watch(
   () => props.words,
-  () => {
-    nextTick(() => {
-      if (!isEmpty.value) {
-        refreshChart()
+  async (newWords) => {
+    if (newWords && newWords.length > 0) {
+      if (props.enablePerformanceOptimization) {
+        await smartRender()
+      } else {
+        await updateWords(newWords)
       }
-    })
-  },
-  { deep: true }
-)
-
-watch(
-  () => props.loading,
-  (newLoading) => {
-    isLoading.value = newLoading
-  }
-)
-
-watch(
-  () => props.error,
-  (newError) => {
-    hasError.value = !!newError
-    errorMessage.value = newError || ''
-  }
-)
-
-watch(
-  [() => canvasWidth.value, () => canvasHeight.value],
-  () => {
-    nextTick(() => {
-      if (!isEmpty.value && !isLoading.value) {
-        refreshChart()
-      }
-    })
-  }
-)
-
-// 生命周期
-let themeCleanup: (() => void) | null = null
-
-onMounted(() => {
-  initializeTheme()
-  themeCleanup = watchThemeChanges()
-
-  nextTick(() => {
-    setupCanvasEventListeners()
-    setupResizeObserver()
-    if (!isEmpty.value) {
-      initializeWordCloud()
+    } else {
+      clearCanvas()
     }
-  })
+  },
+  { deep: true, immediate: true }
+)
+
+// 监听性能优化设置
+watch(
+  () => props.enablePerformanceOptimization,
+  (enabled) => {
+    if (enabled && props.words?.length) {
+      smartRender()
+    }
+  }
+)
+
+// 监听性能模式变化
+watch(
+  () => props.performanceMode,
+  (mode) => {
+    if (mode === 'auto') {
+      renderQuality.value = devicePerformance.value === 'high' ? 'high' : 'medium'
+    } else {
+      renderQuality.value = mode === 'performance' ? 'low' : mode === 'quality' ? 'high' : 'medium'
+    }
+
+    if (props.words?.length) {
+      smartRender()
+    }
+  }
+)
+
+// 定期性能监控
+let performanceMonitorInterval: number | null = null
+
+const startPerformanceMonitoring = () => {
+  if (performanceMonitorInterval || !props.enablePerformanceOptimization) return
+
+  performanceMonitorInterval = setInterval(() => {
+    monitorAndAdjust()
+  }, 3000) // 每3秒检查一次
+}
+
+const stopPerformanceMonitoring = () => {
+  if (performanceMonitorInterval) {
+    clearInterval(performanceMonitorInterval)
+    performanceMonitorInterval = null
+  }
+}
+
+// 监听主题变化
+watch(
+  () => props.theme,
+  (newTheme) => {
+    setTheme(newTheme)
+  },
+  { immediate: true }
+)
+
+// 监听尺寸变化
+watch(
+  [() => props.width, () => props.height],
+  ([newWidth, newHeight]) => {
+    if (newWidth && newHeight) {
+      updateDimensions(newWidth, newHeight)
+    }
+  }
+)
+
+// ============= 生命周期 =============
+
+onMounted(async () => {
+  // 检查WordCloud库
+  const isAvailable = await checkWordCloudAvailability()
+  if (!isAvailable) {
+    console.error('WordCloud library is not available')
+    return
+  }
+
+  // 初始化主题
+  setTheme(props.theme)
+
+  // 启动性能监控
+  if (props.enablePerformanceOptimization) {
+    startMonitoring()
+    startPerformanceMonitoring()
+  }
+
+  // 等待下一个tick确保DOM已渲染
+  await nextTick()
+
+  // 更新容器尺寸
+  updateContainerDimensions()
+
+  // 初始渲染
+  if (props.words && props.words.length > 0) {
+    if (props.enablePerformanceOptimization) {
+      await smartRender()
+    } else {
+      await updateWords(props.words)
+    }
+  }
 })
 
 onUnmounted(() => {
-  themeCleanup?.()
-  cleanup()
+  stopRendering()
+  stopPerformanceMonitoring()
+  stopMonitoring()
 })
 
-// 暴露方法
+// ============= 公开方法 =============
+
 defineExpose({
-  refresh: refreshChart,
-  download: downloadChart,
+  /** 重新渲染 */
+  refresh: handleRefresh,
+  /** 智能渲染 */
+  smartRender,
+  /** 下载图片 */
+  download: handleDownload,
+  /** 清空画布 */
   clear: clearCanvas,
+  /** 停止渲染 */
   stop: stopRendering,
+  /** 获取画布元素 */
   getCanvas: () => canvasRef.value,
-  getDebugInfo: () => debugInfo.value,
-  getRenderState: () => renderState
+  /** 获取渲染状态 */
+  getRenderState: () => renderState,
+  /** 获取性能报告 */
+  getPerformanceReport,
+  /** 获取性能指标 */
+  getPerformanceMetrics: () => ({
+    fps: fpsStats.value,
+    memory: memoryStats.value,
+    render: performanceMetrics,
+    device: devicePerformance.value,
+    degraded: degradedMode.value
+  }),
+  /** 切换性能监控 */
+  togglePerformanceMonitoring: () => {
+    if (isMonitoring.value) {
+      stopPerformanceMonitoring()
+      stopMonitoring()
+    } else {
+      startMonitoring()
+      startPerformanceMonitoring()
+    }
+  },
+  /** 手动内存清理 */
+  cleanMemory: performMemoryCleanup,
+  /** 设置渲染质量 */
+  setRenderQuality: (quality: 'low' | 'medium' | 'high') => {
+    renderQuality.value = quality
+    if (props.words?.length) {
+      smartRender()
+    }
+  }
 })
 </script>
 
 <style scoped>
 .hot-word-cloud-chart {
-  @apply relative bg-card border border-border rounded-lg overflow-hidden;
+  min-height: 200px;
 }
 
-/* 工具栏 */
-.cloud-toolbar {
-  @apply flex items-center justify-between p-3 bg-card border-b border-border;
-}
-
-.toolbar-left {
-  @apply flex items-center gap-3;
-}
-
-.chart-title {
-  @apply text-lg font-semibold text-foreground;
-}
-
-.word-count {
-  @apply text-sm text-muted-foreground;
-}
-
-.toolbar-right {
-  @apply flex items-center gap-2;
-}
-
-/* 图表容器 */
-.chart-container {
-  @apply relative min-h-[400px] bg-background;
+.canvas-wrapper {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
 }
 
 .word-cloud-canvas {
-  @apply w-full h-auto;
-}
-
-/* 加载状态 */
-.loading-overlay {
-  @apply absolute inset-0 bg-background/80 backdrop-blur-sm z-20;
-  @apply flex items-center justify-center;
-}
-
-.loading-content {
-  @apply text-center space-y-4;
-}
-
-.loading-spinner {
-  @apply w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto;
-}
-
-.loading-text {
-  @apply text-sm text-muted-foreground;
-}
-
-.loading-progress {
-  @apply space-y-2;
-}
-
-.progress-bar {
-  @apply w-32 h-2 bg-secondary rounded-full overflow-hidden;
-}
-
-.progress-fill {
-  @apply h-full bg-primary transition-all duration-300;
-}
-
-.progress-text {
-  @apply text-xs text-muted-foreground;
-}
-
-/* 错误状态 */
-.error-overlay {
-  @apply absolute inset-0 bg-background z-20;
-  @apply flex items-center justify-center;
-}
-
-.error-content {
-  @apply text-center space-y-4;
-}
-
-.error-icon {
-  @apply w-12 h-12 text-destructive mx-auto;
-}
-
-.error-message {
-  @apply text-sm text-destructive font-medium;
-}
-
-/* 空状态 */
-.empty-overlay {
-  @apply absolute inset-0 bg-background z-10;
-  @apply flex items-center justify-center;
-}
-
-.empty-content {
-  @apply text-center space-y-3;
-}
-
-.empty-icon {
-  @apply w-12 h-12 text-muted-foreground mx-auto;
-}
-
-.empty-message {
-  @apply text-base font-medium text-muted-foreground;
-}
-
-.empty-description {
-  @apply text-sm text-muted-foreground;
-}
-
-/* 配置面板 */
-.config-panel-overlay {
-  @apply absolute inset-0 bg-black/20 backdrop-blur-sm z-30;
-  @apply flex items-center justify-center p-4;
-}
-
-.config-panel {
-  @apply bg-card border border-border rounded-lg shadow-lg;
-  @apply w-full max-w-md max-h-[80vh] overflow-hidden;
-}
-
-.panel-header {
-  @apply flex items-center justify-between p-4 border-b border-border;
-}
-
-.panel-title {
-  @apply text-lg font-semibold text-foreground;
-}
-
-.panel-content {
-  @apply p-4 overflow-y-auto;
-}
-
-/* 调试信息 */
-.debug-info {
-  @apply mt-4 border-t border-border;
-}
-
-.debug-details {
-  @apply p-3;
-}
-
-.debug-summary {
-  @apply text-sm font-medium text-muted-foreground cursor-pointer;
-}
-
-.debug-content {
-  @apply mt-2 space-y-1;
-}
-
-.debug-item {
-  @apply flex justify-between text-xs;
-}
-
-.debug-label {
-  @apply text-muted-foreground;
-}
-
-.debug-value {
-  @apply text-foreground font-mono;
-}
-
-/* 状态指示器 */
-.hot-word-cloud-chart.loading {
-  @apply opacity-75;
-}
-
-.hot-word-cloud-chart.error {
-  @apply border-destructive;
+  transition: opacity 0.3s ease;
 }
 
 /* 响应式设计 */
-@media (max-width: 640px) {
-  .cloud-toolbar {
-    @apply flex-col gap-2 items-start;
-  }
-
-  .toolbar-left,
-  .toolbar-right {
-    @apply w-full justify-between;
-  }
-
-  .chart-title {
-    @apply text-base;
-  }
-
-  .config-panel {
-    @apply m-2;
+@media (max-width: 768px) {
+  .hot-word-cloud-chart {
+    min-height: 150px;
   }
 }
 
-/* 动画 */
-.word-cloud-canvas {
-  @apply transition-opacity duration-300;
-}
-
-.hot-word-cloud-chart.loading .word-cloud-canvas {
-  @apply opacity-50;
-}
-
-/* 按钮状态 */
-.refresh-btn:disabled,
-.download-btn:disabled {
-  @apply opacity-50 cursor-not-allowed;
-}
-
-/* 深色模式适配 */
-.dark .loading-overlay {
-  @apply bg-background/90;
-}
-
-.dark .config-panel-overlay {
-  @apply bg-black/40;
+@media (max-width: 480px) {
+  .hot-word-cloud-chart {
+    min-height: 120px;
+  }
 }
 </style>

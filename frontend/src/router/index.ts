@@ -102,6 +102,33 @@ const routes = [
           requiresAuth: false,
           title: 'iPhone设备模拟器测试'
         }
+      },
+      {
+        path: 'wordcloud-test',
+        name: 'WordCloudTest',
+        component: () => import('@/pages/WordCloudTest.vue'),
+        meta: {
+          requiresAuth: false,
+          title: '词云图组件测试'
+        }
+      },
+      {
+        path: 'hot-word-statistics',
+        name: 'HotWordStatistics',
+        component: () => import('@/views/statistics/HotWordStatisticsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '热词统计分析'
+        }
+      },
+      {
+        path: 'admin/hot-word-statistics',
+        name: 'AdminHotWordStatistics',
+        component: () => import('@/views/admin/HotWordStatisticsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '热词统计分析 - 管理后台'
+        }
       }
     ]
   },

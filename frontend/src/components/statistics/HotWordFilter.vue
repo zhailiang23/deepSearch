@@ -1,565 +1,429 @@
 <template>
   <div class="hot-word-filter">
-    <!-- 过滤器头部 -->
-    <div class="filter-header">
-      <h3 class="filter-title">搜索过滤器</h3>
-      <div class="filter-actions">
-        <button
-          @click="resetFilters"
-          :disabled="!hasActiveFilters"
-          class="reset-btn"
-          title="重置所有过滤条件"
-        >
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          重置
-        </button>
-        <button
-          @click="applyFilters"
-          class="apply-btn"
-          title="应用过滤条件"
-        >
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          应用
-        </button>
+    <!-- 过滤器标题栏 -->
+    <div class="hot-word-filter__header">
+      <div class="filter-header-content">
+        <h3 class="filter-title">热词过滤器</h3>
+        <div class="filter-actions">
+          <button
+            @click="toggleCollapse"
+            class="collapse-button"
+            type="button"
+            :title="isCollapsed ? '展开过滤器' : '收起过滤器'"
+          >
+            {{ isCollapsed ? '展开' : '收起' }}
+          </button>
+          <button
+            @click="resetFilter"
+            class="reset-button"
+            type="button"
+            :disabled="loading || !hasActiveFilters"
+          >
+            重置
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 过滤器内容 -->
-    <div class="filter-content">
-      <!-- 时间范围选择器 -->
+    <!-- 过滤器主体 -->
+    <div v-show="!isCollapsed" class="hot-word-filter__body">
+      <!-- 基础过滤条件 -->
       <div class="filter-section">
-        <TimeRangeSelector
-          v-model:start-time="localFilterState.timeRange.startTime"
-          v-model:end-time="localFilterState.timeRange.endTime"
-          v-model:preset="localFilterState.timeRange.preset"
-        />
-      </div>
-
-      <!-- 搜索条件过滤器 -->
-      <div class="filter-section">
-        <SearchConditionFilter
-          v-model:search-keyword="localFilterState.searchKeyword"
-          :suggestions="searchSuggestions"
-          @search="handleSearch"
-        />
-      </div>
-
-      <!-- 热词数量限制 -->
-      <div class="filter-section">
-        <HotWordLimitSelector
-          v-model:limit="localFilterState.limit"
-          :min-limit="10"
-          :max-limit="1000"
-        />
-      </div>
-
-      <!-- 高级选项（可折叠） -->
-      <div class="filter-section">
-        <button
-          @click="toggleAdvancedOptions"
-          class="advanced-toggle"
-        >
-          <span class="advanced-label">高级选项</span>
-          <svg
-            :class="[
-              'w-4 h-4 transition-transform duration-200',
-              { 'transform rotate-180': showAdvancedOptions }
-            ]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        <div v-if="showAdvancedOptions" class="advanced-options">
-          <!-- 排序选项 -->
-          <div class="advanced-option">
-            <label class="option-label">排序方式</label>
+        <!-- 时间范围选择 -->
+        <div class="filter-group">
+          <label class="filter-label">时间范围</label>
+          <div class="time-range-selector">
             <select
-              v-model="localFilterState.sortBy"
-              class="option-select"
+              v-model="filterData.timeRange"
+              @change="handleTimeRangeChange"
+              class="time-range-select"
+              :disabled="loading"
             >
-              <option value="count">按搜索次数</option>
-              <option value="keyword">按关键词</option>
-              <option value="rank">按排名</option>
+              <option value="">全部时间</option>
+              <option value="today">今天</option>
+              <option value="yesterday">昨天</option>
+              <option value="last7days">最近7天</option>
+              <option value="last30days">最近30天</option>
+              <option value="custom">自定义</option>
             </select>
           </div>
+        </div>
 
-          <div class="advanced-option">
-            <label class="option-label">排序顺序</label>
-            <select
-              v-model="localFilterState.sortOrder"
-              class="option-select"
-            >
-              <option value="desc">降序</option>
-              <option value="asc">升序</option>
-            </select>
-          </div>
-
-          <!-- 最小搜索次数过滤 -->
-          <div class="advanced-option">
-            <label class="option-label">最小搜索次数</label>
+        <!-- 自定义时间范围 -->
+        <div v-if="filterData.timeRange === 'custom'" class="filter-group">
+          <label class="filter-label">自定义时间</label>
+          <div class="custom-time-range">
             <input
-              v-model.number="localFilterState.minCount"
-              type="number"
-              min="1"
-              class="option-input"
-              placeholder="如: 10"
+              v-model="filterData.customStartDate"
+              type="date"
+              class="date-input"
+              :disabled="loading"
+              @change="handleCustomDateChange"
+            />
+            <span class="date-separator">至</span>
+            <input
+              v-model="filterData.customEndDate"
+              type="date"
+              class="date-input"
+              :disabled="loading"
+              @change="handleCustomDateChange"
+            />
+          </div>
+        </div>
+
+        <!-- 关键词搜索 -->
+        <div class="filter-group">
+          <label class="filter-label">关键词</label>
+          <div class="keyword-input-wrapper">
+            <input
+              v-model="filterData.keyword"
+              type="text"
+              placeholder="输入关键词搜索..."
+              class="keyword-input"
+              :disabled="loading"
+              @input="debounceKeywordChange"
+            />
+          </div>
+        </div>
+
+        <!-- 数据量限制 -->
+        <div class="filter-group">
+          <label class="filter-label">数据量限制</label>
+          <div class="limit-selector">
+            <select
+              v-model="filterData.limit"
+              @change="handleLimitChange"
+              class="limit-select"
+              :disabled="loading"
             >
+              <option :value="50">50条</option>
+              <option :value="100">100条</option>
+              <option :value="200">200条</option>
+              <option :value="500">500条</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <!-- 过滤状态指示器 -->
-      <div v-if="hasActiveFilters" class="filter-status">
-        <div class="status-header">
-          <span class="status-label">当前过滤条件:</span>
-          <button @click="resetFilters" class="clear-all-btn">
-            清除全部
-          </button>
-        </div>
-        <div class="status-tags">
-          <span v-if="localFilterState.timeRange.preset" class="status-tag">
-            时间: {{ getPresetLabel(localFilterState.timeRange.preset) }}
-            <button @click="clearTimeFilter" class="tag-clear">×</button>
-          </span>
-          <span v-if="localFilterState.searchKeyword" class="status-tag">
-            关键词: {{ localFilterState.searchKeyword }}
-            <button @click="clearSearchFilter" class="tag-clear">×</button>
-          </span>
-          <span v-if="localFilterState.limit !== defaultFilterState.limit" class="status-tag">
-            数量: {{ localFilterState.limit }}
-            <button @click="clearLimitFilter" class="tag-clear">×</button>
-          </span>
-        </div>
+      <!-- 操作按钮 -->
+      <div class="filter-actions-footer">
+        <button
+          @click="applyFilter"
+          class="apply-button"
+          type="button"
+          :disabled="loading"
+        >
+          {{ loading ? '查询中...' : '应用过滤器' }}
+        </button>
+        <button
+          @click="resetFilter"
+          class="reset-button-footer"
+          type="button"
+          :disabled="loading"
+        >
+          重置
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive } from 'vue'
-import TimeRangeSelector from './filters/TimeRangeSelector.vue'
-import SearchConditionFilter from './filters/SearchConditionFilter.vue'
-import HotWordLimitSelector from './filters/HotWordLimitSelector.vue'
-import type { FilterState, HotWordQueryParams } from '@/types/statistics'
+import { ref, reactive, computed, watch } from 'vue'
 
+// 组件属性
 interface Props {
-  filterState: FilterState
-  searchSuggestions?: string[]
   loading?: boolean
-}
-
-interface Emits {
-  (e: 'update:filterState', value: FilterState): void
-  (e: 'filter-change', params: HotWordQueryParams): void
-  (e: 'search', keyword: string): void
-  (e: 'reset'): void
+  estimatedDataSize?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  searchSuggestions: () => [],
-  loading: false
+  loading: false,
+  estimatedDataSize: 0
 })
+
+// 组件事件
+interface Emits {
+  filter: [filterData: any]
+  reset: []
+}
 
 const emit = defineEmits<Emits>()
 
-const showAdvancedOptions = ref(false)
+// 响应式数据
+const isCollapsed = ref(false)
 
-// 默认过滤状态
-const defaultFilterState: FilterState = {
-  timeRange: {
-    startTime: '',
-    endTime: '',
-    preset: 'last7days'
-  },
-  searchKeyword: '',
-  limit: 50,
-  sortBy: 'count',
-  sortOrder: 'desc',
-  minCount: undefined
-}
-
-// 本地过滤状态
-const localFilterState = reactive<FilterState & { sortBy: 'count' | 'keyword' | 'rank', sortOrder: 'asc' | 'desc', minCount?: number }>({
-  ...defaultFilterState,
-  ...props.filterState,
-  sortBy: 'count',
-  sortOrder: 'desc'
+const filterData = reactive({
+  timeRange: '',
+  customStartDate: '',
+  customEndDate: '',
+  keyword: '',
+  limit: 100
 })
 
-/**
- * 检查是否有活跃的过滤条件
- */
+// 计算属性
 const hasActiveFilters = computed(() => {
-  return (
-    localFilterState.timeRange.preset !== defaultFilterState.timeRange.preset ||
-    localFilterState.searchKeyword !== defaultFilterState.searchKeyword ||
-    localFilterState.limit !== defaultFilterState.limit ||
-    localFilterState.minCount !== undefined
+  return !!(
+    filterData.timeRange ||
+    filterData.keyword ||
+    filterData.limit !== 100
   )
 })
 
-/**
- * 获取预设时间范围的标签
- */
-const getPresetLabel = (preset: string) => {
-  const presetLabels: Record<string, string> = {
-    today: '今天',
-    last7days: '最近7天',
-    last30days: '最近30天',
-    thisMonth: '本月',
-    lastMonth: '上月'
+// 防抖关键词输入
+let keywordTimeout: number | null = null
+const debounceKeywordChange = () => {
+  if (keywordTimeout) {
+    clearTimeout(keywordTimeout)
   }
-  return presetLabels[preset] || preset
+  keywordTimeout = setTimeout(() => {
+    // 自动应用过滤器
+  }, 500) as unknown as number
 }
 
-/**
- * 切换高级选项显示
- */
-const toggleAdvancedOptions = () => {
-  showAdvancedOptions.value = !showAdvancedOptions.value
+// 方法
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
 }
 
-/**
- * 应用过滤条件
- */
-const applyFilters = () => {
-  const queryParams: HotWordQueryParams = {
-    startTime: localFilterState.timeRange.startTime,
-    endTime: localFilterState.timeRange.endTime,
-    searchKeyword: localFilterState.searchKeyword,
-    limit: localFilterState.limit,
-    sortBy: localFilterState.sortBy,
-    sortOrder: localFilterState.sortOrder
+const handleTimeRangeChange = () => {
+  if (filterData.timeRange !== 'custom') {
+    filterData.customStartDate = ''
+    filterData.customEndDate = ''
   }
-
-  // 添加最小搜索次数过滤
-  if (localFilterState.minCount && localFilterState.minCount > 0) {
-    queryParams.minCount = localFilterState.minCount
-  }
-
-  emit('update:filterState', { ...localFilterState })
-  emit('filter-change', queryParams)
 }
 
-/**
- * 重置所有过滤条件
- */
-const resetFilters = () => {
-  Object.assign(localFilterState, defaultFilterState)
-  emit('update:filterState', { ...localFilterState })
+const handleCustomDateChange = () => {
+  // 验证日期范围
+}
+
+const handleLimitChange = () => {
+  // 处理数据量限制变化
+}
+
+const applyFilter = () => {
+  emit('filter', { ...filterData })
+}
+
+const resetFilter = () => {
+  Object.assign(filterData, {
+    timeRange: '',
+    customStartDate: '',
+    customEndDate: '',
+    keyword: '',
+    limit: 100
+  })
   emit('reset')
 }
 
-/**
- * 处理搜索事件
- */
-const handleSearch = (keyword: string) => {
-  localFilterState.searchKeyword = keyword
-  emit('search', keyword)
-  applyFilters()
-}
-
-/**
- * 清除时间过滤条件
- */
-const clearTimeFilter = () => {
-  localFilterState.timeRange = { ...defaultFilterState.timeRange }
-  applyFilters()
-}
-
-/**
- * 清除搜索过滤条件
- */
-const clearSearchFilter = () => {
-  localFilterState.searchKeyword = defaultFilterState.searchKeyword
-  applyFilters()
-}
-
-/**
- * 清除数量限制过滤条件
- */
-const clearLimitFilter = () => {
-  localFilterState.limit = defaultFilterState.limit
-  applyFilters()
-}
-
-// 监听props变化
-watch(() => props.filterState, (newState) => {
-  Object.assign(localFilterState, newState)
-}, { deep: true })
-
-// 监听本地状态变化（自动应用）
-watch(localFilterState, () => {
-  if (hasActiveFilters.value) {
-    // 可以添加自动应用逻辑，当前需要手动点击应用按钮
+// 监听器
+watch(() => props.loading, (newVal) => {
+  if (newVal) {
+    // 加载开始
+  } else {
+    // 加载结束
   }
-}, { deep: true })
+})
 </script>
 
 <style scoped>
 .hot-word-filter {
-  @apply bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-/* 过滤器头部 */
-.filter-header {
-  @apply
-    flex
-    items-center
-    justify-between
-    p-4
-    bg-green-50
-    border-b
-    border-green-200;
+.hot-word-filter__header {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  padding: 16px;
+  color: white;
+}
+
+.filter-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .filter-title {
-  @apply text-lg font-semibold text-gray-900;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .filter-actions {
-  @apply flex items-center gap-2;
+  display: flex;
+  gap: 8px;
 }
 
-.reset-btn {
-  @apply
-    inline-flex
-    items-center
-    px-3
-    py-1.5
-    text-sm
-    font-medium
-    text-gray-600
-    bg-white
-    border
-    border-gray-300
-    rounded-md
-    hover:bg-gray-50
-    hover:border-gray-400
-    disabled:opacity-50
-    disabled:cursor-not-allowed
-    transition-colors
-    duration-200
-    focus:outline-none
-    focus:ring-2
-    focus:ring-gray-500
-    focus:ring-offset-2;
+.collapse-button,
+.reset-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-.apply-btn {
-  @apply
-    inline-flex
-    items-center
-    px-3
-    py-1.5
-    text-sm
-    font-medium
-    text-white
-    bg-green-600
-    border
-    border-green-600
-    rounded-md
-    hover:bg-green-700
-    hover:border-green-700
-    transition-colors
-    duration-200
-    focus:outline-none
-    focus:ring-2
-    focus:ring-green-500
-    focus:ring-offset-2;
+.collapse-button:hover,
+.reset-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* 过滤器内容 */
-.filter-content {
-  @apply p-4 space-y-6;
+.reset-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hot-word-filter__body {
+  padding: 20px;
 }
 
 .filter-section {
-  @apply space-y-3;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-/* 高级选项 */
-.advanced-toggle {
-  @apply
-    flex
-    items-center
-    justify-between
-    w-full
-    text-left
-    text-sm
-    font-medium
-    text-gray-700
-    hover:text-gray-900
-    focus:outline-none
-    focus:ring-2
-    focus:ring-green-500
-    focus:ring-offset-2
-    rounded-md
-    p-2
-    hover:bg-gray-50
-    transition-colors
-    duration-200;
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.advanced-label {
-  @apply flex items-center gap-2;
+.filter-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
 }
 
-.advanced-options {
-  @apply mt-3 space-y-4 p-4 bg-gray-50 rounded-md border border-gray-200;
+.time-range-select,
+.limit-select,
+.date-input,
+.keyword-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
 }
 
-.advanced-option {
-  @apply space-y-1;
+.time-range-select:focus,
+.limit-select:focus,
+.date-input:focus,
+.keyword-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.option-label {
-  @apply block text-xs font-medium text-gray-600;
+.custom-time-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.option-select,
-.option-input {
-  @apply
-    w-full
-    px-3
-    py-2
-    text-sm
-    border
-    border-gray-300
-    rounded-md
-    focus:outline-none
-    focus:ring-2
-    focus:ring-green-500
-    focus:border-green-500
-    transition-colors
-    duration-200;
+.date-separator {
+  color: #6b7280;
+  font-size: 14px;
 }
 
-/* 过滤状态指示器 */
-.filter-status {
-  @apply
-    p-4
-    bg-blue-50
-    border
-    border-blue-200
-    rounded-md
-    space-y-3;
+.keyword-input-wrapper {
+  position: relative;
 }
 
-.status-header {
-  @apply flex items-center justify-between;
+.keyword-input {
+  width: 100%;
 }
 
-.status-label {
-  @apply text-sm font-medium text-blue-800;
+.limit-selector {
+  display: flex;
+  align-items: center;
 }
 
-.clear-all-btn {
-  @apply
-    text-xs
-    text-blue-600
-    hover:text-blue-800
-    focus:outline-none
-    focus:underline
-    transition-colors
-    duration-200;
+.filter-actions-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
-.status-tags {
-  @apply flex flex-wrap gap-2;
+.apply-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.status-tag {
-  @apply
-    inline-flex
-    items-center
-    gap-1
-    px-2
-    py-1
-    text-xs
-    font-medium
-    text-blue-800
-    bg-blue-100
-    border
-    border-blue-200
-    rounded-md;
+.apply-button:hover:not(:disabled) {
+  background: #059669;
 }
 
-.tag-clear {
-  @apply
-    ml-1
-    text-blue-600
-    hover:text-blue-800
-    focus:outline-none
-    font-bold
-    transition-colors
-    duration-200;
+.apply-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
 }
 
-/* 响应式优化 */
+.reset-button-footer {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-button-footer:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.reset-button-footer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 响应式设计 */
 @media (max-width: 768px) {
-  .filter-header {
-    @apply flex-col items-start gap-3 p-3;
+  .filter-section {
+    grid-template-columns: 1fr;
   }
 
-  .filter-actions {
-    @apply self-end;
+  .filter-actions-footer {
+    flex-direction: column;
   }
 
-  .filter-title {
-    @apply text-base;
-  }
-
-  .filter-content {
-    @apply p-3 space-y-4;
-  }
-
-  .reset-btn,
-  .apply-btn {
-    @apply text-xs px-2 py-1;
-  }
-
-  .status-tags {
-    @apply flex-col gap-1;
-  }
-
-  .status-tag {
-    @apply justify-between;
+  .apply-button,
+  .reset-button-footer {
+    width: 100%;
   }
 }
 
-/* 加载状态优化 */
-.hot-word-filter[data-loading="true"] {
-  @apply opacity-75 pointer-events-none;
+/* 动画效果 */
+.hot-word-filter {
+  animation: slideIn 0.4s ease-out;
 }
 
-/* 动画优化 */
-.advanced-options {
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
+@keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* 焦点状态优化 */
-.filter-section:focus-within {
-  @apply ring-2 ring-green-500 ring-opacity-50 rounded-md;
 }
 </style>

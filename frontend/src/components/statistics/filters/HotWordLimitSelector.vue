@@ -1,70 +1,139 @@
 <template>
   <div class="hot-word-limit-selector">
-    <label class="label">显示数量</label>
-    <div class="selector-content">
-      <!-- 预设选项 -->
-      <div class="preset-options">
+    <!-- 组件标题 -->
+    <div class="hot-word-limit-selector__header">
+      <h4 class="hot-word-limit-selector__title">显示数量</h4>
+      <span v-if="selectedLimit" class="limit-display">
+        前 {{ selectedLimit }} 条
+      </span>
+    </div>
+
+    <!-- 预设数量选项 -->
+    <div class="hot-word-limit-selector__presets">
+      <button
+        v-for="preset in limitPresets"
+        :key="preset.value"
+        @click="selectLimit(preset.value)"
+        :class="[
+          'limit-button',
+          { 'limit-button--active': selectedLimit === preset.value }
+        ]"
+        type="button"
+        :disabled="disabled"
+      >
+        <span class="limit-value">{{ preset.label }}</span>
+        <span v-if="preset.description" class="limit-description">
+          {{ preset.description }}
+        </span>
+      </button>
+    </div>
+
+    <!-- 自定义数量输入 -->
+    <div v-if="allowCustomLimit" class="hot-word-limit-selector__custom">
+      <div class="custom-limit-header">
+        <label for="custom-limit" class="custom-limit-label">自定义数量</label>
+        <span class="custom-limit-range">({{ minLimit }} - {{ maxLimit }})</span>
+      </div>
+
+      <div class="custom-limit-input-group">
+        <input
+          id="custom-limit"
+          v-model.number="customLimitInput"
+          type="number"
+          :min="minLimit"
+          :max="maxLimit"
+          step="1"
+          class="custom-limit-input"
+          placeholder="输入数量"
+          :disabled="disabled"
+          @input="validateCustomLimit"
+          @blur="applyCustomLimit"
+          @keypress.enter="applyCustomLimit"
+        />
         <button
-          v-for="option in limitOptions"
-          :key="option.value"
-          @click="selectLimit(option.value)"
-          :class="[
-            'preset-btn',
-            {
-              'preset-btn-active': localLimit === option.value,
-              'preset-btn-inactive': localLimit !== option.value
-            }
-          ]"
+          @click="applyCustomLimit"
+          :disabled="!isValidCustomLimit || disabled"
+          class="apply-custom-button"
+          type="button"
         >
-          {{ option.label }}
+          应用
         </button>
       </div>
 
-      <!-- 自定义数量输入 -->
-      <div class="custom-input-group">
-        <label class="custom-label">自定义</label>
-        <div class="input-with-controls">
-          <input
-            v-model.number="customLimit"
-            type="number"
-            :min="minLimit"
-            :max="maxLimit"
-            class="custom-input"
-            @input="handleCustomInput"
-            @blur="handleCustomBlur"
-          >
-          <div class="input-controls">
-            <button
-              @click="decreaseLimit"
-              :disabled="customLimit <= minLimit"
-              class="control-btn decrease-btn"
-              title="减少"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-              </svg>
-            </button>
-            <button
-              @click="increaseLimit"
-              :disabled="customLimit >= maxLimit"
-              class="control-btn increase-btn"
-              title="增加"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <!-- 自定义数量错误提示 -->
+      <div v-if="customLimitError" class="custom-limit-error">
+        <span class="error-message">{{ customLimitError }}</span>
       </div>
+    </div>
 
-      <!-- 限制说明 -->
-      <div class="limit-info">
-        <span class="info-text">
-          当前显示前 <strong class="text-green-600">{{ localLimit }}</strong> 个热词
-          <span class="text-gray-400">(范围: {{ minLimit }}-{{ maxLimit }})</span>
+    <!-- 显示模式选择 -->
+    <div class="hot-word-limit-selector__display-mode">
+      <label class="display-mode-label">显示模式</label>
+      <div class="display-mode-options">
+        <label
+          v-for="mode in displayModes"
+          :key="mode.value"
+          class="display-mode-option"
+        >
+          <input
+            v-model="selectedDisplayMode"
+            :value="mode.value"
+            type="radio"
+            class="display-mode-radio"
+            :disabled="disabled"
+          />
+          <span class="display-mode-text">{{ mode.label }}</span>
+          <span v-if="mode.description" class="display-mode-description">
+            {{ mode.description }}
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 性能提示 -->
+    <div v-if="shouldShowPerformanceWarning" class="hot-word-limit-selector__warning">
+      <div class="warning-content">
+        <span class="warning-icon">⚠️</span>
+        <span class="warning-text">
+          显示过多数据可能影响页面性能，建议控制在{{ recommendedLimit }}条以内
         </span>
       </div>
+    </div>
+
+    <!-- 数据量预估 -->
+    <div v-if="estimatedDataSize && selectedLimit" class="hot-word-limit-selector__estimate">
+      <div class="estimate-content">
+        <span class="estimate-label">预计数据量:</span>
+        <span class="estimate-value">{{ formatDataSize(estimatedDataSize) }}</span>
+      </div>
+    </div>
+
+    <!-- 快速操作 -->
+    <div class="hot-word-limit-selector__quick-actions">
+      <button
+        @click="selectLimit(50)"
+        :class="['quick-action', { 'quick-action--active': selectedLimit === 50 }]"
+        type="button"
+        :disabled="disabled"
+      >
+        标准视图 (50)
+      </button>
+      <button
+        @click="selectLimit(100)"
+        :class="['quick-action', { 'quick-action--active': selectedLimit === 100 }]"
+        type="button"
+        :disabled="disabled"
+      >
+        详细视图 (100)
+      </button>
+      <button
+        @click="selectLimit(20)"
+        :class="['quick-action', { 'quick-action--active': selectedLimit === 20 }]"
+        type="button"
+        :disabled="disabled"
+      >
+        精简视图 (20)
+      </button>
     </div>
   </div>
 </template>
@@ -72,284 +141,394 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 
-interface LimitOption {
+export interface LimitConfig {
+  limit: number
+  displayMode: 'table' | 'card' | 'compact'
+}
+
+interface LimitPreset {
   label: string
   value: number
+  description?: string
+  recommended?: boolean
+}
+
+interface DisplayMode {
+  label: string
+  value: 'table' | 'card' | 'compact'
+  description?: string
 }
 
 interface Props {
-  limit: number
+  modelValue?: LimitConfig | null
+  disabled?: boolean
+  allowCustomLimit?: boolean
   minLimit?: number
   maxLimit?: number
+  recommendedLimit?: number
+  estimatedDataSize?: number // 预估的数据大小(字节)
 }
 
 interface Emits {
-  (e: 'update:limit', value: number): void
+  (e: 'update:modelValue', value: LimitConfig): void
+  (e: 'change', value: LimitConfig): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  minLimit: 10,
-  maxLimit: 1000
+  modelValue: null,
+  disabled: false,
+  allowCustomLimit: true,
+  minLimit: 5,
+  maxLimit: 1000,
+  recommendedLimit: 100,
+  estimatedDataSize: 0
 })
 
 const emit = defineEmits<Emits>()
 
-const localLimit = ref(props.limit)
-const customLimit = ref(props.limit)
+// 响应式数据
+const selectedLimit = ref(50)
+const selectedDisplayMode = ref<'table' | 'card' | 'compact'>('table')
+const customLimitInput = ref<number | null>(null)
+const customLimitError = ref('')
 
-/**
- * 预设限制选项
- */
-const limitOptions: LimitOption[] = [
-  { label: '10', value: 10 },
-  { label: '20', value: 20 },
-  { label: '50', value: 50 },
-  { label: '100', value: 100 },
-  { label: '200', value: 200 }
+// 预设选项
+const limitPresets = computed<LimitPreset[]>(() => [
+  { label: '10条', value: 10, description: '快速预览' },
+  { label: '20条', value: 20, description: '精简显示' },
+  { label: '50条', value: 50, description: '标准显示', recommended: true },
+  { label: '100条', value: 100, description: '详细显示' },
+  { label: '200条', value: 200, description: '大量数据' },
+  { label: '500条', value: 500, description: '完整数据' }
+])
+
+const displayModes: DisplayMode[] = [
+  { label: '表格', value: 'table', description: '表格形式显示' },
+  { label: '卡片', value: 'card', description: '卡片形式显示' },
+  { label: '紧凑', value: 'compact', description: '紧凑列表显示' }
 ]
 
-/**
- * 检查是否为预设值
- */
-const isPresetValue = computed(() => {
-  return limitOptions.some(option => option.value === localLimit.value)
+// 计算属性
+const shouldShowPerformanceWarning = computed(() => {
+  return selectedLimit.value > props.recommendedLimit
 })
 
-/**
- * 选择预设限制
- */
-const selectLimit = (value: number) => {
-  localLimit.value = value
-  customLimit.value = value
-  emit('update:limit', value)
-}
-
-/**
- * 处理自定义输入
- */
-const handleCustomInput = () => {
-  // 确保输入值在有效范围内
-  if (customLimit.value < props.minLimit) {
-    customLimit.value = props.minLimit
-  } else if (customLimit.value > props.maxLimit) {
-    customLimit.value = props.maxLimit
-  }
-
-  localLimit.value = customLimit.value
-  emit('update:limit', customLimit.value)
-}
-
-/**
- * 处理输入框失焦
- */
-const handleCustomBlur = () => {
-  // 确保输入值是有效数字
-  if (isNaN(customLimit.value) || customLimit.value < props.minLimit) {
-    customLimit.value = props.minLimit
-  } else if (customLimit.value > props.maxLimit) {
-    customLimit.value = props.maxLimit
-  }
-
-  localLimit.value = customLimit.value
-  emit('update:limit', customLimit.value)
-}
-
-/**
- * 减少限制数量
- */
-const decreaseLimit = () => {
-  if (customLimit.value > props.minLimit) {
-    customLimit.value = Math.max(customLimit.value - 10, props.minLimit)
-    localLimit.value = customLimit.value
-    emit('update:limit', customLimit.value)
-  }
-}
-
-/**
- * 增加限制数量
- */
-const increaseLimit = () => {
-  if (customLimit.value < props.maxLimit) {
-    customLimit.value = Math.min(customLimit.value + 10, props.maxLimit)
-    localLimit.value = customLimit.value
-    emit('update:limit', customLimit.value)
-  }
-}
-
-// 监听props变化
-watch(() => props.limit, (newVal) => {
-  localLimit.value = newVal
-  customLimit.value = newVal
+const isValidCustomLimit = computed(() => {
+  return customLimitInput.value !== null &&
+         customLimitInput.value >= props.minLimit &&
+         customLimitInput.value <= props.maxLimit &&
+         Number.isInteger(customLimitInput.value)
 })
+
+// 方法
+const selectLimit = (limit: number) => {
+  selectedLimit.value = limit
+  customLimitError.value = ''
+  emitChange()
+}
+
+const validateCustomLimit = () => {
+  customLimitError.value = ''
+
+  if (customLimitInput.value === null || customLimitInput.value === undefined) {
+    return
+  }
+
+  if (!Number.isInteger(customLimitInput.value)) {
+    customLimitError.value = '请输入整数'
+    return
+  }
+
+  if (customLimitInput.value < props.minLimit) {
+    customLimitError.value = `数量不能小于 ${props.minLimit}`
+    return
+  }
+
+  if (customLimitInput.value > props.maxLimit) {
+    customLimitError.value = `数量不能大于 ${props.maxLimit}`
+    return
+  }
+}
+
+const applyCustomLimit = () => {
+  validateCustomLimit()
+
+  if (isValidCustomLimit.value && customLimitInput.value !== null) {
+    selectedLimit.value = customLimitInput.value
+    customLimitInput.value = null
+    emitChange()
+  }
+}
+
+const formatDataSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B'
+
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
+const emitChange = () => {
+  const config: LimitConfig = {
+    limit: selectedLimit.value,
+    displayMode: selectedDisplayMode.value
+  }
+
+  emit('update:modelValue', config)
+  emit('change', config)
+}
+
+// 初始化组件
+const initializeComponent = () => {
+  if (props.modelValue) {
+    selectedLimit.value = props.modelValue.limit
+    selectedDisplayMode.value = props.modelValue.displayMode
+  }
+}
+
+// 监听显示模式变化
+watch(selectedDisplayMode, () => {
+  emitChange()
+})
+
+// 监听外部值变化
+watch(() => props.modelValue, (newValue) => {
+  if (newValue) {
+    initializeComponent()
+  }
+}, { deep: true })
+
+// 组件挂载时初始化
+initializeComponent()
 </script>
 
 <style scoped>
 .hot-word-limit-selector {
-  @apply space-y-3;
+  @apply bg-white rounded-lg border border-green-200 p-4 space-y-4;
 }
 
-.label {
+/* 组件头部 */
+.hot-word-limit-selector__header {
+  @apply flex items-center justify-between;
+}
+
+.hot-word-limit-selector__title {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.limit-display {
+  @apply text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded;
+}
+
+/* 预设选项 */
+.hot-word-limit-selector__presets {
+  @apply grid grid-cols-2 md:grid-cols-3 gap-2;
+}
+
+.limit-button {
+  @apply p-3 text-left border border-gray-300 rounded-md hover:border-green-300 hover:bg-green-50 transition-colors duration-200;
+}
+
+.limit-button--active {
+  @apply border-green-300 bg-green-50 ring-2 ring-green-200;
+}
+
+.limit-value {
   @apply block text-sm font-medium text-gray-700;
 }
 
-.selector-content {
-  @apply space-y-4;
+.limit-description {
+  @apply block text-xs text-gray-500 mt-1;
 }
 
-/* 预设选项样式 */
-.preset-options {
-  @apply flex flex-wrap gap-2;
+/* 自定义数量输入 */
+.hot-word-limit-selector__custom {
+  @apply space-y-2 border-t border-gray-100 pt-4;
 }
 
-.preset-btn {
-  @apply
-    px-3
-    py-1.5
-    text-sm
-    font-medium
-    rounded-md
-    border
-    transition-colors
-    duration-200
-    focus:outline-none
-    focus:ring-2
-    focus:ring-green-500
-    focus:ring-offset-2;
+.custom-limit-header {
+  @apply flex items-center justify-between;
 }
 
-.preset-btn-active {
-  @apply
-    bg-green-100
-    text-green-800
-    border-green-300
-    hover:bg-green-200;
+.custom-limit-label {
+  @apply text-xs font-medium text-gray-600;
 }
 
-.preset-btn-inactive {
-  @apply
-    bg-white
-    text-gray-600
-    border-gray-300
-    hover:bg-gray-50
-    hover:border-gray-400;
+.custom-limit-range {
+  @apply text-xs text-gray-500;
 }
 
-/* 自定义输入样式 */
-.custom-input-group {
-  @apply space-y-2;
+.custom-limit-input-group {
+  @apply flex space-x-2;
 }
 
-.custom-label {
+.custom-limit-input {
+  @apply flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500;
+}
+
+.apply-custom-button {
+  @apply px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed;
+}
+
+.custom-limit-error {
+  @apply flex items-center;
+}
+
+.error-message {
+  @apply text-xs text-red-600;
+}
+
+/* 显示模式选择 */
+.hot-word-limit-selector__display-mode {
+  @apply space-y-2 border-t border-gray-100 pt-4;
+}
+
+.display-mode-label {
   @apply block text-xs font-medium text-gray-600;
 }
 
-.input-with-controls {
-  @apply relative flex items-center;
+.display-mode-options {
+  @apply space-y-2;
 }
 
-.custom-input {
-  @apply
-    w-full
-    pr-16
-    pl-3
-    py-2
-    text-sm
-    border
-    border-gray-300
-    rounded-md
-    focus:outline-none
-    focus:ring-2
-    focus:ring-green-500
-    focus:border-green-500
-    transition-colors
-    duration-200;
+.display-mode-option {
+  @apply flex items-start space-x-2 cursor-pointer;
 }
 
-.input-controls {
-  @apply absolute right-1 flex;
+.display-mode-radio {
+  @apply mt-0.5 w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500;
 }
 
-.control-btn {
-  @apply
-    p-1
-    text-gray-400
-    hover:text-gray-600
-    disabled:text-gray-300
-    disabled:cursor-not-allowed
-    focus:outline-none
-    focus:text-green-600
-    transition-colors
-    duration-200;
+.display-mode-text {
+  @apply text-sm font-medium text-gray-700;
 }
 
-.decrease-btn:hover:not(:disabled) {
-  @apply text-red-500;
+.display-mode-description {
+  @apply text-xs text-gray-500 ml-1;
 }
 
-.increase-btn:hover:not(:disabled) {
-  @apply text-green-500;
+/* 性能警告 */
+.hot-word-limit-selector__warning {
+  @apply bg-yellow-50 border border-yellow-200 rounded-md p-3;
 }
 
-/* 限制信息样式 */
-.limit-info {
-  @apply
-    p-3
-    bg-green-50
-    border
-    border-green-200
-    rounded-md;
+.warning-content {
+  @apply flex items-center space-x-2;
 }
 
-.info-text {
-  @apply text-sm text-gray-700;
+.warning-icon {
+  @apply text-yellow-600;
 }
 
-/* 响应式优化 */
+.warning-text {
+  @apply text-xs text-yellow-800;
+}
+
+/* 数据量预估 */
+.hot-word-limit-selector__estimate {
+  @apply bg-blue-50 border border-blue-200 rounded-md p-3;
+}
+
+.estimate-content {
+  @apply flex items-center space-x-2;
+}
+
+.estimate-label {
+  @apply text-xs font-medium text-blue-700;
+}
+
+.estimate-value {
+  @apply text-xs text-blue-600 font-mono;
+}
+
+/* 快速操作 */
+.hot-word-limit-selector__quick-actions {
+  @apply flex flex-wrap gap-2 border-t border-gray-100 pt-4;
+}
+
+.quick-action {
+  @apply px-3 py-2 text-xs font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors duration-200;
+}
+
+.quick-action--active {
+  @apply bg-green-50 border-green-300 text-green-700;
+}
+
+/* 响应式设计 */
 @media (max-width: 640px) {
-  .preset-options {
-    @apply grid grid-cols-3 gap-2;
+  .hot-word-limit-selector {
+    @apply p-3 space-y-3;
   }
 
-  .preset-btn {
-    @apply text-xs px-2 py-1;
+  .hot-word-limit-selector__presets {
+    @apply grid-cols-1;
   }
 
-  .custom-input {
-    @apply text-base; /* 防止iOS缩放 */
+  .custom-limit-input-group {
+    @apply flex-col space-x-0 space-y-2;
   }
 
-  .control-btn {
-    @apply p-1.5; /* 增加触摸目标大小 */
+  .hot-word-limit-selector__quick-actions {
+    @apply flex-col;
+  }
+
+  .quick-action {
+    @apply w-full text-center;
   }
 }
 
-/* 数字输入框优化 */
-.custom-input::-webkit-outer-spin-button,
-.custom-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+/* 动画效果 */
+.hot-word-limit-selector {
+  animation: fadeIn 0.3s ease-out;
 }
 
-.custom-input[type=number] {
-  -moz-appearance: textfield;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* 焦点状态优化 */
-.custom-input:focus + .input-controls .control-btn {
-  @apply text-green-500;
+.limit-button:hover {
+  transform: translateY(-1px);
 }
 
-/* 验证状态样式 */
-.custom-input:invalid {
-  @apply border-red-300 focus:border-red-500 focus:ring-red-500;
+.quick-action:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
-/* 动画优化 */
-.control-btn {
-  transition: all 0.15s ease-in-out;
+/* 焦点状态 */
+.custom-limit-input:focus {
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
 }
 
-.control-btn:active:not(:disabled) {
-  @apply scale-95;
+/* 禁用状态 */
+.hot-word-limit-selector:has([disabled]) {
+  @apply opacity-60;
+}
+
+.hot-word-limit-selector [disabled] {
+  @apply cursor-not-allowed;
+}
+
+/* 推荐选项高亮 */
+.limit-button:has(.limit-value:contains('50条')) {
+  @apply border-green-300 bg-green-50;
+}
+
+/* 悬停状态增强 */
+.limit-button:hover:not(:disabled) {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.apply-custom-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>

@@ -1,678 +1,647 @@
 <template>
-  <div class="hot-word-statistics-page">
+  <div class="hot-word-statistics-page min-h-screen bg-gray-50">
     <!-- 页面头部 -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-info">
-          <h1 class="page-title">热词统计分析</h1>
-          <p class="page-description">
-            分析搜索日志中的热门关键词，了解用户搜索趋势和热点话题
-          </p>
-        </div>
-        <div class="header-actions">
-          <button
-            @click="refreshData"
-            :disabled="loading"
-            class="action-btn refresh-btn"
-            title="刷新数据"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            刷新
-          </button>
-          <button
-            @click="exportData"
-            :disabled="loading || !hotWordData.length"
-            class="action-btn export-btn"
-            title="导出数据"
-          >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            导出
-          </button>
+    <div class="bg-white shadow-sm border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-6">
+          <div class="md:flex md:items-center md:justify-between">
+            <div class="flex-1 min-w-0">
+              <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                热词统计分析
+              </h1>
+              <p class="mt-1 text-sm text-gray-500">
+                基于搜索日志的热词分析和可视化展示
+              </p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+              <button
+                @click="refreshData"
+                :disabled="loading"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+              >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                刷新数据
+              </button>
+              <button
+                @click="exportData"
+                :disabled="loading || !hotWords.length"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+              >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                导出报告
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 主要内容区域 -->
-    <div class="page-content">
-      <!-- 过滤器侧边栏 -->
-      <div class="filter-sidebar">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- 筛选条件 -->
+      <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">筛选条件</h2>
+
         <HotWordFilter
-          v-model:filter-state="filterState"
-          :search-suggestions="searchSuggestions"
+          v-model="filterConfig as any"
+          @search="handleFilterChange"
+          @reset="handleFilterChange"
           :loading="loading"
-          @filter-change="handleFilterChange"
-          @search="handleSearch"
-          @reset="handleFilterReset"
         />
       </div>
 
-      <!-- 数据展示区域 -->
-      <div class="data-display">
-        <!-- 统计概览卡片 -->
-        <div class="stats-overview">
-          <div class="stats-card">
-            <div class="stats-icon">
-              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+      <!-- 统计概览 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-emerald-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
             </div>
-            <div class="stats-content">
-              <p class="stats-label">总热词数</p>
-              <p class="stats-value">{{ pagination.total }}</p>
-            </div>
-          </div>
-
-          <div class="stats-card">
-            <div class="stats-icon">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <div class="stats-content">
-              <p class="stats-label">总搜索量</p>
-              <p class="stats-value">{{ totalSearchCount.toLocaleString() }}</p>
-            </div>
-          </div>
-
-          <div class="stats-card">
-            <div class="stats-icon">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div class="stats-content">
-              <p class="stats-label">时间范围</p>
-              <p class="stats-value">{{ timeRangeDisplay }}</p>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">总搜索次数</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ summary.totalSearches.toLocaleString() }}</p>
             </div>
           </div>
         </div>
 
-        <!-- 热词排行榜表格 -->
-        <div class="ranking-section">
-          <HotWordRankingTable
-            :data="hotWordData"
-            :loading="loading"
-            :error="error"
-            :pagination="pagination"
-            :current-sort="currentSort"
-            @sort-change="handleSortChange"
-            @page-change="handlePageChange"
-            @page-size-change="handlePageSizeChange"
-            @row-click="handleRowClick"
-            @view-detail="handleViewDetail"
-            @refresh="refreshData"
-            @export="exportData"
-            @retry="retryLoadData"
-          />
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">热词数量</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ summary.uniqueKeywords }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">平均搜索频次</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ summary.averageFrequency.toFixed(1) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">统计时间段</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ summary.timePeriod }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主内容区域 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 词云图 -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-semibold text-gray-900">热词云图</h2>
+              <div class="flex items-center space-x-4">
+                <!-- 主题切换 -->
+                <div class="flex items-center space-x-2">
+                  <label class="text-sm text-gray-500">主题:</label>
+                  <select
+                    v-model="wordCloudConfig.theme"
+                    class="text-sm border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                  >
+                    <option value="light-green">淡绿色</option>
+                    <option value="dark-green">深绿色</option>
+                    <option value="blue">蓝色</option>
+                    <option value="purple">紫色</option>
+                  </select>
+                </div>
+
+                <!-- 显示数量 -->
+                <div class="flex items-center space-x-2">
+                  <label class="text-sm text-gray-500">显示:</label>
+                  <select
+                    v-model="wordCloudConfig.maxWords"
+                    class="text-sm border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                  >
+                    <option :value="50">50个词</option>
+                    <option :value="100">100个词</option>
+                    <option :value="200">200个词</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 词云图组件 -->
+            <div class="h-96 relative">
+              <HotWordCloudChart
+                ref="wordCloudRef"
+                :words="wordCloudData"
+                :theme="wordCloudConfig.theme"
+                :responsive="true"
+                :loading="loading"
+                :error="error || undefined"
+                :options="wordCloudOptions"
+                @word-click="handleWordClick"
+                @word-hover="handleWordHover"
+                @render-start="handleRenderStart"
+                @render-complete="handleRenderComplete"
+                @render-error="handleRenderError"
+                @download="handleWordCloudDownload"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- 热词排行榜 -->
+        <div class="space-y-6">
+          <!-- TOP 10 热词 -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">TOP 10 热词</h3>
+            <div class="space-y-3">
+              <div
+                v-for="(item, index) in topWords"
+                :key="item.text"
+                class="flex items-center justify-between p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                @click="highlightWord(item.text)"
+              >
+                <div class="flex items-center space-x-3">
+                  <div
+                    class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    :class="getRankingClass(index)"
+                  >
+                    {{ index + 1 }}
+                  </div>
+                  <span class="font-medium text-gray-900">{{ item.text }}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-semibold text-gray-900">{{ item.weight }}</div>
+                  <div class="text-xs text-gray-500">搜索次数</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 趋势信息 -->
+          <div class="bg-white rounded-lg shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">趋势分析</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500">上升最快</span>
+                <span class="text-sm font-medium text-green-600">{{ trendInfo.rising || '-' }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500">下降最快</span>
+                <span class="text-sm font-medium text-red-600">{{ trendInfo.falling || '-' }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500">新热词</span>
+                <span class="text-sm font-medium text-blue-600">{{ trendInfo.new || '-' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 详细数据表格 -->
+      <div class="bg-white rounded-lg shadow-sm border p-6 mt-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-gray-900">热词详细数据</h2>
+          <div class="flex items-center space-x-3">
+            <div class="relative">
+              <input
+                v-model="searchKeyword"
+                type="text"
+                placeholder="搜索热词..."
+                class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+              >
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排名</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">热词</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">搜索次数</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">占比</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">趋势</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr
+                v-for="(item, index) in filteredStatistics"
+                :key="item.keyword"
+                class="hover:bg-gray-50"
+              >
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ index + 1 }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-900">{{ item.keyword }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ item.count.toLocaleString() }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ (item.percentage || ((item.count / summary.totalSearches) * 100)).toFixed(2) }}%
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="getTrendClass(item.trend || 'stable')" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                    {{ getTrendLabel(item.trend || 'stable') }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分页 -->
+        <div v-if="filteredStatistics.length > pageSize" class="flex items-center justify-between mt-6">
+          <div class="text-sm text-gray-700">
+            显示 {{ (currentPage - 1) * pageSize + 1 }} 到 {{ Math.min(currentPage * pageSize, filteredStatistics.length) }}
+            条，共 {{ filteredStatistics.length }} 条记录
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              @click="currentPage--"
+              :disabled="currentPage === 1"
+              class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              上一页
+            </button>
+            <span class="px-3 py-1 text-sm text-gray-700">{{ currentPage }} / {{ totalPages }}</span>
+            <button
+              @click="currentPage++"
+              :disabled="currentPage === totalPages"
+              class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              下一页
+            </button>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- 热词详情弹窗 -->
-    <HotWordDetailModal
-      v-if="selectedHotWord"
-      :hot-word="selectedHotWord"
-      :visible="showDetailModal"
-      @close="closeDetailModal"
-      @export="exportHotWordDetail"
-    />
-
-    <!-- 导出进度弹窗 -->
-    <ExportProgressModal
-      :visible="showExportModal"
-      :progress="exportProgress"
-      :status="exportStatus"
-      @close="closeExportModal"
-      @cancel="cancelExport"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import HotWordCloudChart from '@/components/statistics/HotWordCloudChart.vue'
 import HotWordFilter from '@/components/statistics/HotWordFilter.vue'
-import HotWordRankingTable from '@/components/statistics/HotWordRankingTable.vue'
-// 注意：这些组件还需要创建，暂时注释掉
-// import HotWordDetailModal from '@/components/statistics/HotWordDetailModal.vue'
-// import ExportProgressModal from '@/components/statistics/ExportProgressModal.vue'
-import type {
-  HotWordItem,
-  FilterState,
-  HotWordQueryParams,
-  SortConfig,
-  PaginationConfig,
-  HotWordStatisticsResponse
-} from '@/types/statistics'
+import { useHotWordData } from '@/composables/useHotWordData'
+import { useHotWordStatisticsStore } from '@/stores/hotWordStatistics'
+import type { HotWordItem } from '@/types/statistics'
 
-// 临时的模拟组件
-const HotWordDetailModal = { template: '<div></div>' }
-const ExportProgressModal = { template: '<div></div>' }
+// ============= 响应式状态 =============
 
-const router = useRouter()
+// 使用Pinia Store
+const store = useHotWordStatisticsStore()
 
-// 响应式数据
-const loading = ref(false)
-const error = ref<string | null>(null)
-const hotWordData = ref<HotWordItem[]>([])
-const selectedHotWord = ref<HotWordItem | null>(null)
-const showDetailModal = ref(false)
-const showExportModal = ref(false)
-const exportProgress = ref(0)
-const exportStatus = ref<'preparing' | 'exporting' | 'completed' | 'error'>('preparing')
+const wordCloudRef = ref()
 
-// 搜索建议（可以从历史搜索记录获取）
-const searchSuggestions = ref<string[]>([
-  '用户管理',
-  '权限配置',
-  '数据统计',
-  '搜索功能',
-  '系统设置'
-])
-
-// 过滤状态
-const filterState = reactive<FilterState>({
-  timeRange: {
-    startTime: '',
-    endTime: '',
-    preset: 'last7days'
-  },
-  searchKeyword: '',
-  limit: 50
-})
-
-// 排序配置
-const currentSort = reactive<SortConfig>({
-  field: 'count',
-  order: 'desc'
-})
-
-// 分页配置
-const pagination = reactive<PaginationConfig>({
-  page: 1,
-  pageSize: 20,
-  total: 0,
-  totalPages: 0
-})
-
-/**
- * 计算总搜索次数
- */
-const totalSearchCount = computed(() => {
-  return hotWordData.value.reduce((total, item) => total + item.count, 0)
-})
-
-/**
- * 时间范围显示
- */
-const timeRangeDisplay = computed(() => {
-  if (filterState.timeRange.preset) {
-    const presetLabels: Record<string, string> = {
-      today: '今天',
-      last7days: '最近7天',
-      last30days: '最近30天',
-      thisMonth: '本月',
-      lastMonth: '上月'
-    }
-    return presetLabels[filterState.timeRange.preset] || '自定义'
-  }
-  return '自定义'
-})
-
-/**
- * 加载热词数据
- */
-const loadHotWordData = async (params?: HotWordQueryParams) => {
-  loading.value = true
-  error.value = null
-
-  try {
-    // 构建查询参数
-    const queryParams: HotWordQueryParams = {
-      startTime: filterState.timeRange.startTime,
-      endTime: filterState.timeRange.endTime,
-      searchKeyword: filterState.searchKeyword,
-      limit: filterState.limit,
-      offset: (pagination.page - 1) * pagination.pageSize,
-      sortBy: currentSort.field,
-      sortOrder: currentSort.order,
-      ...params
-    }
-
-    // TODO: 调用实际的API
-    // const response = await hotWordService.getHotWordStatistics(queryParams)
-
-    // 模拟API响应
-    const mockResponse: HotWordStatisticsResponse = {
-      items: generateMockHotWordData(),
-      total: 150,
-      page: pagination.page,
-      pageSize: pagination.pageSize,
-      hasNext: pagination.page < 8,
-      hasPrevious: pagination.page > 1
-    }
-
-    hotWordData.value = mockResponse.items
-    pagination.total = mockResponse.total
-    pagination.totalPages = Math.ceil(mockResponse.total / pagination.pageSize)
-
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : '加载热词数据失败'
-    console.error('Failed to load hot word data:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-/**
- * 生成模拟热词数据
- */
-const generateMockHotWordData = (): HotWordItem[] => {
-  const keywords = [
-    '用户管理', '权限配置', '数据统计', '搜索功能', '系统设置',
-    '角色管理', '日志管理', '性能监控', '安全配置', '备份恢复',
-    '界面设置', '通知管理', '文件上传', '数据导出', 'API接口',
-    '数据库优化', '缓存管理', '负载均衡', '集群配置', '监控告警'
-  ]
-
-  return keywords.map((keyword, index) => ({
-    keyword,
-    count: Math.floor(Math.random() * 1000) + 100,
+// 从store中获取响应式数据
+const hotWords = computed(() => store.hotWords)
+const statistics = computed(() => {
+  // 创建兼容格式的统计数据
+  return store.hotWords.map((word, index) => ({
+    keyword: word.word,
+    count: word.count,
     rank: index + 1,
-    trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable',
-    percentage: Math.random() * 100
-  })).sort((a, b) => b.count - a.count)
-}
+    trend: (word as any).trend || 'stable',
+    percentage: word.percentage
+  }))
+})
+const loading = computed(() => store.loading)
+const error = computed(() => store.error)
 
-/**
- * 处理过滤条件变化
- */
-const handleFilterChange = (params: HotWordQueryParams) => {
-  pagination.page = 1 // 重置页码
-  loadHotWordData(params)
-}
+// 筛选配置 - 使用Store中的filter
+const filterConfig = computed({
+  get: () => ({
+    timeRange: {
+      start: store.filter.dateRange.start,
+      end: store.filter.dateRange.end
+    },
+    searchCondition: {
+      keywords: [],
+      includeMode: 'any'
+    },
+    limitConfig: {
+      limit: store.filter.limit,
+      sortBy: 'count',
+      sortOrder: 'desc'
+    },
+    channels: []
+  }),
+  set: (value: any) => {
+    if (value.timeRange) {
+      store.updateFilter({
+        dateRange: {
+          start: value.timeRange.start,
+          end: value.timeRange.end
+        },
+        limit: value.limitConfig?.limit || store.filter.limit
+      })
+    }
+  }
+})
 
-/**
- * 处理搜索
- */
-const handleSearch = (keyword: string) => {
-  filterState.searchKeyword = keyword
-  pagination.page = 1
-  loadHotWordData()
-}
+// 词云配置
+const wordCloudConfig = reactive({
+  theme: 'light-green',
+  maxWords: 100
+})
 
-/**
- * 处理过滤器重置
- */
-const handleFilterReset = () => {
-  pagination.page = 1
-  loadHotWordData()
-}
+// 本地UI状态
+const searchKeyword = ref('')
+const currentPage = ref(1)
+const pageSize = ref(50)
 
-/**
- * 处理排序变化
- */
-const handleSortChange = (field: string, order: 'asc' | 'desc') => {
-  currentSort.field = field as 'count' | 'keyword' | 'rank'
-  currentSort.order = order
-  loadHotWordData()
-}
+// ============= 计算属性 =============
 
-/**
- * 处理分页变化
- */
-const handlePageChange = (page: number, pageSize: number) => {
-  pagination.page = page
-  pagination.pageSize = pageSize
-  loadHotWordData()
-}
+const wordCloudData = computed(() => {
+  // 从统计数据创建词云数据
+  return statistics.value
+    .slice(0, wordCloudConfig.maxWords)
+    .map(item => ({
+      text: item.keyword,
+      weight: item.count,
+      trend: item.trend
+    }))
+})
 
-/**
- * 处理页面大小变化
- */
-const handlePageSizeChange = (pageSize: number) => {
-  pagination.pageSize = pageSize
-  pagination.page = 1
-  loadHotWordData()
-}
+const wordCloudOptions = computed((): any => ({
+  gridSize: 8,
+  weightFactor: (weight: number) => Math.pow(weight, 2.3) / 600,
+  fontFamily: 'Arial, sans-serif',
+  rotateRatio: 0.5,
+  rotationSteps: 4,
+  backgroundColor: 'transparent',
+  color: (word: string, weight: number) => {
+    // 根据权重返回不同颜色
+    const colors = ['#10b981', '#059669', '#047857', '#065f46']
+    const index = Math.floor((weight / 100) * colors.length)
+    return colors[Math.min(index, colors.length - 1)]
+  }
+}))
 
-/**
- * 处理行点击
- */
-const handleRowClick = (item: HotWordItem) => {
-  selectedHotWord.value = item
-  showDetailModal.value = true
-}
+const summary = computed(() => {
+  // 使用Store中的数据摘要
+  const dataSummary = store.dataSummary
 
-/**
- * 处理查看详情
- */
-const handleViewDetail = (item: HotWordItem) => {
-  selectedHotWord.value = item
-  showDetailModal.value = true
-}
+  if (!dataSummary) {
+    return {
+      totalSearches: 0,
+      uniqueKeywords: 0,
+      averageFrequency: 0,
+      timePeriod: ''
+    }
+  }
 
-/**
- * 关闭详情弹窗
- */
-const closeDetailModal = () => {
-  showDetailModal.value = false
-  selectedHotWord.value = null
-}
+  return {
+    totalSearches: dataSummary.totalCount,
+    uniqueKeywords: dataSummary.totalWords,
+    averageFrequency: dataSummary.avgCount,
+    timePeriod: `${dataSummary.timeRange.start.toLocaleDateString()} - ${dataSummary.timeRange.end.toLocaleDateString()}`
+  }
+})
 
-/**
- * 刷新数据
- */
-const refreshData = () => {
-  loadHotWordData()
-}
+const topWords = computed(() => {
+  // 使用统计数据前10个作为top words
+  return statistics.value.slice(0, 10).map(item => ({
+    text: item.keyword,
+    weight: item.count
+  }))
+})
 
-/**
- * 重试加载数据
- */
-const retryLoadData = () => {
-  loadHotWordData()
-}
+const trendInfo = computed(() => {
+  // 从统计数据中获取趋势信息
+  const data = statistics.value
+  return {
+    rising: data.find(item => item.trend === 'up')?.keyword || '-',
+    falling: data.find(item => item.trend === 'down')?.keyword || '-',
+    new: data.find(item => item.trend === 'new')?.keyword || '-'
+  }
+})
 
-/**
- * 导出数据
- */
-const exportData = async () => {
-  showExportModal.value = true
-  exportProgress.value = 0
-  exportStatus.value = 'preparing'
+const filteredStatistics = computed(() => {
+  let filtered = statistics.value
 
+  if (searchKeyword.value) {
+    const keyword = searchKeyword.value.toLowerCase()
+    filtered = filtered.filter(item =>
+      item.keyword.toLowerCase().includes(keyword)
+    )
+  }
+
+  return filtered
+})
+
+const totalPages = computed(() => Math.ceil(filteredStatistics.value.length / pageSize.value))
+
+// ============= 方法 =============
+
+const loadStatistics = async () => {
   try {
-    // 模拟导出进度
-    const progressInterval = setInterval(() => {
-      exportProgress.value += 10
-      if (exportProgress.value >= 100) {
-        clearInterval(progressInterval)
-        exportStatus.value = 'completed'
-        setTimeout(() => {
-          showExportModal.value = false
-        }, 2000)
-      }
-    }, 200)
-
-    exportStatus.value = 'exporting'
-
+    await store.fetchHotWords()
   } catch (err) {
-    exportStatus.value = 'error'
-    console.error('Export failed:', err)
+    console.error('Failed to load statistics:', err)
   }
 }
 
-/**
- * 导出热词详情
- */
-const exportHotWordDetail = (hotWord: HotWordItem) => {
-  console.log('Exporting hot word detail:', hotWord)
-  // TODO: 实现热词详情导出
-}
-
-/**
- * 关闭导出弹窗
- */
-const closeExportModal = () => {
-  showExportModal.value = false
-  exportProgress.value = 0
-  exportStatus.value = 'preparing'
-}
-
-/**
- * 取消导出
- */
-const cancelExport = () => {
-  closeExportModal()
-}
-
-// 监听路由查询参数
-watch(() => router.currentRoute.value.query, (query) => {
-  // 从URL查询参数恢复过滤状态
-  if (query.keyword) {
-    filterState.searchKeyword = query.keyword as string
+const refreshData = async () => {
+  try {
+    await store.refreshAll()
+  } catch (err) {
+    console.error('Failed to refresh data:', err)
   }
-  if (query.limit) {
-    filterState.limit = parseInt(query.limit as string) || 50
-  }
-}, { immediate: true })
+}
 
-// 组件挂载时加载数据
-onMounted(() => {
-  loadHotWordData()
+const exportData = async () => {
+  try {
+    // 导出当前统计数据
+    const blob = new Blob([JSON.stringify(statistics.value, null, 2)], {
+      type: 'application/json'
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `hot-word-statistics-${Date.now()}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('Failed to export data:', err)
+  }
+}
+
+const handleFilterChange = async () => {
+  currentPage.value = 1
+  await store.fetchHotWords()
+}
+
+const handleWordClick = (word: HotWordItem, event: Event) => {
+  console.log('Word clicked:', word)
+  // 可以在这里实现更多交互逻辑，比如显示详细信息
+}
+
+const handleWordHover = (word: HotWordItem, event: Event) => {
+  // 悬停效果已由组件内部处理
+}
+
+const handleRenderStart = () => {
+  console.log('Word cloud rendering started')
+}
+
+const handleRenderComplete = () => {
+  console.log('Word cloud rendering completed')
+}
+
+const handleRenderError = (errorMessage: string) => {
+  console.error('Word cloud rendering error:', errorMessage)
+}
+
+const handleWordCloudDownload = (canvas: HTMLCanvasElement) => {
+  const link = document.createElement('a')
+  link.download = `hot-word-cloud-${Date.now()}.png`
+  link.href = canvas.toDataURL()
+  link.click()
+}
+
+const highlightWord = (word: string) => {
+  // 查找热词并高亮
+  const hotWord = statistics.value.find(item => item.keyword === word)
+  if (hotWord) {
+    console.log('Highlight word:', word, 'Count:', hotWord.count)
+    // 实现高亮和详情显示逻辑
+    searchKeyword.value = word
+  }
+}
+
+const getRankingClass = (index: number) => {
+  if (index === 0) return 'bg-yellow-500'
+  if (index === 1) return 'bg-gray-400'
+  if (index === 2) return 'bg-yellow-600'
+  return 'bg-gray-500'
+}
+
+const getTrendClass = (trend: string) => {
+  switch (trend) {
+    case 'up':
+    case 'rising':
+      return 'bg-green-100 text-green-800'
+    case 'down':
+    case 'falling':
+      return 'bg-red-100 text-red-800'
+    case 'new':
+      return 'bg-blue-100 text-blue-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getTrendLabel = (trend: string) => {
+  switch (trend) {
+    case 'up':
+    case 'rising':
+      return '上升'
+    case 'down':
+    case 'falling':
+      return '下降'
+    case 'new':
+      return '新词'
+    default:
+      return '稳定'
+  }
+}
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '-'
+  return new Date(dateString).toLocaleString('zh-CN')
+}
+
+// ============= 监听器 =============
+
+watch([() => wordCloudConfig.theme, () => wordCloudConfig.maxWords], () => {
+  // 词云配置变化时重新渲染
+  nextTick(() => {
+    if (wordCloudRef.value?.refresh) {
+      wordCloudRef.value.refresh()
+    }
+  })
+})
+
+watch(searchKeyword, () => {
+  currentPage.value = 1
+})
+
+// ============= 生命周期 =============
+
+onMounted(async () => {
+  // 初始化时设置默认时间范围并加载数据
+  await store.setTimeRange(
+    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 默认最近7天
+    new Date()
+  )
+  await loadStatistics()
 })
 </script>
 
 <style scoped>
 .hot-word-statistics-page {
-  @apply min-h-screen bg-gray-50;
+  min-height: 100vh;
 }
 
-/* 页面头部 */
-.page-header {
-  @apply bg-white border-b border-gray-200 px-6 py-4;
+/* 自定义滚动条样式 */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
 }
 
-.header-content {
-  @apply max-w-7xl mx-auto flex items-center justify-between;
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
 }
 
-.header-info {
-  @apply space-y-1;
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
-.page-title {
-  @apply text-2xl font-bold text-gray-900;
-}
-
-.page-description {
-  @apply text-gray-600;
-}
-
-.header-actions {
-  @apply flex items-center gap-3;
-}
-
-.action-btn {
-  @apply
-    inline-flex
-    items-center
-    px-4
-    py-2
-    text-sm
-    font-medium
-    rounded-md
-    transition-colors
-    duration-200
-    focus:outline-none
-    focus:ring-2
-    focus:ring-offset-2
-    disabled:opacity-50
-    disabled:cursor-not-allowed;
-}
-
-.refresh-btn {
-  @apply
-    text-gray-600
-    bg-white
-    border
-    border-gray-300
-    hover:bg-gray-50
-    hover:border-gray-400
-    focus:ring-gray-500;
-}
-
-.export-btn {
-  @apply
-    text-white
-    bg-green-600
-    border
-    border-green-600
-    hover:bg-green-700
-    hover:border-green-700
-    focus:ring-green-500;
-}
-
-/* 主要内容 */
-.page-content {
-  @apply max-w-7xl mx-auto p-6 flex gap-6;
-}
-
-.filter-sidebar {
-  @apply w-80 flex-shrink-0;
-}
-
-.data-display {
-  @apply flex-1 space-y-6;
-}
-
-/* 统计概览 */
-.stats-overview {
-  @apply grid grid-cols-1 md:grid-cols-3 gap-6;
-}
-
-.stats-card {
-  @apply bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center gap-4;
-}
-
-.stats-icon {
-  @apply
-    flex
-    items-center
-    justify-center
-    w-12
-    h-12
-    rounded-lg
-    bg-green-100;
-}
-
-.stats-content {
-  @apply space-y-1;
-}
-
-.stats-label {
-  @apply text-sm font-medium text-gray-600;
-}
-
-.stats-value {
-  @apply text-2xl font-bold text-gray-900;
-}
-
-/* 排行榜区域 */
-.ranking-section {
-  @apply space-y-4;
-}
-
-/* 响应式优化 */
-@media (max-width: 1024px) {
-  .page-content {
-    @apply flex-col;
-  }
-
-  .filter-sidebar {
-    @apply w-full;
-  }
-
-  .stats-overview {
-    @apply grid-cols-1 md:grid-cols-2;
-  }
-}
-
-@media (max-width: 768px) {
-  .page-header {
-    @apply px-4 py-3;
-  }
-
-  .header-content {
-    @apply flex-col items-start gap-4;
-  }
-
-  .header-actions {
-    @apply self-end;
-  }
-
-  .page-title {
-    @apply text-xl;
-  }
-
-  .page-content {
-    @apply p-4;
-  }
-
-  .stats-overview {
-    @apply grid-cols-1;
-  }
-
-  .stats-card {
-    @apply p-4;
-  }
-
-  .stats-value {
-    @apply text-xl;
-  }
-
-  .action-btn {
-    @apply text-xs px-3 py-1.5;
-  }
-}
-
-/* 加载状态 */
-.page-content[data-loading="true"] {
-  @apply opacity-75;
-}
-
-/* 动画优化 */
-.stats-card {
-  transition: all 0.2s ease-in-out;
-}
-
-.stats-card:hover {
-  @apply shadow-md transform scale-105;
-}
-
-/* 无障碍优化 */
-.action-btn:focus {
-  @apply ring-offset-white;
-}
-
-/* 深色模式兼容 */
-@media (prefers-color-scheme: dark) {
-  .hot-word-statistics-page {
-    @apply bg-gray-900;
-  }
-
-  .page-header {
-    @apply bg-gray-800 border-gray-700;
-  }
-
-  .page-title {
-    @apply text-white;
-  }
-
-  .page-description {
-    @apply text-gray-300;
-  }
-
-  .stats-card {
-    @apply bg-gray-800 border-gray-700;
-  }
-
-  .stats-value {
-    @apply text-white;
-  }
-
-  .stats-label {
-    @apply text-gray-300;
-  }
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>
