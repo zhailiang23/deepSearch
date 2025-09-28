@@ -42,6 +42,15 @@ const routes = [
         }
       },
       {
+        path: 'hot-word-statistics',
+        name: 'HotWordStatistics',
+        component: () => import('@/views/statistics/HotWordStatisticsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '热词统计分析'
+        }
+      },
+      {
         path: 'channels',
         name: 'Channels',
         component: () => import('@/pages/channels/ChannelManage.vue'),

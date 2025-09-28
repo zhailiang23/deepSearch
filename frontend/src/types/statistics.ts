@@ -20,6 +20,7 @@ export interface HotWordQueryParams {
   offset?: number
   sortBy?: 'count' | 'keyword' | 'rank'
   sortOrder?: 'asc' | 'desc'
+  minCount?: number
 }
 
 // 热词统计响应
@@ -49,6 +50,9 @@ export interface FilterState {
   }
   searchKeyword: string
   limit: number
+  sortBy?: 'count' | 'keyword' | 'rank'
+  sortOrder?: 'asc' | 'desc'
+  minCount?: number
 }
 
 // 排序配置
