@@ -1,9 +1,10 @@
 ---
 name: statistics-mismatch-keyword
-status: open
+status: completed
 created: 2025-09-28T07:23:53Z
-updated: 2025-09-28T11:55:27Z
-progress: 0%
+updated: 2025-09-28T23:34:00Z
+completed: 2025-09-28T23:34:00Z
+progress: 100%
 prd: .claude/prds/statistics-mismatch-keyword.md
 github: https://github.com/zhailiang23/deepSearch/issues/106
 ---
