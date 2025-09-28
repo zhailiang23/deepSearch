@@ -2,8 +2,8 @@
 name: statistics-hot-word
 status: backlog
 created: 2025-09-28T04:00:38Z
-updated: 2025-09-28T06:40:53Z
-progress: 33.3%
+updated: 2025-09-28T07:20:00Z
+progress: 50.0%
 prd: .claude/prds/statistics-hot-word.md
 github: https://github.com/zhailiang23/deepSearch/issues/92
 ---
@@ -141,7 +141,7 @@ github: https://github.com/zhailiang23/deepSearch/issues/92
 ## Tasks Created
 - [x] #93 - 后端依赖集成和分词服务开发 (parallel: true) ✅ 已完成
 - [x] #94 - 后端热词统计API和DTO开发 (parallel: false, depends: 93) ✅ 已完成
-- [ ] #95 - 前端依赖集成和热词排行榜组件开发 (parallel: true)
+- [x] #95 - 前端依赖集成和热词排行榜组件开发 (parallel: true) ✅ 已完成
 - [ ] #96 - 前端词云图组件开发 (parallel: false, depends: 95)
 - [ ] #97 - 热词统计页面集成和路由配置 (parallel: false, depends: 94, 96)
 - [ ] #98 - 系统集成测试和性能优化 (parallel: false, depends: 97)
