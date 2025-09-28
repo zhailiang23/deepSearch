@@ -1,5 +1,8 @@
 package com.ynet.mgmt.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -15,6 +18,21 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
  */
 @Configuration
 public class RedisConfig {
+
+    /**
+     * 配置ObjectMapper支持Java 8时间
+     *
+     * @return 配置好的ObjectMapper
+     */
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        // 注册JavaTimeModule支持Java 8时间类型
+        mapper.registerModule(new JavaTimeModule());
+        // 不将日期写为时间戳
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
 
     /**
      * 配置RedisTemplate
@@ -33,7 +51,7 @@ public class RedisConfig {
         template.setHashKeySerializer(stringRedisSerializer);
 
         // 使用JSON序列化器作为value的序列化器
-        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
+        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper());
         template.setValueSerializer(jsonRedisSerializer);
         template.setHashValueSerializer(jsonRedisSerializer);
 

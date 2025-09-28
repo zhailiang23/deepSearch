@@ -56,6 +56,16 @@ spring:
       max-request-size: 25MB
       enabled: true
 
+  # Jackson配置
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: non_null
+
 # Elasticsearch配置
 elasticsearch:
   uris:

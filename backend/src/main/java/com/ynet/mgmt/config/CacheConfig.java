@@ -1,5 +1,7 @@
 package com.ynet.mgmt.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -23,6 +25,9 @@ import java.util.Map;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Value("${app.cache.default-ttl:PT30M}")
     private Duration defaultTtl;
@@ -52,7 +57,7 @@ public class CacheConfig {
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(defaultTtl)
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)))
                 .disableCachingNullValues(); // 不缓存空值
 
         // 特定缓存配置
