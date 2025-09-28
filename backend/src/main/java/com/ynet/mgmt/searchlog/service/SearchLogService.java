@@ -68,4 +68,13 @@ public interface SearchLogService {
      * @return 删除的记录数
      */
     long batchDeleteLogs(List<Long> logIds);
+
+    /**
+     * 获取热词统计
+     * 对搜索日志中的查询词进行分词分析，统计出现频率最高的词汇
+     *
+     * @param request 热词统计请求参数
+     * @return 热词统计结果列表
+     */
+    List<HotWordResponse> getHotWords(HotWordRequest request);
 }

@@ -8,6 +8,7 @@ import com.ynet.mgmt.searchlog.entity.SearchLog;
 import com.ynet.mgmt.searchlog.entity.SearchLogStatus;
 import com.ynet.mgmt.searchlog.repository.SearchClickLogRepository;
 import com.ynet.mgmt.searchlog.repository.SearchLogRepository;
+import com.ynet.mgmt.searchlog.service.ChineseSegmentationService;
 import com.ynet.mgmt.searchlog.service.SearchLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,8 @@ import org.springframework.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +39,7 @@ public class SearchLogServiceImpl implements SearchLogService {
 
     private final SearchLogRepository searchLogRepository;
     private final SearchClickLogRepository searchClickLogRepository;
+    private final ChineseSegmentationService segmentationService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -417,5 +419,250 @@ public class SearchLogServiceImpl implements SearchLogService {
                         .searchCount((Long) row[2])
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HotWordResponse> getHotWords(HotWordRequest request) {
+        try {
+            log.debug("开始获取热词统计: request={}", request);
+
+            // 设置默认时间范围
+            LocalDateTime startTime = request.getStartDate();
+            LocalDateTime endTime = request.getEndDate();
+            if (startTime == null) {
+                startTime = LocalDateTime.now().minusDays(30); // 默认查询最近30天
+            }
+            if (endTime == null) {
+                endTime = LocalDateTime.now();
+            }
+
+            // 构建查询条件
+            Specification<SearchLog> spec = buildHotWordSpecification(request, startTime, endTime);
+
+            // 获取符合条件的搜索日志
+            List<SearchLog> searchLogs = searchLogRepository.findAll(spec);
+            log.debug("获取到{}条搜索日志用于热词分析", searchLogs.size());
+
+            if (searchLogs.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // 提取所有搜索查询文本
+            List<String> searchQueries = searchLogs.stream()
+                    .map(SearchLog::getSearchQuery)
+                    .filter(Objects::nonNull)
+                    .filter(query -> !query.trim().isEmpty())
+                    .collect(Collectors.toList());
+
+            if (searchQueries.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // 批量分词处理
+            List<List<String>> segmentedQueries = segmentationService.segmentTexts(searchQueries);
+            log.debug("完成分词处理，共处理{}个查询", segmentedQueries.size());
+
+            // 统计词频
+            Map<String, WordStatistics> wordStatsMap = calculateWordStatistics(
+                    segmentedQueries, searchLogs, request);
+
+            // 转换为响应对象并排序
+            List<HotWordResponse> hotWords = wordStatsMap.values().stream()
+                    .map(stats -> buildHotWordResponse(stats, wordStatsMap.values().size()))
+                    .sorted((w1, w2) -> Long.compare(w2.getCount(), w1.getCount()))
+                    .limit(request.getLimit())
+                    .collect(Collectors.toList());
+
+            log.debug("热词统计完成，返回{}个热词", hotWords.size());
+            return hotWords;
+
+        } catch (Exception e) {
+            log.error("获取热词统计失败: request={}", request, e);
+            throw new BusinessException("HOT_WORD_STATISTICS_ERROR", "获取热词统计失败: " + e.getMessage());
+        }
+    }
+
+    // ========== 热词统计私有辅助方法 ==========
+
+    /**
+     * 构建热词查询条件
+     */
+    private Specification<SearchLog> buildHotWordSpecification(HotWordRequest request,
+                                                             LocalDateTime startTime,
+                                                             LocalDateTime endTime) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 时间范围筛选
+            predicates.add(criteriaBuilder.between(root.get("createdAt"), startTime, endTime));
+
+            // 只统计成功的搜索
+            predicates.add(criteriaBuilder.equal(root.get("status"), SearchLogStatus.SUCCESS));
+
+            // 用户ID筛选
+            if (StringUtils.hasText(request.getUserId())) {
+                try {
+                    Long userId = Long.valueOf(request.getUserId());
+                    predicates.add(criteriaBuilder.equal(root.get("userId"), userId));
+                } catch (NumberFormatException e) {
+                    log.warn("无效的用户ID格式: {}", request.getUserId());
+                }
+            }
+
+            // 搜索空间ID筛选
+            if (StringUtils.hasText(request.getSearchSpaceId())) {
+                try {
+                    Long searchSpaceId = Long.valueOf(request.getSearchSpaceId());
+                    predicates.add(criteriaBuilder.equal(root.get("searchSpaceId"), searchSpaceId));
+                } catch (NumberFormatException e) {
+                    log.warn("无效的搜索空间ID格式: {}", request.getSearchSpaceId());
+                }
+            }
+
+            // 排除空查询
+            predicates.add(criteriaBuilder.isNotNull(root.get("searchQuery")));
+            predicates.add(criteriaBuilder.notEqual(root.get("searchQuery"), ""));
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    /**
+     * 计算词汇统计信息
+     */
+    private Map<String, WordStatistics> calculateWordStatistics(List<List<String>> segmentedQueries,
+                                                               List<SearchLog> searchLogs,
+                                                               HotWordRequest request) {
+        Map<String, WordStatistics> wordStatsMap = new HashMap<>();
+
+        // 建立查询索引映射
+        Map<String, SearchLog> queryToLogMap = searchLogs.stream()
+                .filter(log -> log.getSearchQuery() != null)
+                .collect(Collectors.toMap(
+                        SearchLog::getSearchQuery,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
+
+        for (int i = 0; i < segmentedQueries.size() && i < searchLogs.size(); i++) {
+            List<String> words = segmentedQueries.get(i);
+            SearchLog searchLog = searchLogs.get(i);
+
+            for (String word : words) {
+                if (isValidWord(word, request)) {
+                    WordStatistics stats = wordStatsMap.computeIfAbsent(word, k -> new WordStatistics(k));
+                    stats.incrementCount();
+                    stats.addRelatedQuery(searchLog.getSearchQuery());
+                    stats.updateOccurrenceTimes(searchLog.getCreatedAt());
+                }
+            }
+        }
+
+        return wordStatsMap;
+    }
+
+    /**
+     * 判断词汇是否有效
+     */
+    private boolean isValidWord(String word, HotWordRequest request) {
+        if (word == null || word.trim().isEmpty()) {
+            return false;
+        }
+
+        // 长度过滤
+        if (word.length() < request.getMinWordLength()) {
+            return false;
+        }
+
+        // 停用词过滤
+        if (request.getExcludeStopWords()) {
+            return !isStopWord(word);
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断是否为停用词
+     */
+    private boolean isStopWord(String word) {
+        // 简单的停用词判断
+        Set<String> stopWords = Set.of(
+                "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这",
+                "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by"
+        );
+        return stopWords.contains(word.toLowerCase());
+    }
+
+    /**
+     * 构建热词响应对象
+     */
+    private HotWordResponse buildHotWordResponse(WordStatistics stats, int totalWords) {
+        HotWordResponse.HotWordResponseBuilder builder = HotWordResponse.builder()
+                .word(stats.getWord())
+                .count(stats.getCount())
+                .percentage(calculatePercentage(stats.getCount(), stats.getTotalOccurrences()))
+                .wordLength(stats.getWord().length())
+                .relatedQueriesCount((long) stats.getRelatedQueries().size())
+                .firstOccurrence(stats.getFirstOccurrence())
+                .lastOccurrence(stats.getLastOccurrence());
+
+        return builder.build();
+    }
+
+    /**
+     * 计算百分比
+     */
+    private Double calculatePercentage(long count, long total) {
+        if (total == 0) {
+            return 0.0;
+        }
+        return Math.round(((double) count / total) * 10000.0) / 100.0; // 保留两位小数
+    }
+
+    /**
+     * 词汇统计信息内部类
+     */
+    private static class WordStatistics {
+        private final String word;
+        private long count = 0;
+        private final Set<String> relatedQueries = new HashSet<>();
+        private LocalDateTime firstOccurrence;
+        private LocalDateTime lastOccurrence;
+        private long totalOccurrences = 0;
+
+        public WordStatistics(String word) {
+            this.word = word;
+        }
+
+        public void incrementCount() {
+            this.count++;
+            this.totalOccurrences++;
+        }
+
+        public void addRelatedQuery(String query) {
+            if (query != null && !query.trim().isEmpty()) {
+                this.relatedQueries.add(query);
+            }
+        }
+
+        public void updateOccurrenceTimes(LocalDateTime time) {
+            if (time != null) {
+                if (this.firstOccurrence == null || time.isBefore(this.firstOccurrence)) {
+                    this.firstOccurrence = time;
+                }
+                if (this.lastOccurrence == null || time.isAfter(this.lastOccurrence)) {
+                    this.lastOccurrence = time;
+                }
+            }
+        }
+
+        // Getters
+        public String getWord() { return word; }
+        public long getCount() { return count; }
+        public Set<String> getRelatedQueries() { return relatedQueries; }
+        public LocalDateTime getFirstOccurrence() { return firstOccurrence; }
+        public LocalDateTime getLastOccurrence() { return lastOccurrence; }
+        public long getTotalOccurrences() { return totalOccurrences; }
     }
 }
