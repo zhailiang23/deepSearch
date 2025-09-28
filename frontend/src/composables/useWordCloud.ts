@@ -134,7 +134,9 @@ export function useWordCloud(
     ...defaultOptions,
     ...options,
     width: dimensions.width,
-    height: dimensions.height
+    height: dimensions.height,
+    // 动态设置词云的起始位置为画布中心
+    origin: [dimensions.width / 2, dimensions.height / 2]
   }))
 
   /** 是否可以渲染 */
