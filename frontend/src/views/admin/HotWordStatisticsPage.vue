@@ -10,7 +10,7 @@
       <!-- 筛选条件插槽 -->
       <template #filters>
         <HotWordFilter
-          v-model="pageState.filter"
+          v-model="hotWordFilterData"
           :loading="pageState.loading"
           :search-space-options="searchSpaceOptions"
           :estimated-data-size="estimatedDataSize"
@@ -152,7 +152,7 @@
                 :options="wordCloudOptions"
                 :responsive="true"
                 :loading="pageState.loading"
-                :error="pageState.error"
+                :error="pageState.error || undefined"
                 @word-click="handleWordClick"
                 @word-hover="handleWordHover"
                 @render-start="handleRenderStart"
@@ -429,7 +429,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import StatisticsPageLayout from '@/components/statistics/StatisticsPageLayout.vue'
-import HotWordFilter from '@/components/statistics/HotWordFilter.vue'
+import HotWordFilter, { type HotWordFilterData } from '@/components/statistics/HotWordFilter.vue'
 import HotWordCloudChart from '@/components/statistics/HotWordCloudChart.vue'
 import type {
   HotWordItem,
@@ -575,6 +575,40 @@ const searchSpaceOptions = computed(() => [
 ])
 
 const estimatedDataSize = computed(() => statistics.value.length)
+
+// 适配器：转换pageState.filter为HotWordFilterData格式
+const hotWordFilterData = computed<HotWordFilterData>({
+  get(): HotWordFilterData {
+    return {
+      timeRange: {
+        start: pageState.filter.timeRange.start,
+        end: pageState.filter.timeRange.end,
+        label: `${pageState.filter.timeRange.start.toLocaleDateString('zh-CN')} - ${pageState.filter.timeRange.end.toLocaleDateString('zh-CN')}`
+      },
+      searchCondition: {
+        keywords: pageState.filter.searchCondition ? [pageState.filter.searchCondition] : [],
+        userTypes: [],
+        sortOrder: 'frequency_desc'
+      },
+      limitConfig: {
+        limit: pageState.filter.hotWordLimit,
+        displayMode: 'table'
+      }
+    }
+  },
+  set(value: HotWordFilterData) {
+    if (value.timeRange) {
+      pageState.filter.timeRange.start = value.timeRange.start
+      pageState.filter.timeRange.end = value.timeRange.end
+    }
+    if (value.searchCondition) {
+      pageState.filter.searchCondition = value.searchCondition.keywords?.[0] || ''
+    }
+    if (value.limitConfig) {
+      pageState.filter.hotWordLimit = value.limitConfig.limit
+    }
+  }
+})
 
 // ============= 组件引用 =============
 

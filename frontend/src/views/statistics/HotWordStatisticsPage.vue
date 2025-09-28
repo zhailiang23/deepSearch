@@ -26,7 +26,7 @@
               </button>
               <button
                 @click="exportData"
-                :disabled="loading || !statistics.length"
+                :disabled="loading || !hotWords.length"
                 class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
               >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,11 +46,9 @@
         <h2 class="text-lg font-semibold text-gray-900 mb-4">筛选条件</h2>
 
         <HotWordFilter
-          v-model:timeRange="filterConfig.timeRange"
-          v-model:searchCondition="filterConfig.searchCondition"
-          v-model:hotWordLimit="filterConfig.hotWordLimit"
-          v-model:channels="filterConfig.channels"
-          @filter-change="handleFilterChange"
+          v-model="filterConfig as any"
+          @search="handleFilterChange"
+          @reset="handleFilterChange"
           :loading="loading"
         />
       </div>
@@ -167,7 +165,7 @@
                 :theme="wordCloudConfig.theme"
                 :responsive="true"
                 :loading="loading"
-                :error="error"
+                :error="error || undefined"
                 :options="wordCloudOptions"
                 @word-click="handleWordClick"
                 @word-hover="handleWordHover"
@@ -261,13 +259,12 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">搜索次数</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">占比</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">趋势</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最后搜索时间</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr
                 v-for="(item, index) in filteredStatistics"
-                :key="item.text"
+                :key="item.keyword"
                 class="hover:bg-gray-50"
               >
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -275,22 +272,19 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900">{{ item.text }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ item.keyword }}</span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ item.weight.toLocaleString() }}
+                  {{ item.count.toLocaleString() }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ ((item.weight / summary.totalSearches) * 100).toFixed(2) }}%
+                  {{ (item.percentage || ((item.count / summary.totalSearches) * 100)).toFixed(2) }}%
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getTrendClass(item.trend || 'stable')" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                     {{ getTrendLabel(item.trend || 'stable') }}
                   </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ formatDate(item.lastSearchTime) }}
                 </td>
               </tr>
             </tbody>
@@ -330,24 +324,61 @@
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 import HotWordCloudChart from '@/components/statistics/HotWordCloudChart.vue'
 import HotWordFilter from '@/components/statistics/HotWordFilter.vue'
-import type { HotWordItem, HotWordStatistics, FilterConfig, WordCloudOptions } from '@/types/statistics'
-import { statisticsApi } from '@/api/statistics'
+import { useHotWordData } from '@/composables/useHotWordData'
+import { useHotWordStatisticsStore } from '@/stores/hotWordStatistics'
+import type { HotWordItem } from '@/types/statistics'
 
 // ============= 响应式状态 =============
 
-const loading = ref(false)
-const error = ref<string | null>(null)
+// 使用Pinia Store
+const store = useHotWordStatisticsStore()
+
 const wordCloudRef = ref()
 
-// 筛选配置
-const filterConfig = reactive<FilterConfig>({
-  timeRange: {
-    start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 默认最近7天
-    end: new Date()
-  },
-  searchCondition: '',
-  hotWordLimit: 100,
-  channels: []
+// 从store中获取响应式数据
+const hotWords = computed(() => store.hotWords)
+const statistics = computed(() => {
+  // 创建兼容格式的统计数据
+  return store.hotWords.map((word, index) => ({
+    keyword: word.word,
+    count: word.count,
+    rank: index + 1,
+    trend: (word as any).trend || 'stable',
+    percentage: word.percentage
+  }))
+})
+const loading = computed(() => store.loading)
+const error = computed(() => store.error)
+
+// 筛选配置 - 使用Store中的filter
+const filterConfig = computed({
+  get: () => ({
+    timeRange: {
+      start: store.filter.dateRange.start,
+      end: store.filter.dateRange.end
+    },
+    searchCondition: {
+      keywords: [],
+      includeMode: 'any'
+    },
+    limitConfig: {
+      limit: store.filter.limit,
+      sortBy: 'count',
+      sortOrder: 'desc'
+    },
+    channels: []
+  }),
+  set: (value: any) => {
+    if (value.timeRange) {
+      store.updateFilter({
+        dateRange: {
+          start: value.timeRange.start,
+          end: value.timeRange.end
+        },
+        limit: value.limitConfig?.limit || store.filter.limit
+      })
+    }
+  }
 })
 
 // 词云配置
@@ -356,28 +387,27 @@ const wordCloudConfig = reactive({
   maxWords: 100
 })
 
-// 数据状态
-const statistics = ref<HotWordStatistics[]>([])
+// 本地UI状态
 const searchKeyword = ref('')
 const currentPage = ref(1)
 const pageSize = ref(50)
 
 // ============= 计算属性 =============
 
-const wordCloudData = computed((): HotWordItem[] => {
+const wordCloudData = computed(() => {
+  // 从统计数据创建词云数据
   return statistics.value
     .slice(0, wordCloudConfig.maxWords)
-    .map(stat => ({
-      text: stat.keyword,
-      weight: stat.searchCount,
-      trend: stat.trend,
-      lastSearchTime: stat.lastSearchTime
+    .map(item => ({
+      text: item.keyword,
+      weight: item.count,
+      trend: item.trend
     }))
 })
 
-const wordCloudOptions = computed((): Partial<WordCloudOptions> => ({
+const wordCloudOptions = computed((): any => ({
   gridSize: 8,
-  weightFactor: (size: number) => Math.pow(size, 2.3) / 600,
+  weightFactor: (weight: number) => Math.pow(weight, 2.3) / 600,
   fontFamily: 'Arial, sans-serif',
   rotateRatio: 0.5,
   rotationSteps: 4,
@@ -391,34 +421,41 @@ const wordCloudOptions = computed((): Partial<WordCloudOptions> => ({
 }))
 
 const summary = computed(() => {
-  const totalSearches = statistics.value.reduce((sum, stat) => sum + stat.searchCount, 0)
-  const uniqueKeywords = statistics.value.length
-  const averageFrequency = uniqueKeywords > 0 ? totalSearches / uniqueKeywords : 0
+  // 使用Store中的数据摘要
+  const dataSummary = store.dataSummary
+
+  if (!dataSummary) {
+    return {
+      totalSearches: 0,
+      uniqueKeywords: 0,
+      averageFrequency: 0,
+      timePeriod: ''
+    }
+  }
 
   return {
-    totalSearches,
-    uniqueKeywords,
-    averageFrequency,
-    timePeriod: `${filterConfig.timeRange.start.toLocaleDateString()} - ${filterConfig.timeRange.end.toLocaleDateString()}`
+    totalSearches: dataSummary.totalCount,
+    uniqueKeywords: dataSummary.totalWords,
+    averageFrequency: dataSummary.avgCount,
+    timePeriod: `${dataSummary.timeRange.start.toLocaleDateString()} - ${dataSummary.timeRange.end.toLocaleDateString()}`
   }
 })
 
 const topWords = computed(() => {
-  return statistics.value.slice(0, 10).map(stat => ({
-    text: stat.keyword,
-    weight: stat.searchCount
+  // 使用统计数据前10个作为top words
+  return statistics.value.slice(0, 10).map(item => ({
+    text: item.keyword,
+    weight: item.count
   }))
 })
 
 const trendInfo = computed(() => {
-  const rising = statistics.value.find(s => s.trend === 'rising')?.keyword
-  const falling = statistics.value.find(s => s.trend === 'falling')?.keyword
-  const newWord = statistics.value.find(s => s.trend === 'new')?.keyword
-
+  // 从统计数据中获取趋势信息
+  const data = statistics.value
   return {
-    rising,
-    falling,
-    new: newWord
+    rising: data.find(item => item.trend === 'up')?.keyword || '-',
+    falling: data.find(item => item.trend === 'down')?.keyword || '-',
+    new: data.find(item => item.trend === 'new')?.keyword || '-'
   }
 })
 
@@ -427,8 +464,8 @@ const filteredStatistics = computed(() => {
 
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
-    filtered = filtered.filter(stat =>
-      stat.keyword.toLowerCase().includes(keyword)
+    filtered = filtered.filter(item =>
+      item.keyword.toLowerCase().includes(keyword)
     )
   }
 
@@ -440,33 +477,24 @@ const totalPages = computed(() => Math.ceil(filteredStatistics.value.length / pa
 // ============= 方法 =============
 
 const loadStatistics = async () => {
-  loading.value = true
-  error.value = null
-
   try {
-    const response = await statisticsApi.getHotWordStatistics({
-      startTime: filterConfig.timeRange.start.toISOString(),
-      endTime: filterConfig.timeRange.end.toISOString(),
-      searchCondition: filterConfig.searchCondition,
-      limit: filterConfig.hotWordLimit,
-      channels: filterConfig.channels
-    })
-
-    statistics.value = response.data
+    await store.fetchHotWords()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '加载数据失败'
     console.error('Failed to load statistics:', err)
-  } finally {
-    loading.value = false
   }
 }
 
 const refreshData = async () => {
-  await loadStatistics()
+  try {
+    await store.refreshAll()
+  } catch (err) {
+    console.error('Failed to refresh data:', err)
+  }
 }
 
 const exportData = async () => {
   try {
+    // 导出当前统计数据
     const blob = new Blob([JSON.stringify(statistics.value, null, 2)], {
       type: 'application/json'
     })
@@ -483,7 +511,7 @@ const exportData = async () => {
 
 const handleFilterChange = async () => {
   currentPage.value = 1
-  await loadStatistics()
+  await store.fetchHotWords()
 }
 
 const handleWordClick = (word: HotWordItem, event: Event) => {
@@ -515,8 +543,13 @@ const handleWordCloudDownload = (canvas: HTMLCanvasElement) => {
 }
 
 const highlightWord = (word: string) => {
-  // 实现词语高亮逻辑
-  console.log('Highlight word:', word)
+  // 查找热词并高亮
+  const hotWord = statistics.value.find(item => item.keyword === word)
+  if (hotWord) {
+    console.log('Highlight word:', word, 'Count:', hotWord.count)
+    // 实现高亮和详情显示逻辑
+    searchKeyword.value = word
+  }
 }
 
 const getRankingClass = (index: number) => {
@@ -528,8 +561,10 @@ const getRankingClass = (index: number) => {
 
 const getTrendClass = (trend: string) => {
   switch (trend) {
+    case 'up':
     case 'rising':
       return 'bg-green-100 text-green-800'
+    case 'down':
     case 'falling':
       return 'bg-red-100 text-red-800'
     case 'new':
@@ -541,8 +576,10 @@ const getTrendClass = (trend: string) => {
 
 const getTrendLabel = (trend: string) => {
   switch (trend) {
+    case 'up':
     case 'rising':
       return '上升'
+    case 'down':
     case 'falling':
       return '下降'
     case 'new':
@@ -575,6 +612,11 @@ watch(searchKeyword, () => {
 // ============= 生命周期 =============
 
 onMounted(async () => {
+  // 初始化时设置默认时间范围并加载数据
+  await store.setTimeRange(
+    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 默认最近7天
+    new Date()
+  )
   await loadStatistics()
 })
 </script>

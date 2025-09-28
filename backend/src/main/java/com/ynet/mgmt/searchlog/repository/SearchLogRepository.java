@@ -349,4 +349,111 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @return 日志数量
      */
     long countByCreatedAtAfter(LocalDateTime afterTime);
+
+    // ========== 性能优化查询方法 ==========
+
+    /**
+     * 分页查询热词统计原始数据
+     * 优化版本：避免加载所有数据到内存
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param pageable  分页参数
+     * @return 搜索查询分页列表
+     */
+    @Query("SELECT s.searchQuery FROM SearchLog s WHERE s.status = 'SUCCESS' " +
+           "AND s.createdAt BETWEEN :startTime AND :endTime " +
+           "AND s.searchQuery IS NOT NULL AND s.searchQuery != ''")
+    Page<String> findSearchQueriesForHotWords(@Param("startTime") LocalDateTime startTime,
+                                             @Param("endTime") LocalDateTime endTime,
+                                             Pageable pageable);
+
+    /**
+     * 获取热词统计的优化查询
+     * 使用数据库聚合功能，避免内存计算
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param limit     限制数量
+     * @return 查询词频统计
+     */
+    @Query(value = "SELECT search_query, COUNT(*) as query_count, " +
+                   "MIN(created_at) as first_occurrence, MAX(created_at) as last_occurrence " +
+                   "FROM search_logs " +
+                   "WHERE status = 'SUCCESS' AND created_at BETWEEN :startTime AND :endTime " +
+                   "AND search_query IS NOT NULL AND search_query != '' " +
+                   "GROUP BY search_query " +
+                   "ORDER BY query_count DESC " +
+                   "LIMIT :limit", nativeQuery = true)
+    List<Object[]> findHotQueriesOptimized(@Param("startTime") LocalDateTime startTime,
+                                          @Param("endTime") LocalDateTime endTime,
+                                          @Param("limit") int limit);
+
+    /**
+     * 批量统计查询
+     * 一次查询获取多个统计指标，减少数据库交互
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 统计数据数组 [总数, 成功数, 平均响应时间, 最大响应时间, 最小响应时间]
+     */
+    @Query("SELECT COUNT(s), " +
+           "SUM(CASE WHEN s.status = 'SUCCESS' THEN 1 ELSE 0 END), " +
+           "AVG(CASE WHEN s.status = 'SUCCESS' THEN s.totalTimeMs ELSE NULL END), " +
+           "MAX(CASE WHEN s.status = 'SUCCESS' THEN s.totalTimeMs ELSE NULL END), " +
+           "MIN(CASE WHEN s.status = 'SUCCESS' THEN s.totalTimeMs ELSE NULL END) " +
+           "FROM SearchLog s WHERE s.createdAt BETWEEN :startTime AND :endTime")
+    Object[] findBatchStatistics(@Param("startTime") LocalDateTime startTime,
+                                @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 条件查询热词数据（带过滤条件）
+     *
+     * @param startTime      开始时间
+     * @param endTime        结束时间
+     * @param userId         用户ID（可选）
+     * @param searchSpaceId  搜索空间ID（可选）
+     * @param pageable       分页参数
+     * @return 搜索查询分页列表
+     */
+    @Query("SELECT s.searchQuery FROM SearchLog s WHERE s.status = 'SUCCESS' " +
+           "AND s.createdAt BETWEEN :startTime AND :endTime " +
+           "AND s.searchQuery IS NOT NULL AND s.searchQuery != '' " +
+           "AND (:userId IS NULL OR s.userId = :userId) " +
+           "AND (:searchSpaceId IS NULL OR s.searchSpaceId = :searchSpaceId)")
+    Page<String> findSearchQueriesForHotWordsWithFilter(@Param("startTime") LocalDateTime startTime,
+                                                       @Param("endTime") LocalDateTime endTime,
+                                                       @Param("userId") Long userId,
+                                                       @Param("searchSpaceId") Long searchSpaceId,
+                                                       Pageable pageable);
+
+    /**
+     * 获取用户搜索行为分析的优化查询
+     *
+     * @param userIds   用户ID列表
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 用户行为统计
+     */
+    @Query("SELECT s.userId, COUNT(s), AVG(s.totalResults), " +
+           "COUNT(CASE WHEN SIZE(s.clickLogs) > 0 THEN 1 END) " +
+           "FROM SearchLog s WHERE s.userId IN :userIds " +
+           "AND s.createdAt BETWEEN :startTime AND :endTime " +
+           "GROUP BY s.userId")
+    List<Object[]> findUserSearchBehaviorBatch(@Param("userIds") List<Long> userIds,
+                                              @Param("startTime") LocalDateTime startTime,
+                                              @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 查询指定时间范围内有搜索记录的活跃用户ID
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 活跃用户ID列表
+     */
+    @Query("SELECT DISTINCT s.userId FROM SearchLog s " +
+           "WHERE s.userId IS NOT NULL " +
+           "AND s.createdAt BETWEEN :startTime AND :endTime")
+    List<Long> findActiveUserIds(@Param("startTime") LocalDateTime startTime,
+                                @Param("endTime") LocalDateTime endTime);
 }

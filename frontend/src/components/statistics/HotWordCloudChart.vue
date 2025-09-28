@@ -122,12 +122,59 @@
       <div class="text-sm font-medium">{{ hoveredWord.text }}</div>
       <div class="text-xs text-gray-300">权重: {{ hoveredWord.weight }}</div>
     </div>
+
+    <!-- 性能监控面板 -->
+    <div
+      v-if="showPerformanceMetrics && enablePerformanceOptimization"
+      class="absolute top-2 left-2 bg-black/80 text-white text-xs p-3 rounded-lg font-mono z-40"
+    >
+      <div class="space-y-1">
+        <div class="font-bold text-emerald-400">性能指标</div>
+        <div>FPS: {{ fpsStats.current }}fps</div>
+        <div>渲染: {{ getLastMeasurement('smart-render')?.duration.toFixed(0) || 0 }}ms</div>
+        <div>内存: {{ Math.round(memoryStats.usedJSHeapSize / 1024 / 1024) }}MB</div>
+        <div>词数: {{ optimizedWords.length }}/{{ props.words?.length || 0 }}</div>
+        <div :class="[
+          'text-xs',
+          degradedMode ? 'text-red-400' : 'text-green-400'
+        ]">
+          {{ degradedMode ? '降级模式' : '正常模式' }}
+        </div>
+        <div class="text-xs text-gray-400">
+          设备: {{ devicePerformance }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 性能警告提示 -->
+    <div
+      v-if="degradedMode"
+      class="absolute bottom-2 left-2 bg-orange-600 text-white text-xs px-3 py-2 rounded-md z-40"
+    >
+      <div class="flex items-center space-x-2">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+        </svg>
+        <span>性能优化模式已启用</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, type PropType } from 'vue'
 import { useWordCloud, useWordCloudTheme } from '@/composables/useWordCloud'
+import { useWordCloudPerformance } from '@/composables/useWordCloudPerformance'
+import { usePerformanceMonitor } from '@/composables/usePerformanceMonitor'
+import {
+  generateOptimizedConfig,
+  detectDevicePerformance,
+  normalizeWordData,
+  filterWordsByImportance,
+  optimizeCanvasSettings,
+  debounce,
+  type OptimizationContext
+} from '@/utils/wordCloudOptimizations'
 import type {
   HotWordItem,
   WordCloudOptions,
@@ -187,6 +234,31 @@ const props = defineProps({
   containerClass: {
     type: String,
     default: ''
+  },
+  /** 是否启用性能优化 */
+  enablePerformanceOptimization: {
+    type: Boolean,
+    default: true
+  },
+  /** 最大词语数量 */
+  maxWords: {
+    type: Number,
+    default: null
+  },
+  /** 性能监控模式 */
+  performanceMode: {
+    type: String as PropType<'auto' | 'performance' | 'quality' | 'balanced'>,
+    default: 'auto'
+  },
+  /** 是否启用虚拟化渲染 */
+  enableVirtualization: {
+    type: Boolean,
+    default: true
+  },
+  /** 是否显示性能指标 */
+  showPerformanceMetrics: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -205,6 +277,12 @@ const emit = defineEmits<{
   renderError: [error: string]
   /** 下载事件 */
   download: [canvas: HTMLCanvasElement]
+  /** 性能警告事件 */
+  performanceWarning: [metrics: any]
+  /** 内存阈值超出事件 */
+  memoryThresholdExceeded: [usage: number]
+  /** 渲染优化建议事件 */
+  optimizationSuggestion: [suggestions: string[]]
 }>()
 
 // ============= 模板引用 =============
@@ -221,9 +299,77 @@ const hoveredWord = ref<HotWordItem | null>(null)
 /** 鼠标位置 */
 const mousePosition = ref({ x: 0, y: 0 })
 
+/** 设备性能等级 */
+const devicePerformance = ref(detectDevicePerformance())
+
+/** 优化后的词语数据 */
+const optimizedWords = ref<HotWordItem[]>([])
+
+/** 是否启用降级模式 */
+const degradedMode = ref(false)
+
+/** 渲染质量设置 */
+const renderQuality = ref<'low' | 'medium' | 'high'>('high')
+
 // ============= 主题管理 =============
 
 const { currentTheme, setTheme, getColorFunction } = useWordCloudTheme()
+
+// ============= 性能监控 =============
+
+const {
+  startMeasure,
+  endMeasure,
+  getLastMeasurement,
+  fpsStats,
+  memoryStats,
+  isMonitoring,
+  startMonitoring,
+  stopMonitoring
+} = usePerformanceMonitor({
+  enableFPS: true,
+  enableMemory: true,
+  fpsSampleInterval: 1000,
+  memorySampleInterval: 3000
+})
+
+// ============= 词云性能优化 =============
+
+const {
+  metrics: performanceMetrics,
+  renderState: perfRenderState,
+  memoryState: perfMemoryState,
+  preprocessWordData,
+  getOptimalWordCount,
+  batchRenderWords,
+  measureRenderPerformance,
+  smartResponsiveRender,
+  virtualizeWordRendering,
+  adjustRenderQuality,
+  performMemoryCleanup,
+  getPerformanceReport,
+  getPerformanceRecommendations
+} = useWordCloudPerformance({
+  batchSize: computed(() => {
+    switch (devicePerformance.value) {
+      case 'low': return 20
+      case 'medium': return 40
+      case 'high': return 60
+      default: return 50
+    }
+  }).value,
+  renderDelay: computed(() => {
+    return degradedMode.value ? 20 : 10
+  }).value,
+  maxRenderTime: computed(() => {
+    switch (devicePerformance.value) {
+      case 'low': return 5000
+      case 'medium': return 8000
+      case 'high': return 12000
+      default: return 10000
+    }
+  }).value
+})
 
 // ============= 事件处理 =============
 
@@ -353,13 +499,182 @@ const handleDownload = () => {
   }
 }
 
-/** 更新容器尺寸 */
-const updateContainerDimensions = () => {
+/** 优化的数据处理 */
+const processWordsForRendering = async (words: HotWordItem[]): Promise<HotWordItem[]> => {
+  if (!props.enablePerformanceOptimization) {
+    return words
+  }
+
+  startMeasure('word-processing')
+
+  try {
+    // 1. 数据验证和归一化
+    const normalizedWords = normalizeWordData(words)
+
+    // 2. 根据设备性能和配置确定最优数量
+    const maxWordCount = props.maxWords || getOptimalWordCount()
+
+    // 3. 过滤重要词语
+    const filteredWords = filterWordsByImportance(
+      normalizedWords,
+      maxWordCount,
+      0 // 最小权重阈值
+    )
+
+    // 4. 虚拟化处理
+    const finalWords = props.enableVirtualization && containerRef.value
+      ? virtualizeWordRendering(
+          filteredWords,
+          containerRef.value.clientWidth,
+          containerRef.value.clientHeight
+        )
+      : filteredWords
+
+    // 5. 预处理数据
+    const processedWords = await preprocessWordData(finalWords)
+
+    optimizedWords.value = processedWords
+    endMeasure('word-processing')
+
+    return processedWords
+  } catch (error) {
+    endMeasure('word-processing')
+    console.error('词语处理失败:', error)
+    return words.slice(0, 50) // 回退到基础数量
+  }
+}
+
+/** 生成优化的渲染配置 */
+const generateRenderConfig = (): Partial<WordCloudOptions> => {
+  if (!containerRef.value || !props.enablePerformanceOptimization) {
+    return props.options || {}
+  }
+
+  const context: OptimizationContext = {
+    containerWidth: containerRef.value.clientWidth,
+    containerHeight: containerRef.value.clientHeight,
+    devicePixelRatio: window.devicePixelRatio || 1,
+    availableMemory: memoryStats.value.jsHeapSizeLimit - memoryStats.value.usedJSHeapSize,
+    currentFPS: fpsStats.value.current
+  }
+
+  const optimizationResult = generateOptimizedConfig(context, props.options)
+
+  // 根据性能模式调整
+  const qualitySettings = adjustRenderQuality()
+
+  // 合并配置
+  const finalConfig = {
+    ...props.options,
+    ...optimizationResult.optimizedOptions,
+    ...qualitySettings
+  }
+
+  // 发送优化建议
+  if (optimizationResult.suggestions.length > 0) {
+    emit('optimizationSuggestion', optimizationResult.suggestions)
+  }
+
+  return finalConfig
+}
+
+/** 智能渲染方法 */
+const smartRender = async () => {
+  if (!canvasRef.value || !props.words?.length) return
+
+  const renderFunction = async () => {
+    startMeasure('smart-render')
+
+    try {
+      // 1. 处理词语数据
+      const processedWords = await processWordsForRendering(props.words)
+
+      // 2. 生成优化配置
+      const optimizedConfig = generateRenderConfig()
+
+      // 3. 优化Canvas设置
+      const context: OptimizationContext = {
+        containerWidth: containerRef.value?.clientWidth || 800,
+        containerHeight: containerRef.value?.clientHeight || 600,
+        devicePixelRatio: window.devicePixelRatio || 1,
+        availableMemory: memoryStats.value.jsHeapSizeLimit - memoryStats.value.usedJSHeapSize,
+        currentFPS: fpsStats.value.current
+      }
+
+      if (canvasRef.value) {
+        optimizeCanvasSettings(canvasRef.value, context)
+      }
+
+      // 4. 执行渲染
+      await updateWords(processedWords)
+
+      endMeasure('smart-render')
+    } catch (error) {
+      endMeasure('smart-render')
+      throw error
+    }
+  }
+
+  // 使用响应式渲染
+  if (containerRef.value) {
+    await smartResponsiveRender(
+      containerRef.value.clientWidth,
+      containerRef.value.clientHeight,
+      renderFunction
+    )
+  } else {
+    await measureRenderPerformance(renderFunction)
+  }
+}
+
+/** 性能监控的容器尺寸更新 */
+const updateContainerDimensions = debounce(() => {
   if (!props.responsive || !containerRef.value) return
 
   const rect = containerRef.value.getBoundingClientRect()
   if (rect.width > 0 && rect.height > 0) {
     updateDimensions(rect.width, rect.height)
+
+    // 触发智能重新渲染
+    if (props.enablePerformanceOptimization) {
+      smartRender()
+    }
+  }
+}, 250)
+
+/** 监控性能指标并调整 */
+const monitorAndAdjust = () => {
+  const report = getPerformanceReport()
+  const { renderTime, fps, memoryUsage } = performanceMetrics
+
+  // 性能警告
+  if (renderTime > 2000 || fps < 20 || memoryUsage > 100 * 1024 * 1024) {
+    emit('performanceWarning', report.metrics)
+  }
+
+  // 内存阈值检查
+  if (memoryStats.value.usagePercentage > 85) {
+    emit('memoryThresholdExceeded', memoryStats.value.usagePercentage)
+    performMemoryCleanup()
+  }
+
+  // 自动降级
+  if (renderTime > 3000 || fps < 15) {
+    if (!degradedMode.value) {
+      degradedMode.value = true
+      renderQuality.value = 'low'
+      console.warn('启用性能降级模式')
+    }
+  } else if (degradedMode.value && renderTime < 1000 && fps > 40) {
+    degradedMode.value = false
+    renderQuality.value = devicePerformance.value === 'high' ? 'high' : 'medium'
+    console.info('退出性能降级模式')
+  }
+
+  // 发送优化建议
+  const recommendations = getPerformanceRecommendations()
+  if (recommendations.length > 0) {
+    emit('optimizationSuggestion', recommendations)
   }
 }
 
@@ -370,13 +685,61 @@ watch(
   () => props.words,
   async (newWords) => {
     if (newWords && newWords.length > 0) {
-      await updateWords(newWords)
+      if (props.enablePerformanceOptimization) {
+        await smartRender()
+      } else {
+        await updateWords(newWords)
+      }
     } else {
       clearCanvas()
     }
   },
   { deep: true, immediate: true }
 )
+
+// 监听性能优化设置
+watch(
+  () => props.enablePerformanceOptimization,
+  (enabled) => {
+    if (enabled && props.words?.length) {
+      smartRender()
+    }
+  }
+)
+
+// 监听性能模式变化
+watch(
+  () => props.performanceMode,
+  (mode) => {
+    if (mode === 'auto') {
+      renderQuality.value = devicePerformance.value === 'high' ? 'high' : 'medium'
+    } else {
+      renderQuality.value = mode === 'performance' ? 'low' : mode === 'quality' ? 'high' : 'medium'
+    }
+
+    if (props.words?.length) {
+      smartRender()
+    }
+  }
+)
+
+// 定期性能监控
+let performanceMonitorInterval: number | null = null
+
+const startPerformanceMonitoring = () => {
+  if (performanceMonitorInterval || !props.enablePerformanceOptimization) return
+
+  performanceMonitorInterval = setInterval(() => {
+    monitorAndAdjust()
+  }, 3000) // 每3秒检查一次
+}
+
+const stopPerformanceMonitoring = () => {
+  if (performanceMonitorInterval) {
+    clearInterval(performanceMonitorInterval)
+    performanceMonitorInterval = null
+  }
+}
 
 // 监听主题变化
 watch(
@@ -410,6 +773,12 @@ onMounted(async () => {
   // 初始化主题
   setTheme(props.theme)
 
+  // 启动性能监控
+  if (props.enablePerformanceOptimization) {
+    startMonitoring()
+    startPerformanceMonitoring()
+  }
+
   // 等待下一个tick确保DOM已渲染
   await nextTick()
 
@@ -418,12 +787,18 @@ onMounted(async () => {
 
   // 初始渲染
   if (props.words && props.words.length > 0) {
-    await updateWords(props.words)
+    if (props.enablePerformanceOptimization) {
+      await smartRender()
+    } else {
+      await updateWords(props.words)
+    }
   }
 })
 
 onUnmounted(() => {
   stopRendering()
+  stopPerformanceMonitoring()
+  stopMonitoring()
 })
 
 // ============= 公开方法 =============
@@ -431,6 +806,8 @@ onUnmounted(() => {
 defineExpose({
   /** 重新渲染 */
   refresh: handleRefresh,
+  /** 智能渲染 */
+  smartRender,
   /** 下载图片 */
   download: handleDownload,
   /** 清空画布 */
@@ -440,7 +817,36 @@ defineExpose({
   /** 获取画布元素 */
   getCanvas: () => canvasRef.value,
   /** 获取渲染状态 */
-  getRenderState: () => renderState
+  getRenderState: () => renderState,
+  /** 获取性能报告 */
+  getPerformanceReport,
+  /** 获取性能指标 */
+  getPerformanceMetrics: () => ({
+    fps: fpsStats.value,
+    memory: memoryStats.value,
+    render: performanceMetrics,
+    device: devicePerformance.value,
+    degraded: degradedMode.value
+  }),
+  /** 切换性能监控 */
+  togglePerformanceMonitoring: () => {
+    if (isMonitoring.value) {
+      stopPerformanceMonitoring()
+      stopMonitoring()
+    } else {
+      startMonitoring()
+      startPerformanceMonitoring()
+    }
+  },
+  /** 手动内存清理 */
+  cleanMemory: performMemoryCleanup,
+  /** 设置渲染质量 */
+  setRenderQuality: (quality: 'low' | 'medium' | 'high') => {
+    renderQuality.value = quality
+    if (props.words?.length) {
+      smartRender()
+    }
+  }
 })
 </script>
 

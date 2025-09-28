@@ -17,7 +17,9 @@ import type {
   WordCloudItem,
   LegacyHotWordStatistics,
   LegacyHotWordItem,
-  LegacyHotWordStatisticsResponse,
+  LegacyHotWordStatisticsResponse
+} from '@/types/hotWord'
+import {
   convertToLegacyFormat,
   convertToLegacyStatistics,
   convertToLegacyResponse

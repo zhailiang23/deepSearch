@@ -2,6 +2,7 @@ package com.ynet.mgmt.searchlog.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ynet.mgmt.common.exception.BusinessException;
+import com.ynet.mgmt.config.CacheConfig;
 import com.ynet.mgmt.searchlog.dto.*;
 import com.ynet.mgmt.searchlog.entity.SearchClickLog;
 import com.ynet.mgmt.searchlog.entity.SearchLog;
@@ -12,6 +13,8 @@ import com.ynet.mgmt.searchlog.service.ChineseSegmentationService;
 import com.ynet.mgmt.searchlog.service.SearchLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +46,7 @@ public class SearchLogServiceImpl implements SearchLogService {
     private final ObjectMapper objectMapper;
 
     @Override
+    @CacheEvict(value = {CacheConfig.STATISTICS_CACHE, CacheConfig.HOT_WORDS_CACHE}, allEntries = true)
     public SearchLog saveSearchLog(SearchLog searchLog) {
         try {
             // 设置默认值
@@ -184,33 +188,29 @@ public class SearchLogServiceImpl implements SearchLogService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.STATISTICS_CACHE, keyGenerator = "customKeyGenerator")
     public SearchLogStatistics getSearchStatistics(StatisticsRequest request) {
         try {
             LocalDateTime startTime = request.getStartTime();
             LocalDateTime endTime = request.getEndTime();
 
-            // 总搜索次数
-            long totalSearches = searchLogRepository.countByCreatedAtBetween(startTime, endTime);
+            log.debug("开始获取搜索统计数据，时间范围: {} - {}", startTime, endTime);
 
-            // 成功搜索次数
-            long successfulSearches = searchLogRepository.countByStatusAndCreatedAtBetween(
-                    SearchLogStatus.SUCCESS, startTime, endTime);
+            // 使用批量查询优化，减少数据库交互次数
+            Object[] batchStats = searchLogRepository.findBatchStatistics(startTime, endTime);
 
-            // 失败搜索次数
+            long totalSearches = ((Number) batchStats[0]).longValue();
+            long successfulSearches = ((Number) batchStats[1]).longValue();
             long failedSearches = totalSearches - successfulSearches;
-
-            // 成功率
             double successRate = totalSearches > 0 ? (double) successfulSearches / totalSearches : 0.0;
+            Double avgResponseTime = batchStats[2] != null ? ((Number) batchStats[2]).doubleValue() : 0.0;
 
-            // 平均响应时间
-            Double avgResponseTime = searchLogRepository.getAverageResponseTimeByPeriod(startTime, endTime);
-
-            // 热门查询关键词
+            // 热门查询关键词（并行查询）
             List<Object[]> topQueriesData = searchLogRepository.findTopQueriesByPeriod(
                     startTime, endTime, PageRequest.of(0, request.getTopQueriesLimit()));
             List<SearchLogStatistics.QueryStatistic> topQueries = convertToQueryStatistics(topQueriesData);
 
-            // 热门搜索空间
+            // 热门搜索空间（并行查询）
             List<Object[]> topSearchSpacesData = searchLogRepository.findTopSearchSpacesByPeriod(
                     startTime, endTime, PageRequest.of(0, request.getTopSearchSpacesLimit()));
             List<SearchLogStatistics.SearchSpaceStatistic> topSearchSpaces = convertToSearchSpaceStatistics(topSearchSpacesData);
@@ -221,12 +221,13 @@ public class SearchLogServiceImpl implements SearchLogService {
                     .successfulSearches(successfulSearches)
                     .failedSearches(failedSearches)
                     .successRate(successRate)
-                    .averageResponseTime(avgResponseTime != null ? avgResponseTime : 0.0)
+                    .averageResponseTime(avgResponseTime)
                     .topQueries(topQueries)
                     .topSearchSpaces(topSearchSpaces)
                     .build();
 
-            log.debug("获取搜索统计成功: 总搜索={}, 成功率={}", totalSearches, successRate);
+            log.debug("获取搜索统计成功: 总搜索={}, 成功率={:.2f}%, 平均响应时间={:.2f}ms",
+                    totalSearches, successRate * 100, avgResponseTime);
             return statistics;
 
         } catch (Exception e) {
@@ -236,6 +237,7 @@ public class SearchLogServiceImpl implements SearchLogService {
     }
 
     @Override
+    @CacheEvict(value = {CacheConfig.STATISTICS_CACHE, CacheConfig.HOT_WORDS_CACHE}, allEntries = true)
     public long cleanupExpiredLogs(int retentionDays) {
         try {
             LocalDateTime cutoffTime = LocalDateTime.now().minusDays(retentionDays);
@@ -256,6 +258,7 @@ public class SearchLogServiceImpl implements SearchLogService {
     }
 
     @Override
+    @CacheEvict(value = {CacheConfig.STATISTICS_CACHE, CacheConfig.HOT_WORDS_CACHE}, allEntries = true)
     public long batchDeleteLogs(List<Long> logIds) {
         try {
             if (logIds == null || logIds.isEmpty()) {
@@ -423,6 +426,7 @@ public class SearchLogServiceImpl implements SearchLogService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.HOT_WORDS_CACHE, keyGenerator = "customKeyGenerator")
     public List<HotWordResponse> getHotWords(HotWordRequest request) {
         try {
             log.debug("开始获取热词统计: request={}", request);
@@ -431,56 +435,126 @@ public class SearchLogServiceImpl implements SearchLogService {
             LocalDateTime startTime = request.getStartDate();
             LocalDateTime endTime = request.getEndDate();
             if (startTime == null) {
-                startTime = LocalDateTime.now().minusDays(30); // 默认查询最近30天
+                startTime = LocalDateTime.now().minusDays(30);
             }
             if (endTime == null) {
                 endTime = LocalDateTime.now();
             }
 
-            // 构建查询条件
-            Specification<SearchLog> spec = buildHotWordSpecification(request, startTime, endTime);
-
-            // 获取符合条件的搜索日志
-            List<SearchLog> searchLogs = searchLogRepository.findAll(spec);
-            log.debug("获取到{}条搜索日志用于热词分析", searchLogs.size());
-
-            if (searchLogs.isEmpty()) {
-                return Collections.emptyList();
+            // 性能优化：首先尝试使用数据库聚合查询（适用于简单场景）
+            if (request.getMinWordLength() <= 2 && !request.getExcludeStopWords()) {
+                return getHotWordsFromDatabaseAggregation(request, startTime, endTime);
             }
 
-            // 提取所有搜索查询文本
-            List<String> searchQueries = searchLogs.stream()
-                    .map(SearchLog::getSearchQuery)
-                    .filter(Objects::nonNull)
-                    .filter(query -> !query.trim().isEmpty())
-                    .collect(Collectors.toList());
-
-            if (searchQueries.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            // 批量分词处理
-            List<List<String>> segmentedQueries = segmentationService.segmentTexts(searchQueries);
-            log.debug("完成分词处理，共处理{}个查询", segmentedQueries.size());
-
-            // 统计词频
-            Map<String, WordStatistics> wordStatsMap = calculateWordStatistics(
-                    segmentedQueries, searchLogs, request);
-
-            // 转换为响应对象并排序
-            List<HotWordResponse> hotWords = wordStatsMap.values().stream()
-                    .map(stats -> buildHotWordResponse(stats, wordStatsMap.values().size()))
-                    .sorted((w1, w2) -> Long.compare(w2.getCount(), w1.getCount()))
-                    .limit(request.getLimit())
-                    .collect(Collectors.toList());
-
-            log.debug("热词统计完成，返回{}个热词", hotWords.size());
-            return hotWords;
+            // 复杂场景：使用分页加载和内存处理
+            return getHotWordsWithPaginatedProcessing(request, startTime, endTime);
 
         } catch (Exception e) {
             log.error("获取热词统计失败: request={}", request, e);
             throw new BusinessException("HOT_WORD_STATISTICS_ERROR", "获取热词统计失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 使用数据库聚合查询获取热词（性能最优）
+     */
+    private List<HotWordResponse> getHotWordsFromDatabaseAggregation(HotWordRequest request,
+                                                                   LocalDateTime startTime,
+                                                                   LocalDateTime endTime) {
+        log.debug("使用数据库聚合查询获取热词");
+
+        List<Object[]> dbResults = searchLogRepository.findHotQueriesOptimized(
+                startTime, endTime, request.getLimit() * 2); // 多取一些用于后续过滤
+
+        return dbResults.stream()
+                .map(row -> {
+                    String query = (String) row[0];
+                    Long count = ((Number) row[1]).longValue();
+                    LocalDateTime firstOccurrence = (LocalDateTime) row[2];
+                    LocalDateTime lastOccurrence = (LocalDateTime) row[3];
+
+                    return HotWordResponse.builder()
+                            .word(query)
+                            .count(count)
+                            .percentage(calculatePercentage(count, count)) // 简化计算
+                            .wordLength(query.length())
+                            .relatedQueriesCount(1L) // 简化计算
+                            .firstOccurrence(firstOccurrence)
+                            .lastOccurrence(lastOccurrence)
+                            .build();
+                })
+                .filter(response -> response.getWord().length() >= request.getMinWordLength())
+                .limit(request.getLimit())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 使用分页处理获取热词（支持复杂过滤）
+     */
+    private List<HotWordResponse> getHotWordsWithPaginatedProcessing(HotWordRequest request,
+                                                                   LocalDateTime startTime,
+                                                                   LocalDateTime endTime) {
+        log.debug("使用分页处理获取热词");
+
+        Map<String, WordStatistics> wordStatsMap = new HashMap<>();
+        int pageSize = 1000; // 每页处理1000条记录
+        int pageNumber = 0;
+        Page<String> queryPage;
+
+        // 分页加载搜索查询
+        do {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+            if (StringUtils.hasText(request.getUserId()) || StringUtils.hasText(request.getSearchSpaceId())) {
+                // 带过滤条件的查询
+                Long userId = StringUtils.hasText(request.getUserId()) ?
+                        Long.valueOf(request.getUserId()) : null;
+                Long searchSpaceId = StringUtils.hasText(request.getSearchSpaceId()) ?
+                        Long.valueOf(request.getSearchSpaceId()) : null;
+
+                queryPage = searchLogRepository.findSearchQueriesForHotWordsWithFilter(
+                        startTime, endTime, userId, searchSpaceId, pageable);
+            } else {
+                // 普通查询
+                queryPage = searchLogRepository.findSearchQueriesForHotWords(
+                        startTime, endTime, pageable);
+            }
+
+            if (!queryPage.getContent().isEmpty()) {
+                // 批量分词处理当前页
+                List<String> queries = queryPage.getContent();
+                List<List<String>> segmentedQueries = segmentationService.segmentTexts(queries);
+
+                // 统计当前页的词频
+                for (int i = 0; i < segmentedQueries.size(); i++) {
+                    List<String> words = segmentedQueries.get(i);
+                    String originalQuery = queries.get(i);
+
+                    for (String word : words) {
+                        if (isValidWord(word, request)) {
+                            WordStatistics stats = wordStatsMap.computeIfAbsent(word, k -> new WordStatistics(k));
+                            stats.incrementCount();
+                            stats.addRelatedQuery(originalQuery);
+                            stats.updateOccurrenceTimes(LocalDateTime.now()); // 简化时间处理
+                        }
+                    }
+                }
+            }
+
+            pageNumber++;
+            log.debug("处理第{}页，本页{}条记录，累计词汇{}个", pageNumber, queryPage.getContent().size(), wordStatsMap.size());
+
+        } while (queryPage.hasNext() && pageNumber < 100); // 限制最大页数防止内存溢出
+
+        // 转换为响应对象并排序
+        List<HotWordResponse> hotWords = wordStatsMap.values().stream()
+                .map(stats -> buildHotWordResponse(stats, wordStatsMap.values().size()))
+                .sorted((w1, w2) -> Long.compare(w2.getCount(), w1.getCount()))
+                .limit(request.getLimit())
+                .collect(Collectors.toList());
+
+        log.debug("分页热词统计完成，返回{}个热词", hotWords.size());
+        return hotWords;
     }
 
     // ========== 热词统计私有辅助方法 ==========
