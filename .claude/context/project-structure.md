@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-27T01:30:13Z
-version: 1.5
+last_updated: 2025-09-28T05:05:04Z
+version: 1.6
 author: Claude Code PM System
 ---
 
@@ -73,7 +73,33 @@ backend/
 │   │   │   │   │   └── RefreshTokenResponse.java
 │   │   │   │   ├── UserStatistics.java
 │   │   │   │   └── UserSearchCriteria.java
-│   │   │   ├── searchdata/    # **NEW: 搜索数据管理模块** ⭐
+│   │   │   ├── searchlog/     # **NEW: 搜索日志管理模块** ⭐
+│   │   │   │   ├── aspect/     # AOP切面
+│   │   │   │   │   └── SearchLogAspect.java
+│   │   │   │   ├── controller/ # 搜索日志控制器
+│   │   │   │   │   ├── SearchLogController.java
+│   │   │   │   │   └── SearchLogCleanupController.java
+│   │   │   │   ├── dto/        # 搜索日志DTO
+│   │   │   │   │   ├── SearchClickRequest.java
+│   │   │   │   │   ├── SearchLogDetailResponse.java
+│   │   │   │   │   ├── SearchLogQueryRequest.java
+│   │   │   │   │   ├── SearchLogStatistics.java
+│   │   │   │   │   └── StatisticsRequest.java
+│   │   │   │   ├── entity/     # 搜索日志实体
+│   │   │   │   │   ├── SearchLog.java
+│   │   │   │   │   ├── SearchClickLog.java
+│   │   │   │   │   └── SearchLogStatus.java
+│   │   │   │   ├── repository/ # 搜索日志仓库
+│   │   │   │   │   ├── SearchLogRepository.java
+│   │   │   │   │   └── SearchClickLogRepository.java
+│   │   │   │   └── service/    # 搜索日志服务
+│   │   │   │       ├── SearchLogService.java
+│   │   │   │       ├── SearchLogCleanupService.java
+│   │   │   │       └── impl/
+│   │   │   │           └── SearchLogServiceImpl.java
+│   │   │   ├── monitor/        # **NEW: 搜索监控模块**
+│   │   │   │   └── SearchLogMonitor.java
+│   │   │   ├── searchdata/    # 搜索数据管理模块
 │   │   │   │   ├── controller/
 │   │   │   │   │   └── ElasticsearchDataController.java
 │   │   │   │   ├── dto/       # 搜索数据DTO
@@ -151,6 +177,12 @@ backend/
 │       └── java/com/ynet/mgmt/
 │           ├── integration/        # Integration tests
 │           ├── e2e/               # End-to-end tests
+│           ├── searchlog/         # **NEW: 搜索日志测试** ⭐
+│           │   ├── monitor/       # 监控测试
+│           │   │   ├── SearchLogMonitorTest.java # **NEW: 250行监控测试** ⭐
+│           │   │   └── SearchLogMonitoringIntegrationTest.java # **NEW: 275行监控集成测试** ⭐
+│           │   └── service/       # 服务测试
+│           │       └── SearchLogCleanupServiceTest.java # **NEW: 281行清理服务测试** ⭐
 │           ├── jsonimport/        # JSON导入测试
 │           │   ├── service/       # 服务测试
 │           │   │   ├── DataImportServiceTest.java
@@ -198,6 +230,7 @@ frontend/
 │   │   ├── searchSpace.ts   # Search space store
 │   │   └── mobileSearchDemo.ts # **NEW: 571行移动搜索演示状态管理** ⭐
 │   ├── composables/         # **NEW: Composition API utilities** ⭐
+│   │   ├── useClickTracking.ts     # **NEW: 424行点击追踪逻辑** ⭐
 │   │   ├── useMediaQuery.ts # 318行媒体查询工具 (响应式设计)
 │   │   ├── useMobileSearchDemo.ts # **NEW: 813行移动搜索演示逻辑** ⭐
 │   │   ├── useParameterSync.ts    # **NEW: 769行参数同步管理** ⭐
@@ -205,17 +238,24 @@ frontend/
 │   │   ├── useSearchHistory.ts    # **NEW: 530行搜索历史管理** ⭐
 │   │   └── useSearchPerformance.ts # **NEW: 1022行搜索性能监控** ⭐
 │   ├── utils/               # **NEW: Utility functions** ⭐
+│   │   ├── date.ts          # **NEW: 133行日期处理工具** ⭐
+│   │   ├── export.ts        # **NEW: 481行数据导出工具** ⭐
+│   │   ├── message.ts       # **NEW: 131行消息处理工具** ⭐
 │   │   ├── performance.ts   # 422行性能优化工具
 │   │   └── searchOptimization.ts # **NEW: 515行搜索优化工具** ⭐
+│   ├── config/              # **NEW: 配置文件** ⭐
+│   │   └── tracking.ts      # **NEW: 114行点击追踪配置** ⭐
 │   ├── types/               # TypeScript type definitions
 │   │   ├── auth.ts          # Authentication types
 │   │   ├── searchSpace.ts   # Search space types
+│   │   ├── searchLog.ts     # **NEW: 166行搜索日志类型定义** ⭐
 │   │   ├── tableData.ts     # **NEW: 110行表格数据类型定义** ⭐
 │   │   └── demo.ts         # **NEW: 409行演示数据类型定义** ⭐
 │   ├── services/            # API service layer
 │   │   ├── api.ts           # Base API configuration
 │   │   ├── authService.ts   # Authentication API
 │   │   ├── searchSpaceApi.ts # Search space API
+│   │   ├── searchLog.ts     # **NEW: 199行搜索日志API服务** ⭐
 │   │   ├── searchDataService.ts # **NEW: 129行搜索数据API服务** ⭐
 │   │   └── searchData.ts    # **NEW: 157行搜索数据API** ⭐
 │   ├── components/          # Reusable components
@@ -256,6 +296,16 @@ frontend/
 │   │           ├── CellRenderer.vue        # 428行单元格渲染器
 │   │           ├── TableRowCard.vue        # 500行移动端表格行
 │   │           └── TableRowDesktop.vue     # 383行桌面端表格行
+│   │   ├── search-log/       # **NEW: 搜索日志管理组件系统** ⭐
+│   │   │   ├── SearchLogTable.vue         # 452行搜索日志表格
+│   │   │   ├── ClickLogTable.vue          # 395行点击日志表格
+│   │   │   ├── SearchLogDetailModal.vue   # 570行日志详情对话框
+│   │   │   └── SearchLogFilter.vue        # 307行日志过滤器
+│   │   ├── common/           # **NEW: 通用组件系统** ⭐
+│   │   │   ├── PageHeader.vue             # 265行页面头部组件
+│   │   │   └── StatCard.vue               # 552行统计卡片组件
+│   │   ├── search/           # **NEW: 搜索组件系统** ⭐
+│   │   │   └── SearchResultItem.vue       # 351行搜索结果项组件
 │   │   ├── mobile/           # **NEW: 移动端组件系统** ⭐⭐⭐
 │   │   │   ├── DeviceFrame.vue           # 251行设备框架组件
 │   │   │   ├── EmptyState.vue            # 487行空状态组件
@@ -291,14 +341,26 @@ frontend/
 │   │   ├── UserSettingsPage.vue
 │   │   ├── SearchSpaceListPage.vue
 │   │   ├── SearchDataManagePage.vue # **NEW: 936行搜索数据主管理页面** ⭐
+│   │   ├── admin/          # **NEW: 管理页面目录** ⭐
+│   │   │   └── SearchLogManagePage.vue # **NEW: 563行搜索日志管理页面** ⭐
 │   │   └── PhoneSimulatorTest.vue   # **NEW: 198行手机模拟器测试页面** ⭐
 │   ├── assets/              # Static assets
 │   │   ├── styles/
 │   │   │   └── globals.css
 │   │   └── images/
-│   └── test/                # **NEW: 前端测试组件** ⭐
+│   └── tests/               # **NEW: 前端测试套件** ⭐
+│       ├── e2e/             # **NEW: E2E测试** ⭐
+│       │   ├── clickTracking.spec.ts        # **NEW: 599行点击追踪测试** ⭐
+│       │   ├── searchLogManage.spec.ts      # **NEW: 573行搜索日志管理测试** ⭐
+│       │   └── helpers/
+│       │       └── test-utils.ts            # **NEW: 371行测试工具** ⭐
+│       ├── integration/     # **NEW: 集成测试** ⭐
+│       │   └── systemIntegration.spec.ts    # **NEW: 724行系统集成测试** ⭐
+│       ├── performance/     # **NEW: 性能测试** ⭐
+│       │   └── searchPerformance.spec.ts    # **NEW: 723行搜索性能测试** ⭐
 │       └── composables/     # Composition API测试
 │           └── __tests__/
+│               ├── useClickTracking.test.ts # **NEW: 562行点击追踪测试** ⭐
 │               └── useMobileSearchDemo.test.ts # **NEW: 388行移动搜索演示测试** ⭐
 ├── public/                  # Public static files
 ├── components.json          # shadcn-vue component registry
@@ -403,5 +465,6 @@ docker/
 - **Documentation:** Epic文档11个，PRD文档1个
 
 ## Update History
-- 2025-09-24T10:20:29Z: 新增JSON导入功能模块结构，包括70个新文件的完整组织结构
+- 2025-09-28T05:05:04Z: 新增完整的搜索日志管理系统结构，包括后端searchlog包(15个文件)、前端search-log组件系统(4个组件)、监控模块、统计分析、数据导出功能、E2E测试覆盖等100+个新文件
 - 2025-09-24T23:02:23Z: 新增完整的搜索数据管理模块结构，包括后端searchdata包(12个文件)、前端searchData组件系统(15个组件)、性能优化工具、类型定义等30+个新文件
+- 2025-09-24T10:20:29Z: 新增JSON导入功能模块结构，包括70个新文件的完整组织结构

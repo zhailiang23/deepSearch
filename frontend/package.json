@@ -7,8 +7,8 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "dev": "NODE_OPTIONS='--max-old-space-size=4096' vite",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",

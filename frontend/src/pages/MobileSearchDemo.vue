@@ -27,11 +27,6 @@
       </div>
     </div>
 
-    <!-- 页面信息 -->
-    <div class="mt-6 text-sm text-gray-500">
-      <p>技术栈：Vue 3 + TypeScript + TailwindCSS + Elasticsearch</p>
-      <p>设备规格：iPhone 16 模拟器 (375x814px, 19.5:9 长宽比)</p>
-    </div>
   </div>
 </template>
 

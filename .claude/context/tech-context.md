@@ -1,7 +1,7 @@
 ---
 created: 2025-09-21T10:31:04Z
-last_updated: 2025-09-27T01:30:13Z
-version: 1.7
+last_updated: 2025-09-28T05:05:04Z
+version: 1.8
 author: Claude Code PM System
 ---
 
@@ -25,7 +25,14 @@ author: Claude Code PM System
 - **Spring Boot Starter Actuator** - Health checks and monitoring
 - **Spring Boot DevTools** - Development utilities
 
-**搜索数据管理服务架构** ⭐ **NEW**
+**搜索日志管理服务架构** ⭐ **NEW**
+- **SearchLogController** - 搜索日志查询和管理控制器
+- **SearchLogCleanupController** - 日志清理控制器
+- **SearchLogAspect** - AOP切面自动记录搜索行为
+- **SearchLogMonitor** - 搜索行为监控和统计
+- **搜索日志DTO体系** - 日志查询、统计、详情等数据传输对象
+
+**搜索数据管理服务架构** ⭐
 - **ElasticsearchDataController** - 数据CRUD操作控制器
 - **ElasticsearchDataService** - 数据服务层实现
 - **搜索DTO体系** - 10+个数据传输对象
@@ -79,7 +86,15 @@ author: Claude Code PM System
 - **FieldEditor/FieldManager:** 字段编辑器组件系统
 - **SearchDataManagePage:** 936行主管理页面
 
-**移动端组件系统** ⭐⭐⭐ **NEW**
+**搜索日志管理组件系统** ⭐⭐ **NEW**
+- **SearchLogTable:** 452行搜索日志表格组件
+- **ClickLogTable:** 395行点击日志表格组件
+- **SearchLogDetailModal:** 570行日志详情对话框
+- **SearchLogFilter:** 307行日志过滤器组件
+- **StatCard:** 552行统计卡片组件
+- **PageHeader:** 265行页面头部组件
+
+**移动端组件系统** ⭐⭐⭐
 - **MobileSearchInterface:** 1278行移动端搜索界面核心组件
 - **PhoneSimulator:** 248行手机模拟器组件
 - **DeviceFrame:** 251行设备框架组件
@@ -87,7 +102,12 @@ author: Claude Code PM System
 - **搜索组件系统:** SearchInput(462行), SearchResults(345行), SearchResultItem(472行)
 - **演示系统:** ConfigManager(457行), DemoContainer(296行), ParameterPanel(350行)
 
-**移动端Composition API** ⭐⭐ **NEW**
+**搜索日志Composition API** ⭐⭐ **NEW**
+- **useClickTracking:** 424行点击追踪逻辑
+- **搜索日志工具函数:** date(133行), export(481行), message(131行)
+- **追踪配置:** tracking.ts(114行)配置文件
+
+**移动端Composition API** ⭐⭐
 - **useMobileSearchDemo:** 813行移动搜索演示逻辑
 - **useParameterSync:** 769行参数同步管理
 - **useSearchCache:** 554行搜索缓存管理
@@ -101,6 +121,10 @@ author: Claude Code PM System
 - **searchOptimization:** 515行搜索优化工具
 - **CellRenderer:** 动态单元格渲染组件
 - **TableRowCard/Desktop:** 响应式表格行组件
+
+**数据导出和文件处理** ⭐ **NEW**
+- **xlsx:** 0.18.5 (Excel文件生成和处理)
+- **@types/xlsx:** 0.0.35 (xlsx类型定义)
 
 **State Management & Routing**
 - **Pinia:** 3.0.3 (State management)
@@ -126,7 +150,16 @@ author: Claude Code PM System
 - **PostCSS:** 8.5.6 (CSS processing)
 - **Autoprefixer:** 10.4.21 (CSS vendor prefixes)
 
-### 搜索数据管理服务层 ⭐ **NEW**
+### 搜索日志管理服务层 ⭐ **NEW**
+
+**TypeScript服务**
+- **searchLog.ts:** 199行搜索日志API服务
+  - 搜索日志查询和过滤
+  - 日志统计和分析
+  - 数据导出功能
+  - 清理任务管理
+
+### 搜索数据管理服务层 ⭐
 
 **TypeScript服务**
 - **searchDataService.ts:** 129行Elasticsearch数据服务
@@ -134,15 +167,20 @@ author: Claude Code PM System
   - 文档CRUD操作
   - 批量操作支持
   - 错误处理和验证
-- **searchData.ts:** 157行搜索数据API ⭐ **NEW**
+- **searchData.ts:** 157行搜索数据API
   - 演示数据API封装
   - 银行数据搜索服务
   - 拼音搜索支持
 
 **类型定义系统**
+- **searchLog.ts:** 166行搜索日志类型定义 ⭐ **NEW**
+  - 搜索日志实体类型
+  - 点击日志类型
+  - 统计数据类型
+  - 查询请求类型
 - **tableData.ts:** 110行表格数据类型定义
   - SearchData类型接口
-- **demo.ts:** 409行演示数据类型定义 ⭐ **NEW**
+- **demo.ts:** 409行演示数据类型定义
   - 移动端演示组件类型
   - 搜索配置类型
   - 性能监控类型
@@ -404,6 +442,7 @@ author: Claude Code PM System
 - Vue 3 Composition API support
 
 ## Update History
+- 2025-09-28T05:05:04Z: 新增搜索日志管理系统完整技术栈，包括SearchLogAspect AOP切面、搜索监控模块、日志管理组件系统、点击追踪API、xlsx数据导出功能、E2E测试覆盖
 - 2025-09-24T23:02:23Z: 新增搜索数据管理完整技术栈，包括30+个前端组件、ElasticsearchDataController/Service、虚拟化性能优化、响应式设计系统
 - 2025-09-24T10:20:29Z: 添加Lombok和javax.annotation依赖，集成Elasticsearch搜索引擎，新增JSON导入系统架构，AsyncTaskConfig异步配置重构
 - 2025-09-23T04:02:26Z: Added Spring Security with JWT authentication, Redis integration, shadcn-vue component library, Playwright testing framework, and enhanced development tools
