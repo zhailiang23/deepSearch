@@ -93,6 +93,15 @@ const routes = [
           requiresAuth: false,
           title: 'iPhone设备模拟器测试'
         }
+      },
+      {
+        path: 'wordcloud-test',
+        name: 'WordCloudTest',
+        component: () => import('@/pages/WordCloudTest.vue'),
+        meta: {
+          requiresAuth: false,
+          title: '词云图组件测试'
+        }
       }
     ]
   },

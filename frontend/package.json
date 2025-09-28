@@ -66,6 +66,7 @@
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
     "vuedraggable": "^2.24.3",
+    "wordcloud": "^1.2.3",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
