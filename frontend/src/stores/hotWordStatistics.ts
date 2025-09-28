@@ -14,7 +14,13 @@ import type {
   HotWordPageState,
   HotWordStatisticsRequest,
   HotWordStatisticsResponse,
-  WordCloudItem
+  WordCloudItem,
+  LegacyHotWordStatistics,
+  LegacyHotWordItem,
+  LegacyHotWordStatisticsResponse,
+  convertToLegacyFormat,
+  convertToLegacyStatistics,
+  convertToLegacyResponse
 } from '@/types/hotWord'
 
 export const useHotWordStatisticsStore = defineStore('hotWordStatistics', () => {
@@ -118,6 +124,21 @@ export const useHotWordStatisticsStore = defineStore('hotWordStatistics', () => 
       weight: word.count,
       data: word
     }))
+  })
+
+  /** 兼容旧版API的词云数据 */
+  const legacyWordCloudData = computed<LegacyHotWordItem[]>(() => {
+    return convertToLegacyFormat(hotWords.value)
+  })
+
+  /** 兼容旧版API的统计数据 */
+  const legacyStatisticsData = computed<LegacyHotWordStatistics[]>(() => {
+    return convertToLegacyStatistics(hotWords.value)
+  })
+
+  /** 兼容旧版API的响应格式 */
+  const legacyResponse = computed<LegacyHotWordStatisticsResponse>(() => {
+    return convertToLegacyResponse(hotWords.value)
   })
 
   /** 是否有数据 */
@@ -390,6 +411,9 @@ export const useHotWordStatisticsStore = defineStore('hotWordStatistics', () => 
     pageState,
     sortedHotWords,
     wordCloudData,
+    legacyWordCloudData,
+    legacyStatisticsData,
+    legacyResponse,
     hasData,
     dataSummary,
 

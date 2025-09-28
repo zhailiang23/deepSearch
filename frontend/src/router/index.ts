@@ -111,6 +111,15 @@ const routes = [
           requiresAuth: true,
           title: '热词统计分析'
         }
+      },
+      {
+        path: 'admin/hot-word-statistics',
+        name: 'AdminHotWordStatistics',
+        component: () => import('@/views/admin/HotWordStatisticsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '热词统计分析 - 管理后台'
+        }
       }
     ]
   },

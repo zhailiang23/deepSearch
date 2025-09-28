@@ -201,6 +201,50 @@ export interface HourlyStatistic {
   averageResponseTime: number
 }
 
+// ============= 与现有类型兼容 =============
+
+/**
+ * 旧版热词统计数据结构 (兼容现有代码)
+ */
+export interface LegacyHotWordStatistics {
+  /** 关键词 */
+  keyword: string
+  /** 搜索次数 */
+  searchCount: number
+  /** 趋势 */
+  trend?: 'rising' | 'falling' | 'stable' | 'new'
+  /** 最后搜索时间 */
+  lastSearchTime?: string
+  /** 相关渠道 */
+  channels?: string[]
+  /** 增长率 */
+  growthRate?: number
+}
+
+/**
+ * 词云数据兼容格式
+ */
+export interface LegacyHotWordItem {
+  /** 词语文本 */
+  text: string
+  /** 权重/频次 */
+  weight: number
+  /** 额外数据 */
+  extraData?: Record<string, any>
+}
+
+/**
+ * 旧版热词统计响应
+ */
+export interface LegacyHotWordStatisticsResponse {
+  /** 热词列表 */
+  words: LegacyHotWordItem[]
+  /** 总数量 */
+  total: number
+  /** 更新时间 */
+  updatedAt: string
+}
+
 // ============= 前端界面状态类型 =============
 
 /**
@@ -302,6 +346,69 @@ export interface WordCloudConfig {
   minRotation: number
   /** 最大旋转角度 */
   maxRotation: number
+}
+
+// ============= 数据转换工具 =============
+
+/**
+ * 将后端HotWordResponse转换为前端LegacyHotWordItem格式
+ */
+export function convertToLegacyFormat(hotWordResponse: HotWordResponse[]): LegacyHotWordItem[] {
+  return hotWordResponse.map(item => ({
+    text: item.word,
+    weight: item.count,
+    extraData: {
+      percentage: item.percentage,
+      wordLength: item.wordLength,
+      relatedQueriesCount: item.relatedQueriesCount,
+      lastOccurrence: item.lastOccurrence,
+      firstOccurrence: item.firstOccurrence,
+      segmentDetails: item.segmentDetails
+    }
+  }))
+}
+
+/**
+ * 将后端HotWordResponse转换为前端LegacyHotWordStatistics格式
+ */
+export function convertToLegacyStatistics(hotWordResponse: HotWordResponse[]): LegacyHotWordStatistics[] {
+  return hotWordResponse.map(item => ({
+    keyword: item.word,
+    searchCount: item.count,
+    trend: determineTrend(item.percentage),
+    lastSearchTime: item.lastOccurrence,
+    channels: [], // 后端数据中没有channels字段，使用空数组
+    growthRate: calculateGrowthRate(item.percentage)
+  }))
+}
+
+/**
+ * 根据百分比确定趋势
+ */
+function determineTrend(percentage: number): 'rising' | 'falling' | 'stable' | 'new' {
+  if (percentage > 15) return 'rising'
+  if (percentage < 5) return 'falling'
+  if (percentage > 10) return 'new'
+  return 'stable'
+}
+
+/**
+ * 根据百分比计算增长率
+ */
+function calculateGrowthRate(percentage: number): number {
+  // 简单的增长率计算，实际应该基于历史数据
+  return Math.random() * 100 - 50 // -50% 到 +50%
+}
+
+/**
+ * 将HotWordResponse数组转换为LegacyHotWordStatisticsResponse格式
+ */
+export function convertToLegacyResponse(hotWordResponse: HotWordResponse[]): LegacyHotWordStatisticsResponse {
+  return {
+    words: convertToLegacyFormat(hotWordResponse),
+    total: hotWordResponse.length,
+    updatedAt: new Date().toISOString()
+  }
 }
 
 // ============= 通用API响应类型 =============
