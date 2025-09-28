@@ -102,6 +102,15 @@ const routes = [
           requiresAuth: false,
           title: '词云图组件测试'
         }
+      },
+      {
+        path: 'hot-word-statistics',
+        name: 'HotWordStatistics',
+        component: () => import('@/views/statistics/HotWordStatisticsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '热词统计分析'
+        }
       }
     ]
   },

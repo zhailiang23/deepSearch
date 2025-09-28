@@ -255,3 +255,54 @@ export interface StatisticsPageState {
   /** 错误信息 */
   error: string | null
 }
+
+/**
+ * 热词统计数据结构
+ */
+export interface HotWordStatistics {
+  /** 关键词 */
+  keyword: string
+  /** 搜索次数 */
+  searchCount: number
+  /** 趋势 */
+  trend?: 'rising' | 'falling' | 'stable' | 'new'
+  /** 最后搜索时间 */
+  lastSearchTime?: string
+  /** 相关渠道 */
+  channels?: string[]
+  /** 增长率 */
+  growthRate?: number
+}
+
+/**
+ * 筛选配置
+ */
+export interface FilterConfig {
+  /** 时间范围 */
+  timeRange: {
+    start: Date
+    end: Date
+  }
+  /** 搜索条件 */
+  searchCondition: string
+  /** 热词数量限制 */
+  hotWordLimit: number
+  /** 渠道筛选 */
+  channels: string[]
+}
+
+/**
+ * 统计API请求参数
+ */
+export interface StatisticsQueryParams {
+  /** 开始时间 */
+  startTime: string
+  /** 结束时间 */
+  endTime: string
+  /** 搜索条件 */
+  searchCondition?: string
+  /** 数量限制 */
+  limit?: number
+  /** 渠道列表 */
+  channels?: string[]
+}
