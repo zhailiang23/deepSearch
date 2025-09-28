@@ -53,6 +53,7 @@ Using the test-runner agent ensures:
 
 ## ABSOLUTE RULES:
 
+- 优先使用 parallel-worker 工具来执行并行任务
 - 这个系统不需要国际化(i18n)
 - 前端整体采用淡绿色主题
 - 只使用 3000 和 8080 端口启动前后端服务，端口被占用时杀死占用的进程
