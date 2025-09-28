@@ -572,4 +572,4 @@ export async function generatePerformanceReport(): Promise<string> {
   return benchmark.generateReport()
 }
 
-export { WordCloudBenchmark }
+// WordCloudBenchmark已在上面导出

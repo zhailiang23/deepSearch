@@ -5,6 +5,7 @@
 import http from '@/utils/http'
 import type {
   HotWordStatistics,
+  HotWordStatisticsItem,
   StatisticsQueryParams
 } from '@/types/statistics'
 
@@ -21,13 +22,29 @@ export const statisticsApi = {
   /**
    * 获取热词统计数据
    */
-  async getHotWordStatistics(params: StatisticsQueryParams): Promise<StatisticsResponse<HotWordStatistics[]>> {
+  async getHotWordStatistics(params: StatisticsQueryParams): Promise<StatisticsResponse<HotWordStatistics>> {
     try {
       // 模拟API调用，实际项目中应该调用真实的API
       await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
 
       // 生成模拟数据
-      const mockData = generateMockStatistics(params.limit || 100)
+      const mockItems = generateMockStatistics(params.limit || 100)
+
+      // 转换为正确的格式
+      const mockData: HotWordStatistics = {
+        words: mockItems.map(item => ({
+          text: item.keyword,
+          weight: item.searchCount,
+          extraData: {
+            trend: item.trend,
+            lastSearchTime: item.lastSearchTime,
+            channels: item.channels,
+            growthRate: item.growthRate
+          }
+        })),
+        total: mockItems.length,
+        updatedAt: new Date().toISOString()
+      }
 
       return {
         success: true,
@@ -65,7 +82,16 @@ export const statisticsApi = {
     try {
       // 实际项目中这里应该调用后端API获取报告文件
       const data = await this.getHotWordStatistics(params)
-      const reportContent = generateReportContent(data.data)
+      // 将HotWordStatistics转换为HotWordStatisticsItem[]以供报告生成使用
+      const items: HotWordStatisticsItem[] = data.data.words.map(word => ({
+        keyword: word.text,
+        searchCount: word.weight,
+        trend: word.extraData?.trend,
+        lastSearchTime: word.extraData?.lastSearchTime,
+        channels: word.extraData?.channels,
+        growthRate: word.extraData?.growthRate
+      }))
+      const reportContent = generateReportContent(items)
 
       return new Blob([reportContent], { type: 'text/plain;charset=utf-8' })
     } catch (error) {
@@ -78,7 +104,7 @@ export const statisticsApi = {
 /**
  * 生成模拟统计数据
  */
-function generateMockStatistics(limit: number): HotWordStatistics[] {
+function generateMockStatistics(limit: number): HotWordStatisticsItem[] {
   const baseKeywords = [
     // 科技类
     '人工智能', '机器学习', '深度学习', '神经网络', '大数据', '云计算', '物联网', '区块链',
@@ -106,7 +132,7 @@ function generateMockStatistics(limit: number): HotWordStatistics[] {
 
   const trends: Array<'rising' | 'falling' | 'stable' | 'new'> = ['rising', 'falling', 'stable', 'new']
 
-  const statistics: HotWordStatistics[] = []
+  const statistics: HotWordStatisticsItem[] = []
 
   for (let i = 0; i < Math.min(limit, baseKeywords.length); i++) {
     const keyword = baseKeywords[i]
@@ -133,7 +159,7 @@ function generateMockStatistics(limit: number): HotWordStatistics[] {
 function generateRandomChannels(): string[] {
   const channels = ['web', 'mobile', 'api', 'desktop']
   const count = Math.floor(Math.random() * 3) + 1
-  const result = []
+  const result: string[] = []
 
   for (let i = 0; i < count; i++) {
     const channel = channels[Math.floor(Math.random() * channels.length)]
@@ -167,7 +193,7 @@ function generateMockTrends() {
 /**
  * 生成报告内容
  */
-function generateReportContent(data: HotWordStatistics[]): string {
+function generateReportContent(data: HotWordStatisticsItem[]): string {
   let content = '热词统计报告\n'
   content += '====================\n\n'
   content += `生成时间: ${new Date().toLocaleString('zh-CN')}\n`

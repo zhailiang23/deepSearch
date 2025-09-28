@@ -259,7 +259,7 @@ export interface StatisticsPageState {
 /**
  * 热词统计数据结构
  */
-export interface HotWordStatistics {
+export interface HotWordStatisticsItem {
   /** 关键词 */
   keyword: string
   /** 搜索次数 */

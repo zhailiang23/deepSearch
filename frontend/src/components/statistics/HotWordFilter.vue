@@ -6,185 +6,122 @@
         <h3 class="filter-title">热词过滤器</h3>
         <div class="filter-actions">
           <button
-            @click="resetAllFilters"
-            :disabled="!hasActiveFilters || loading"
-            class="reset-button"
-            type="button"
-          >
-            重置全部
-          </button>
-          <button
             @click="toggleCollapse"
             class="collapse-button"
             type="button"
+            :title="isCollapsed ? '展开过滤器' : '收起过滤器'"
           >
             {{ isCollapsed ? '展开' : '收起' }}
           </button>
-        </div>
-      </div>
-
-      <!-- 快速过滤条件摘要 -->
-      <div v-if="isCollapsed && hasActiveFilters" class="filter-summary">
-        <div class="summary-tags">
-          <span v-if="filterData.timeRange" class="summary-tag summary-tag--time">
-            {{ getTimeRangeSummary() }}
-          </span>
-          <span v-if="filterData.searchCondition?.keywords.length" class="summary-tag summary-tag--keywords">
-            关键词: {{ filterData.searchCondition.keywords.length }}个
-          </span>
-          <span v-if="filterData.limitConfig" class="summary-tag summary-tag--limit">
-            显示: {{ filterData.limitConfig.limit }}条
-          </span>
+          <button
+            @click="resetFilter"
+            class="reset-button"
+            type="button"
+            :disabled="loading || !hasActiveFilters"
+          >
+            重置
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- 过滤器内容区域 -->
-    <Transition name="collapse">
-      <div v-show="!isCollapsed" class="hot-word-filter__content">
-        <!-- 过滤器网格布局 -->
-        <div class="filter-grid">
-          <!-- 时间范围选择器 -->
-          <div class="filter-section">
-            <TimeRangeSelector
+    <!-- 过滤器主体 -->
+    <div v-show="!isCollapsed" class="hot-word-filter__body">
+      <!-- 基础过滤条件 -->
+      <div class="filter-section">
+        <!-- 时间范围选择 -->
+        <div class="filter-group">
+          <label class="filter-label">时间范围</label>
+          <div class="time-range-selector">
+            <select
               v-model="filterData.timeRange"
-              :disabled="loading"
               @change="handleTimeRangeChange"
-            />
-          </div>
-
-          <!-- 搜索条件过滤器 -->
-          <div class="filter-section">
-            <SearchConditionFilter
-              v-model="filterData.searchCondition"
+              class="time-range-select"
               :disabled="loading"
-              :search-space-options="searchSpaceOptions"
-              @change="handleSearchConditionChange"
-            />
+            >
+              <option value="">全部时间</option>
+              <option value="today">今天</option>
+              <option value="yesterday">昨天</option>
+              <option value="last7days">最近7天</option>
+              <option value="last30days">最近30天</option>
+              <option value="custom">自定义</option>
+            </select>
           </div>
+        </div>
 
-          <!-- 热词数量限制选择器 -->
-          <div class="filter-section">
-            <HotWordLimitSelector
-              v-model="filterData.limitConfig"
+        <!-- 自定义时间范围 -->
+        <div v-if="filterData.timeRange === 'custom'" class="filter-group">
+          <label class="filter-label">自定义时间</label>
+          <div class="custom-time-range">
+            <input
+              v-model="filterData.customStartDate"
+              type="date"
+              class="date-input"
               :disabled="loading"
-              :estimated-data-size="estimatedDataSize"
-              @change="handleLimitConfigChange"
+              @change="handleCustomDateChange"
+            />
+            <span class="date-separator">至</span>
+            <input
+              v-model="filterData.customEndDate"
+              type="date"
+              class="date-input"
+              :disabled="loading"
+              @change="handleCustomDateChange"
             />
           </div>
         </div>
 
-        <!-- 高级选项 -->
-        <div v-if="showAdvancedOptions" class="advanced-options">
-          <div class="advanced-options-header">
-            <h4 class="advanced-title">高级选项</h4>
-            <button
-              @click="toggleAdvancedOptions"
-              class="toggle-advanced-button"
-              type="button"
-            >
-              {{ showAdvancedOptions ? '隐藏' : '显示' }}
-            </button>
-          </div>
-
-          <div class="advanced-options-content">
-            <!-- 缓存控制 -->
-            <div class="advanced-option">
-              <label class="advanced-label">
-                <input
-                  v-model="advancedOptions.useCache"
-                  type="checkbox"
-                  class="advanced-checkbox"
-                  :disabled="loading"
-                />
-                <span class="advanced-text">使用缓存数据</span>
-                <span class="advanced-description">提高查询速度，但可能不是最新数据</span>
-              </label>
-            </div>
-
-            <!-- 实时更新 -->
-            <div class="advanced-option">
-              <label class="advanced-label">
-                <input
-                  v-model="advancedOptions.realTimeUpdate"
-                  type="checkbox"
-                  class="advanced-checkbox"
-                  :disabled="loading"
-                />
-                <span class="advanced-text">实时更新</span>
-                <span class="advanced-description">数据变化时自动刷新结果</span>
-              </label>
-            </div>
-
-            <!-- 导出选项 */
-            <div class="advanced-option">
-              <label for="export-format" class="advanced-label-block">导出格式</label>
-              <select
-                id="export-format"
-                v-model="advancedOptions.exportFormat"
-                class="advanced-select"
-                :disabled="loading"
-              >
-                <option value="excel">Excel (.xlsx)</option>
-                <option value="csv">CSV (.csv)</option>
-                <option value="json">JSON (.json)</option>
-              </select>
-            </div>
+        <!-- 关键词搜索 -->
+        <div class="filter-group">
+          <label class="filter-label">关键词</label>
+          <div class="keyword-input-wrapper">
+            <input
+              v-model="filterData.keyword"
+              type="text"
+              placeholder="输入关键词搜索..."
+              class="keyword-input"
+              :disabled="loading"
+              @input="debounceKeywordChange"
+            />
           </div>
         </div>
 
-        <!-- 应用过滤器操作栏 -->
-        <div class="filter-actions-bar">
-          <div class="actions-left">
-            <button
-              @click="toggleAdvancedOptions"
-              class="advanced-toggle-button"
-              type="button"
-            >
-              <span class="toggle-icon">⚙️</span>
-              高级选项
-            </button>
-          </div>
-
-          <div class="actions-right">
-            <button
-              @click="saveFilterAsPreset"
-              :disabled="!hasActiveFilters || loading"
-              class="save-preset-button"
-              type="button"
-            >
-              保存为预设
-            </button>
-            <button
-              @click="applyFilters"
+        <!-- 数据量限制 -->
+        <div class="filter-group">
+          <label class="filter-label">数据量限制</label>
+          <div class="limit-selector">
+            <select
+              v-model="filterData.limit"
+              @change="handleLimitChange"
+              class="limit-select"
               :disabled="loading"
-              class="apply-button"
-              type="button"
             >
-              <span v-if="loading" class="loading-spinner"></span>
-              {{ loading ? '查询中...' : '应用过滤器' }}
-            </button>
+              <option :value="50">50条</option>
+              <option :value="100">100条</option>
+              <option :value="200">200条</option>
+              <option :value="500">500条</option>
+            </select>
           </div>
         </div>
       </div>
-    </Transition>
 
-    <!-- 预设过滤器快捷选择 -->
-    <div v-if="filterPresets.length > 0" class="filter-presets">
-      <div class="presets-header">
-        <span class="presets-title">快捷预设</span>
-      </div>
-      <div class="presets-list">
+      <!-- 操作按钮 -->
+      <div class="filter-actions-footer">
         <button
-          v-for="preset in filterPresets"
-          :key="preset.id"
-          @click="loadFilterPreset(preset)"
-          class="preset-button"
+          @click="applyFilter"
+          class="apply-button"
           type="button"
           :disabled="loading"
         >
-          <span class="preset-name">{{ preset.name }}</span>
-          <span class="preset-description">{{ preset.description }}</span>
+          {{ loading ? '查询中...' : '应用过滤器' }}
+        </button>
+        <button
+          @click="resetFilter"
+          class="reset-button-footer"
+          type="button"
+          :disabled="loading"
+        >
+          重置
         </button>
       </div>
     </div>
@@ -192,453 +129,286 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import TimeRangeSelector, { type TimeRange } from './filters/TimeRangeSelector.vue'
-import SearchConditionFilter, { type SearchCondition } from './filters/SearchConditionFilter.vue'
-import HotWordLimitSelector, { type LimitConfig } from './filters/HotWordLimitSelector.vue'
+import { ref, reactive, computed, watch } from 'vue'
 
-export interface HotWordFilterData {
-  timeRange: TimeRange | null
-  searchCondition: SearchCondition | null
-  limitConfig: LimitConfig | null
-}
-
-export interface AdvancedOptions {
-  useCache: boolean
-  realTimeUpdate: boolean
-  exportFormat: 'excel' | 'csv' | 'json'
-}
-
-export interface FilterPreset {
-  id: string
-  name: string
-  description: string
-  filters: HotWordFilterData
-  advancedOptions: AdvancedOptions
-}
-
-interface SearchSpaceOption {
-  label: string
-  value: string
-  description?: string
-}
-
+// 组件属性
 interface Props {
-  modelValue?: HotWordFilterData | null
   loading?: boolean
-  searchSpaceOptions?: SearchSpaceOption[]
   estimatedDataSize?: number
-  filterPresets?: FilterPreset[]
-  autoApply?: boolean
-  showAdvancedOptions?: boolean
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: HotWordFilterData): void
-  (e: 'apply', filters: HotWordFilterData, advanced: AdvancedOptions): void
-  (e: 'reset'): void
-  (e: 'save-preset', filters: HotWordFilterData, advanced: AdvancedOptions): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: null,
   loading: false,
-  searchSpaceOptions: () => [],
-  estimatedDataSize: 0,
-  filterPresets: () => [],
-  autoApply: false,
-  showAdvancedOptions: false
+  estimatedDataSize: 0
 })
+
+// 组件事件
+interface Emits {
+  filter: [filterData: any]
+  reset: []
+}
 
 const emit = defineEmits<Emits>()
 
 // 响应式数据
 const isCollapsed = ref(false)
-const showAdvancedOptions = ref(props.showAdvancedOptions)
 
-const filterData = ref<HotWordFilterData>({
-  timeRange: null,
-  searchCondition: null,
-  limitConfig: null
-})
-
-const advancedOptions = ref<AdvancedOptions>({
-  useCache: true,
-  realTimeUpdate: false,
-  exportFormat: 'excel'
+const filterData = reactive({
+  timeRange: '',
+  customStartDate: '',
+  customEndDate: '',
+  keyword: '',
+  limit: 100
 })
 
 // 计算属性
 const hasActiveFilters = computed(() => {
   return !!(
-    filterData.value.timeRange ||
-    filterData.value.searchCondition ||
-    filterData.value.limitConfig
+    filterData.timeRange ||
+    filterData.keyword ||
+    filterData.limit !== 100
   )
 })
 
+// 防抖关键词输入
+let keywordTimeout: number | null = null
+const debounceKeywordChange = () => {
+  if (keywordTimeout) {
+    clearTimeout(keywordTimeout)
+  }
+  keywordTimeout = setTimeout(() => {
+    // 自动应用过滤器
+  }, 500) as unknown as number
+}
+
 // 方法
-const handleTimeRangeChange = (timeRange: TimeRange | null) => {
-  filterData.value.timeRange = timeRange
-  emitModelValue()
-  if (props.autoApply) {
-    applyFilters()
-  }
-}
-
-const handleSearchConditionChange = (searchCondition: SearchCondition) => {
-  filterData.value.searchCondition = searchCondition
-  emitModelValue()
-  if (props.autoApply) {
-    applyFilters()
-  }
-}
-
-const handleLimitConfigChange = (limitConfig: LimitConfig) => {
-  filterData.value.limitConfig = limitConfig
-  emitModelValue()
-  if (props.autoApply) {
-    applyFilters()
-  }
-}
-
-const emitModelValue = () => {
-  emit('update:modelValue', { ...filterData.value })
-}
-
-const applyFilters = () => {
-  emit('apply', { ...filterData.value }, { ...advancedOptions.value })
-}
-
-const resetAllFilters = () => {
-  filterData.value = {
-    timeRange: null,
-    searchCondition: null,
-    limitConfig: null
-  }
-
-  advancedOptions.value = {
-    useCache: true,
-    realTimeUpdate: false,
-    exportFormat: 'excel'
-  }
-
-  emitModelValue()
-  emit('reset')
-}
-
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
 }
 
-const toggleAdvancedOptions = () => {
-  showAdvancedOptions.value = !showAdvancedOptions.value
-}
-
-const saveFilterAsPreset = () => {
-  emit('save-preset', { ...filterData.value }, { ...advancedOptions.value })
-}
-
-const loadFilterPreset = (preset: FilterPreset) => {
-  filterData.value = { ...preset.filters }
-  advancedOptions.value = { ...preset.advancedOptions }
-  emitModelValue()
-
-  if (props.autoApply) {
-    nextTick(() => {
-      applyFilters()
-    })
+const handleTimeRangeChange = () => {
+  if (filterData.timeRange !== 'custom') {
+    filterData.customStartDate = ''
+    filterData.customEndDate = ''
   }
 }
 
-const getTimeRangeSummary = (): string => {
-  if (!filterData.value.timeRange) return ''
-
-  if (filterData.value.timeRange.label) {
-    return filterData.value.timeRange.label
-  }
-
-  const start = filterData.value.timeRange.start.toLocaleDateString('zh-CN')
-  const end = filterData.value.timeRange.end.toLocaleDateString('zh-CN')
-  return `${start} - ${end}`
+const handleCustomDateChange = () => {
+  // 验证日期范围
 }
 
-// 初始化组件
-const initializeComponent = () => {
-  if (props.modelValue) {
-    filterData.value = { ...props.modelValue }
-  }
+const handleLimitChange = () => {
+  // 处理数据量限制变化
 }
 
-// 监听外部值变化
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    filterData.value = { ...newValue }
-  }
-}, { deep: true })
+const applyFilter = () => {
+  emit('filter', { ...filterData })
+}
 
-// 组件挂载时初始化
-initializeComponent()
+const resetFilter = () => {
+  Object.assign(filterData, {
+    timeRange: '',
+    customStartDate: '',
+    customEndDate: '',
+    keyword: '',
+    limit: 100
+  })
+  emit('reset')
+}
+
+// 监听器
+watch(() => props.loading, (newVal) => {
+  if (newVal) {
+    // 加载开始
+  } else {
+    // 加载结束
+  }
+})
 </script>
 
 <style scoped>
 .hot-word-filter {
-  @apply bg-white rounded-lg shadow-sm border border-green-200;
-}
-
-/* 过滤器标题栏 */
-.hot-word-filter__header {
-  @apply p-4 border-b border-gray-100;
-}
-
-.filter-header-content {
-  @apply flex items-center justify-between;
-}
-
-.filter-title {
-  @apply text-lg font-semibold text-gray-800;
-}
-
-.filter-actions {
-  @apply flex items-center space-x-2;
-}
-
-.reset-button {
-  @apply px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.collapse-button {
-  @apply px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors duration-200;
-}
-
-/* 快速摘要 */
-.filter-summary {
-  @apply mt-3;
-}
-
-.summary-tags {
-  @apply flex flex-wrap gap-2;
-}
-
-.summary-tag {
-  @apply px-2 py-1 text-xs font-medium rounded-full;
-}
-
-.summary-tag--time {
-  @apply bg-blue-100 text-blue-800;
-}
-
-.summary-tag--keywords {
-  @apply bg-green-100 text-green-800;
-}
-
-.summary-tag--limit {
-  @apply bg-purple-100 text-purple-800;
-}
-
-/* 过滤器内容区域 */
-.hot-word-filter__content {
-  @apply p-4 space-y-6;
-}
-
-.filter-grid {
-  @apply grid grid-cols-1 lg:grid-cols-3 gap-6;
-}
-
-.filter-section {
-  @apply space-y-4;
-}
-
-/* 高级选项 */
-.advanced-options {
-  @apply border-t border-gray-100 pt-6 space-y-4;
-}
-
-.advanced-options-header {
-  @apply flex items-center justify-between;
-}
-
-.advanced-title {
-  @apply text-sm font-medium text-gray-700;
-}
-
-.toggle-advanced-button {
-  @apply text-xs text-green-600 hover:text-green-700 font-medium;
-}
-
-.advanced-options-content {
-  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
-}
-
-.advanced-option {
-  @apply space-y-2;
-}
-
-.advanced-label {
-  @apply flex items-start space-x-2 cursor-pointer;
-}
-
-.advanced-label-block {
-  @apply block text-xs font-medium text-gray-600 mb-1;
-}
-
-.advanced-checkbox {
-  @apply mt-0.5 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500;
-}
-
-.advanced-text {
-  @apply text-sm font-medium text-gray-700;
-}
-
-.advanced-description {
-  @apply block text-xs text-gray-500 mt-1 ml-6;
-}
-
-.advanced-select {
-  @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500;
-}
-
-/* 操作栏 */
-.filter-actions-bar {
-  @apply flex items-center justify-between pt-6 border-t border-gray-100;
-}
-
-.actions-left {
-  @apply flex items-center;
-}
-
-.actions-right {
-  @apply flex items-center space-x-3;
-}
-
-.advanced-toggle-button {
-  @apply flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors duration-200;
-}
-
-.toggle-icon {
-  @apply text-sm;
-}
-
-.save-preset-button {
-  @apply px-4 py-2 text-sm font-medium text-green-600 border border-green-300 hover:bg-green-50 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.apply-button {
-  @apply flex items-center space-x-2 px-6 py-2 text-sm font-medium bg-green-600 text-white hover:bg-green-700 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.loading-spinner {
-  @apply w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin;
-}
-
-/* 预设过滤器 */
-.filter-presets {
-  @apply p-4 border-t border-gray-100 bg-gray-50;
-}
-
-.presets-header {
-  @apply mb-3;
-}
-
-.presets-title {
-  @apply text-sm font-medium text-gray-700;
-}
-
-.presets-list {
-  @apply flex flex-wrap gap-2;
-}
-
-.preset-button {
-  @apply p-3 text-left bg-white border border-gray-200 hover:border-green-300 hover:bg-green-50 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-}
-
-.preset-name {
-  @apply block text-sm font-medium text-gray-700;
-}
-
-.preset-description {
-  @apply block text-xs text-gray-500 mt-1;
-}
-
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .filter-grid {
-    @apply grid-cols-1 md:grid-cols-2;
-  }
-}
-
-@media (max-width: 640px) {
-  .hot-word-filter__header,
-  .hot-word-filter__content {
-    @apply p-3;
-  }
-
-  .filter-header-content {
-    @apply flex-col space-y-2 items-start;
-  }
-
-  .filter-actions {
-    @apply w-full justify-end;
-  }
-
-  .filter-grid {
-    @apply grid-cols-1 gap-4;
-  }
-
-  .filter-actions-bar {
-    @apply flex-col space-y-3 items-stretch;
-  }
-
-  .actions-left,
-  .actions-right {
-    @apply justify-center;
-  }
-
-  .advanced-options-content {
-    @apply grid-cols-1;
-  }
-
-  .presets-list {
-    @apply flex-col;
-  }
-
-  .preset-button {
-    @apply w-full;
-  }
-}
-
-/* 折叠动画 */
-.collapse-enter-active,
-.collapse-leave-active {
-  transition: all 0.3s ease;
-}
-
-.collapse-enter-from,
-.collapse-leave-to {
-  opacity: 0;
-  max-height: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.collapse-enter-to,
-.collapse-leave-from {
-  opacity: 1;
-  max-height: 1000px;
+.hot-word-filter__header {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  padding: 16px;
+  color: white;
 }
 
-/* 悬停效果 */
+.filter-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.collapse-button,
+.reset-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.collapse-button:hover,
 .reset-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.reset-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hot-word-filter__body {
+  padding: 20px;
+}
+
+.filter-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.time-range-select,
+.limit-select,
+.date-input,
+.keyword-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.time-range-select:focus,
+.limit-select:focus,
+.date-input:focus,
+.keyword-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.custom-time-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-separator {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.keyword-input-wrapper {
+  position: relative;
+}
+
+.keyword-input {
+  width: 100%;
+}
+
+.limit-selector {
+  display: flex;
+  align-items: center;
+}
+
+.filter-actions-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.apply-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .apply-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #059669;
 }
 
-.preset-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.apply-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.reset-button-footer {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-button-footer:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.reset-button-footer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .filter-section {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions-footer {
+    flex-direction: column;
+  }
+
+  .apply-button,
+  .reset-button-footer {
+    width: 100%;
+  }
 }
 
 /* 动画效果 */
