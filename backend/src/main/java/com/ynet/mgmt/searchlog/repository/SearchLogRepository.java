@@ -183,6 +183,36 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
     List<Object[]> findTopQueriesByPeriod(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, Pageable pageable);
 
     /**
+     * 查找指定时间范围内成功搜索的查询词用于热词统计
+     * 只返回状态为SUCCESS的搜索日志的查询词，排除非空和有效查询
+     *
+     * @param startTime 开始时间（可选）
+     * @param endTime   结束时间（可选）
+     * @return 成功搜索的查询词列表
+     */
+    @Query("SELECT s.searchQuery FROM SearchLog s WHERE s.status = 'SUCCESS' " +
+           "AND (:startTime IS NULL OR s.createdAt >= :startTime) " +
+           "AND (:endTime IS NULL OR s.createdAt <= :endTime) " +
+           "AND s.searchQuery IS NOT NULL AND LENGTH(TRIM(s.searchQuery)) > 0")
+    List<String> findSuccessfulSearchQueriesByTimeRange(@Param("startTime") LocalDateTime startTime,
+                                                       @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 统计指定时间范围内成功搜索的总数
+     * 用于计算热词百分比
+     *
+     * @param startTime 开始时间（可选）
+     * @param endTime   结束时间（可选）
+     * @return 成功搜索总数
+     */
+    @Query("SELECT COUNT(s) FROM SearchLog s WHERE s.status = 'SUCCESS' " +
+           "AND (:startTime IS NULL OR s.createdAt >= :startTime) " +
+           "AND (:endTime IS NULL OR s.createdAt <= :endTime) " +
+           "AND s.searchQuery IS NOT NULL AND LENGTH(TRIM(s.searchQuery)) > 0")
+    long countSuccessfulSearchesByTimeRange(@Param("startTime") LocalDateTime startTime,
+                                          @Param("endTime") LocalDateTime endTime);
+
+    /**
      * 查找指定时间范围内的热门搜索空间
      *
      * @param startTime 开始时间
