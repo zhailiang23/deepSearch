@@ -1,14 +1,14 @@
 # GitHub Issue Mapping
 
-Epic: #98 - https://github.com/zhailiang23/deepSearch/issues/98
+Epic: #106 - https://github.com/zhailiang23/deepSearch/issues/106
 
 Tasks:
-- #102: 数据库优化和索引创建 - https://github.com/zhailiang23/deepSearch/issues/102
-- #104: 统计计算服务开发 - https://github.com/zhailiang23/deepSearch/issues/104  
-- #105: 排行榜服务开发 - https://github.com/zhailiang23/deepSearch/issues/105
-- #101: API接口开发 - https://github.com/zhailiang23/deepSearch/issues/101
-- #103: 前端排行榜界面开发 - https://github.com/zhailiang23/deepSearch/issues/103
-- #99: Redis缓存优化方案 - https://github.com/zhailiang23/deepSearch/issues/99
-- #100: 测试与部署 - https://github.com/zhailiang23/deepSearch/issues/100
+- #107: API接口开发 - https://github.com/zhailiang23/deepSearch/issues/107
+- #108: 前端排行榜界面开发 - https://github.com/zhailiang23/deepSearch/issues/108
+- #109: 统计计算服务开发 - https://github.com/zhailiang23/deepSearch/issues/109
+- #110: 排行榜服务开发 - https://github.com/zhailiang23/deepSearch/issues/110
+- #111: Redis缓存优化方案 - https://github.com/zhailiang23/deepSearch/issues/111
+- #112: 测试与部署 - https://github.com/zhailiang23/deepSearch/issues/112
+- #113: 数据库优化和索引创建 - https://github.com/zhailiang23/deepSearch/issues/113
 
-Synced: 2025-09-28T07:45:02Z
+Synced: 2025-09-28T11:55:27Z

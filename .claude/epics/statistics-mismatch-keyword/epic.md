@@ -1,11 +1,11 @@
 ---
 name: statistics-mismatch-keyword
-status: backlog
+status: open
 created: 2025-09-28T07:23:53Z
-updated: 2025-09-28T07:44:34Z
+updated: 2025-09-28T11:55:27Z
 progress: 0%
 prd: .claude/prds/statistics-mismatch-keyword.md
-github: https://github.com/zhailiang23/deepSearch/issues/98
+github: https://github.com/zhailiang23/deepSearch/issues/106
 ---
 
 # Epic: statistics-mismatch-keyword
@@ -156,19 +156,19 @@ github: https://github.com/zhailiang23/deepSearch/issues/98
 - 大数据量测试和优化预留2天缓冲时间
 
 ## Tasks Created
-- [ ] #102 - 数据库优化和索引创建 (parallel: true)
-- [ ] #104 - 统计计算服务开发 (parallel: false)
-- [ ] #105 - 排行榜服务开发 (parallel: false)
-- [ ] #101 - API接口开发 (parallel: false)
-- [ ] #103 - 前端排行榜界面开发 (parallel: false)
-- [ ] #99 - Redis缓存优化方案 (parallel: true)
-- [ ] #100 - 测试与部署 (parallel: false)
+- [ ] #107 - API接口开发 (parallel: true)
+- [ ] #108 - 前端排行榜界面开发 (parallel: true)
+- [ ] #109 - 统计计算服务开发 (parallel: false)
+- [ ] #110 - 排行榜服务开发 (parallel: false)
+- [ ] #111 - Redis缓存优化方案 (parallel: true)
+- [ ] #112 - 测试与部署 (parallel: false)
+- [ ] #113 - 数据库优化和索引创建 (parallel: true)
 
 **任务统计**:
 - **总任务数**: 7个
-- **并行任务**: 2个 (#102, #99)
-- **串行任务**: 5个 (#104, #105, #101, #103, #100)
+- **并行任务**: 4个 (#107, #108, #111, #113)
+- **串行任务**: 3个 (#109, #110, #112)
 - **预估总工时**: 72-112小时 (9-14天)
 
-**关键路径**: #102 → #104 → #105 → #101 → #103 → #100 (约8-10天)
-**并行优化**: 任务#99可在任务#104完成后并行进行
+**关键路径**: #113 → #109 → #110 → #112 (约8-10天)
+**并行优化**: 任务#107, #108, #111可在数据库优化完成后并行进行
