@@ -22,7 +22,7 @@ import java.util.Map;
  * @since 2025-09-27
  */
 @RestController
-@RequestMapping("/api/search-logs/cleanup")
+@RequestMapping("/search-logs/cleanup")
 @Tag(name = "搜索日志清理管理", description = "搜索日志数据清理和维护接口")
 public class SearchLogCleanupController {
 

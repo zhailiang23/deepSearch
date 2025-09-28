@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class SearchLogMonitor {
     @Autowired
     public SearchLogMonitor(MeterRegistry meterRegistry,
                            SearchLogRepository searchLogRepository,
-                           ThreadPoolTaskExecutor asyncTaskExecutor) {
+                           @Qualifier("searchLogExecutor") ThreadPoolTaskExecutor asyncTaskExecutor) {
         this.meterRegistry = meterRegistry;
         this.searchLogRepository = searchLogRepository;
         this.asyncTaskExecutor = asyncTaskExecutor;

@@ -37,6 +37,9 @@ public class SearchDataResponse {
     @Schema(description = "索引映射信息")
     private IndexMappingInfo mapping;
 
+    @Schema(description = "搜索日志ID", example = "123")
+    private Long searchLogId;
+
     /**
      * 文档数据
      */

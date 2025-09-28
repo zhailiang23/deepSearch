@@ -40,6 +40,7 @@ export interface SearchDataResponse {
   mapping?: {
     mappings: Record<string, any>
   }
+  searchLogId?: number
 }
 
 /**
@@ -61,15 +62,32 @@ export class SearchDataService {
    */
   static async searchData(request: SearchDataRequest): Promise<SearchDataResponse> {
     try {
+      console.log('发送搜索请求:', request)
+
       const response = await http.post<ApiResponse<SearchDataResponse>>(
         '/elasticsearch/search',
         request
-      ) as ApiResponse<SearchDataResponse>
+      )
 
-      if (response.success) {
-        return response.data
+      console.log('HTTP响应原始数据:', response)
+
+      // 由于 http.ts 中的拦截器已经返回了 response.data，
+      // 所以这里 response 就是后端的完整响应对象
+      const apiResponse = response as any
+
+      console.log('API响应解析:', {
+        success: apiResponse.success,
+        message: apiResponse.message,
+        hasData: !!apiResponse.data,
+        dataKeys: apiResponse.data ? Object.keys(apiResponse.data) : []
+      })
+
+      if (apiResponse.success) {
+        console.log('搜索成功，返回数据:', apiResponse.data)
+        return apiResponse.data
       } else {
-        throw new Error(response.message || '搜索失败')
+        console.error('后端返回失败状态:', apiResponse.message)
+        throw new Error(apiResponse.message || '搜索失败')
       }
     } catch (error: any) {
       console.error('搜索数据失败:', error)
@@ -84,12 +102,13 @@ export class SearchDataService {
     try {
       const response = await http.get<ApiResponse<any>>(
         `/elasticsearch/mapping/${searchSpaceId}`
-      ) as ApiResponse<any>
+      )
+      const apiResponse = response.data
 
-      if (response.success) {
-        return response.data
+      if (apiResponse.success) {
+        return apiResponse.data
       } else {
-        throw new Error(response.message || '获取映射失败')
+        throw new Error(apiResponse.message || '获取映射失败')
       }
     } catch (error: any) {
       console.error('获取索引映射失败:', error)
@@ -106,7 +125,7 @@ export function transformSearchResponse(backendResponse: SearchDataResponse): Se
     // 从_source中提取标题和摘要
     const source = item._source || {}
     let title = source.title || source.name || source.subject || `文档 ${item._id}`
-    let summary = source.content || source.description || source.summary || source.body || ''
+    let summary = source.descript || source.content || source.description || source.summary || source.body || ''
 
     // 如果summary太长，截取前200个字符
     if (summary && summary.length > 200) {
@@ -150,7 +169,8 @@ export function transformSearchResponse(backendResponse: SearchDataResponse): Se
     page: backendResponse.page,
     size: backendResponse.size,
     suggestions: [],
-    aggregations: {}
+    aggregations: {},
+    searchLogId: backendResponse.searchLogId
   }
 }
 

@@ -61,19 +61,33 @@ export interface SearchLog {
   userId: string
   userIp: string
   searchSpaceId: string
+  searchSpaceName?: string
+  searchQuery: string
+  totalResults: number
+  totalTimeMs: number
+  status: 'SUCCESS' | 'ERROR'
+  createdAt: string
+  clickLogs?: ClickLog[]
+}
+
+// 搜索日志详细信息
+export interface SearchLogDetail {
+  id: number
+  userId: string
+  userIp: string
+  searchSpaceId: string
+  searchSpaceCode?: string
   query: string
   resultCount: number
   responseTime: number
   status: 'SUCCESS' | 'ERROR'
   createdAt: string
-  clickCount: number
-}
-
-// 搜索日志详细信息
-export interface SearchLogDetail extends SearchLog {
+  sessionId?: string
+  traceId?: string
   requestParams: string
   responseData: string
   errorMessage?: string
+  userAgent?: string
   clickLogs: ClickLog[]
 }
 
@@ -99,6 +113,7 @@ export interface SearchLogQuery {
   endTime?: string
   minResponseTime?: number
   maxResponseTime?: number
+  userIp?: string
   page?: number
   size?: number
   sort?: string

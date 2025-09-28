@@ -33,6 +33,15 @@ const routes = [
         }
       },
       {
+        path: 'search-logs',
+        name: 'SearchLogs',
+        component: () => import('@/views/admin/SearchLogManagePage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '搜索日志管理'
+        }
+      },
+      {
         path: 'channels',
         name: 'Channels',
         component: () => import('@/pages/channels/ChannelManage.vue'),

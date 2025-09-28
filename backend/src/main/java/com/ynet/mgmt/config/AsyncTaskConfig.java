@@ -77,7 +77,7 @@ public class AsyncTaskConfig {
      * 用于异步记录搜索日志，确保不影响搜索性能
      */
     @Bean("searchLogExecutor")
-    public Executor searchLogExecutor() {
+    public ThreadPoolTaskExecutor searchLogExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         executor.setCorePoolSize(2);

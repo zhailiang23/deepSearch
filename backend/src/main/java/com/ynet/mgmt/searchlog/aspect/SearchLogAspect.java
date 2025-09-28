@@ -7,6 +7,8 @@ import com.ynet.mgmt.searchdata.dto.SearchDataResponse;
 import com.ynet.mgmt.searchlog.entity.SearchLog;
 import com.ynet.mgmt.searchlog.entity.SearchLogStatus;
 import com.ynet.mgmt.searchlog.service.SearchLogService;
+import com.ynet.mgmt.searchspace.service.SearchSpaceService;
+import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -23,7 +25,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -39,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
 public class SearchLogAspect {
 
     private final SearchLogService searchLogService;
+    private final SearchSpaceService searchSpaceService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -67,15 +69,50 @@ public class SearchLogAspect {
             // 执行原始方法
             Object result = joinPoint.proceed();
 
-            // 异步记录成功日志
-            recordSearchLogAsync(request, result, userId, userIp, userAgent, sessionId, startTime, null);
+            // 同步记录成功日志并获取搜索日志ID
+            Long searchLogId = recordSearchLogSync(request, result, userId, userIp, userAgent, sessionId, startTime, null);
+
+            // 将搜索日志ID设置到响应中
+            if (result instanceof ResponseEntity) {
+                setSearchLogIdInResponse((ResponseEntity<?>) result, searchLogId);
+            }
 
             return result;
 
         } catch (Exception e) {
-            // 异步记录失败日志
+            // 异步记录失败日志（失败情况下不需要返回ID）
             recordSearchLogAsync(request, null, userId, userIp, userAgent, sessionId, startTime, e);
             throw e;
+        }
+    }
+
+    /**
+     * 同步记录搜索日志并返回日志ID
+     */
+    public Long recordSearchLogSync(
+            SearchDataRequest request,
+            Object response,
+            String userId,
+            String userIp,
+            String userAgent,
+            String sessionId,
+            long startTime,
+            Exception exception) {
+
+        try {
+            SearchLog searchLog = buildSearchLog(request, response, userId, userIp, userAgent, sessionId, startTime, exception);
+
+            // 同步保存搜索日志
+            SearchLog savedLog = searchLogService.saveSearchLog(searchLog);
+
+            log.debug("搜索日志记录成功: userId={}, query={}, responseTime={}ms, status={}, logId={}",
+                    userId, request.getQuery(), searchLog.getTotalTimeMs(), searchLog.getStatus(), savedLog.getId());
+
+            return savedLog.getId();
+
+        } catch (Exception e) {
+            log.error("同步记录搜索日志失败", e);
+            return null;
         }
     }
 
@@ -94,7 +131,58 @@ public class SearchLogAspect {
             Exception exception) {
 
         try {
-            SearchLog searchLog = new SearchLog();
+            SearchLog searchLog = buildSearchLog(request, response, userId, userIp, userAgent, sessionId, startTime, exception);
+
+            // 保存搜索日志
+            searchLogService.saveSearchLog(searchLog);
+
+            log.debug("搜索日志记录成功: userId={}, query={}, responseTime={}ms, status={}",
+                    userId, request.getQuery(), searchLog.getTotalTimeMs(), searchLog.getStatus());
+
+        } catch (Exception e) {
+            log.error("异步记录搜索日志失败", e);
+        }
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * 在响应中设置搜索日志ID
+     */
+    private void setSearchLogIdInResponse(ResponseEntity<?> responseEntity, Long searchLogId) {
+        if (searchLogId == null) {
+            return;
+        }
+
+        try {
+            Object body = responseEntity.getBody();
+            if (body instanceof ApiResponse) {
+                ApiResponse<?> apiResponse = (ApiResponse<?>) body;
+                if (apiResponse.isSuccess() && apiResponse.getData() instanceof SearchDataResponse) {
+                    SearchDataResponse searchResponse = (SearchDataResponse) apiResponse.getData();
+                    searchResponse.setSearchLogId(searchLogId);
+                    log.debug("搜索日志ID已设置到响应中: {}", searchLogId);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("设置搜索日志ID到响应失败: {}", searchLogId, e);
+        }
+    }
+
+    /**
+     * 构建搜索日志对象
+     */
+    private SearchLog buildSearchLog(
+            SearchDataRequest request,
+            Object response,
+            String userId,
+            String userIp,
+            String userAgent,
+            String sessionId,
+            long startTime,
+            Exception exception) {
+
+        SearchLog searchLog = new SearchLog();
 
             // 基本信息
             if (userId != null && !userId.equals("anonymous")) {
@@ -111,17 +199,46 @@ public class SearchLogAspect {
             searchLog.setUserAgent(userAgent);
             searchLog.setSessionId(sessionId);
 
+            // 获取并设置搜索空间信息
+            try {
+                SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(request.getSearchSpaceId()));
+                if (searchSpace != null) {
+                    searchLog.setSearchSpaceCode(searchSpace.getCode());
+                    searchLog.setSearchSpaceName(searchSpace.getName());
+                }
+            } catch (Exception e) {
+                log.warn("获取搜索空间信息失败，searchSpaceId: {}", request.getSearchSpaceId(), e);
+            }
+
             // 设置请求参数
             searchLog.setPageNumber(request.getPage());
             searchLog.setPageSize(request.getSize());
             searchLog.setSearchMode(request.getPinyinMode());
             searchLog.setEnablePinyin(request.getEnablePinyinSearch());
 
+            // 序列化请求参数为 JSON
+            try {
+                String requestJson = objectMapper.writeValueAsString(request);
+                searchLog.setRequestParams(requestJson);
+            } catch (Exception e) {
+                log.warn("序列化请求参数失败", e);
+                searchLog.setRequestParams(null);
+            }
+
             // 处理响应数据
             if (response != null && response instanceof ResponseEntity) {
                 ResponseEntity<?> responseEntity = (ResponseEntity<?>) response;
                 if (responseEntity.getBody() instanceof ApiResponse) {
                     ApiResponse<?> apiResponse = (ApiResponse<?>) responseEntity.getBody();
+
+                    // 序列化响应数据为 JSON
+                    try {
+                        String responseJson = objectMapper.writeValueAsString(apiResponse);
+                        searchLog.setResponseData(responseJson);
+                    } catch (Exception e) {
+                        log.warn("序列化响应数据失败", e);
+                        searchLog.setResponseData(null);
+                    }
 
                     if (apiResponse.isSuccess() && apiResponse.getData() instanceof SearchDataResponse) {
                         SearchDataResponse searchResponse = (SearchDataResponse) apiResponse.getData();
@@ -141,6 +258,16 @@ public class SearchLogAspect {
                 searchLog.setErrorMessage(exception.getMessage());
                 searchLog.setTotalResults(0L);
                 searchLog.setReturnedResults(0);
+
+                // 异常情况下也尝试序列化请求参数
+                if (searchLog.getRequestParams() == null) {
+                    try {
+                        String requestJson = objectMapper.writeValueAsString(request);
+                        searchLog.setRequestParams(requestJson);
+                    } catch (Exception e) {
+                        log.warn("异常情况下序列化请求参数失败", e);
+                    }
+                }
             }
 
             // 计算响应时间
@@ -152,17 +279,7 @@ public class SearchLogAspect {
                 searchLog.setStatus(SearchLogStatus.SUCCESS);
             }
 
-            // 保存搜索日志
-            searchLogService.saveSearchLog(searchLog);
-
-            log.debug("搜索日志记录成功: userId={}, query={}, responseTime={}ms, status={}",
-                    userId, request.getQuery(), responseTime, searchLog.getStatus());
-
-        } catch (Exception e) {
-            log.error("异步记录搜索日志失败", e);
-        }
-
-        return CompletableFuture.completedFuture(null);
+        return searchLog;
     }
 
     // ========== 私有辅助方法 ==========

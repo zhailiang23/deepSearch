@@ -64,6 +64,10 @@ public class SecurityConfig {
                 .requestMatchers("/error").permitAll()
                 // 临时允许映射配置接口不需要认证（用于测试）
                 .requestMatchers("/search-spaces/*/mapping").permitAll()
+                // 允许搜索空间列表接口不需要认证（用于筛选器）
+                .requestMatchers("/search-spaces").permitAll()
+                // 允许搜索日志点击记录接口不需要认证（用于移动搜索演示）
+                .requestMatchers("/search-logs/click").permitAll()
 
                 // 其他所有请求都需要认证
                 .anyRequest().authenticated()

@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/search-logs")
+@RequestMapping("/search-logs")
 @Tag(name = "搜索日志管理", description = "搜索日志查询、统计和分析相关API")
 public class SearchLogController {
 

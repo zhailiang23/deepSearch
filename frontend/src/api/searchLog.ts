@@ -18,20 +18,19 @@ export const searchLogApi = {
    */
   async recordClick(data: ClickRecordRequest): Promise<ApiResponse<void>> {
     try {
-      const response = await http.post('/search-logs/clicks', {
+      const response = await http.post('/search-logs/click', {
         searchLogId: data.searchLogId,
         documentId: data.documentId,
         documentTitle: data.documentTitle,
         documentUrl: data.documentUrl,
         clickPosition: data.clickPosition,
-        clickTime: data.clickTime,
         userAgent: data.userAgent || navigator.userAgent,
         clickType: data.clickType || 'click',
-        modifierKeys: data.modifierKeys || {
+        modifierKeys: JSON.stringify(data.modifierKeys || {
           ctrl: false,
           shift: false,
           alt: false
-        }
+        })
       })
 
       return {
@@ -78,19 +77,21 @@ export const searchLogApi = {
     params: SearchLogQuery = {}
   ): Promise<ApiResponse<PaginatedResponse<SearchLog>>> {
     try {
+      const sortParam = params.sort || 'createdAt'
+      const directionParam = params.direction || 'desc'
+      const { sort, direction, ...otherParams } = params
       const response = await http.get('/search-logs', {
         params: {
           page: params.page || 0,
           size: params.size || 20,
-          sort: params.sort || 'createdAt',
-          direction: params.direction || 'desc',
-          ...params
+          sort: `${sortParam},${directionParam}`,
+          ...otherParams
         }
       })
 
       return {
         success: true,
-        data: response,
+        data: response.data,
         message: '获取搜索日志成功'
       }
     } catch (error: any) {
@@ -120,7 +121,7 @@ export const searchLogApi = {
 
       return {
         success: true,
-        data: response,
+        data: response.data,
         message: '获取搜索日志详情成功'
       }
     } catch (error: any) {
@@ -150,7 +151,7 @@ export const searchLogApi = {
 
       return {
         success: true,
-        data: response,
+        data: response.data,
         message: '获取搜索统计数据成功'
       }
     } catch (error: any) {
@@ -183,7 +184,7 @@ export const searchLogApi = {
 
       return {
         success: true,
-        data: response,
+        data: response.data,
         message: '获取点击统计数据成功'
       }
     } catch (error: any) {

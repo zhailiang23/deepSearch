@@ -337,7 +337,9 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useMobileSearchDemoStore } from '@/stores/mobileSearchDemo'
 import { useInfiniteScroll } from '@vueuse/core'
 import { SearchDataService, transformSearchResponse } from '@/api/searchData'
+import { searchLogApi } from '@/api/searchLog'
 import type { SearchResult, SearchResponse } from '@/types/demo'
+import type { ClickRecordRequest } from '@/types/searchLog'
 
 // 组件Props
 interface Props {
@@ -379,6 +381,9 @@ const hotSearches = ref([
 // 详情页面状态
 const showDetail = ref(false)
 const selectedResult = ref<SearchResult | null>(null)
+
+// 搜索日志ID状态
+const currentSearchLogId = ref<number | null>(null)
 
 // 搜索防抖
 let searchTimeout: number
@@ -462,22 +467,15 @@ const performSearch = async () => {
 
   showSuggestions.value = false
 
-  try {
-    await realSearch()
+  // 直接调用 realSearch，因为它现在已经处理了所有错误情况
+  await realSearch()
 
-    // 添加到搜索历史
+  // 只有在搜索成功时才添加到历史记录
+  if (!store.searchState.error) {
     store.addToHistory({
       query: searchQuery.value,
       resultCount: store.searchState.total,
       config: { ...store.config }
-    })
-
-  } catch (error) {
-    console.error('搜索失败:', error)
-    // 如果搜索失败，可以考虑fallback到模拟数据或显示错误信息
-    store.setSearchState({
-      loading: false,
-      error: error instanceof Error ? error.message : '搜索失败，请重试'
     })
   }
 }
@@ -485,13 +483,37 @@ const performSearch = async () => {
 const realSearch = async () => {
   // 检查是否选择了搜索空间
   if (selectedSpaces.value.length === 0) {
-    throw new Error('请先选择搜索空间')
+    store.setSearchState({
+      loading: false,
+      error: '请先选择搜索空间'
+    })
+    return
   }
 
   const startTime = Date.now()
-  store.setSearchState({ loading: true, query: searchQuery.value })
+  // 清除之前的错误状态，开始新的搜索
+  store.setSearchState({
+    loading: true,
+    query: searchQuery.value,
+    error: null
+  })
 
   try {
+    // 首先记录搜索日志（使用模拟搜索日志API，因为移动演示使用ES直接搜索）
+    const searchLogRequest = {
+      query: searchQuery.value,
+      searchSpaceId: selectedSpaces.value[0].id,
+      userAgent: navigator.userAgent,
+      source: 'mobile_demo'
+    }
+
+    console.log('记录搜索日志:', searchLogRequest)
+
+    // 模拟搜索日志记录，生成一个临时ID用于点击记录
+    // 在实际实现中，这里应该调用后端API记录搜索日志并返回ID
+    currentSearchLogId.value = Date.now() // 使用时间戳作为临时ID
+    console.log('生成搜索日志ID:', currentSearchLogId.value)
+
     // 构建搜索请求参数
     const searchRequest = {
       searchSpaceId: selectedSpaces.value[0].id, // 目前只支持单个搜索空间
@@ -508,9 +530,14 @@ const realSearch = async () => {
 
     // 调用搜索API
     const backendResponse = await SearchDataService.searchData(searchRequest)
+    console.log('后端搜索响应:', backendResponse)
 
     // 转换响应格式
     const searchResponse = transformSearchResponse(backendResponse)
+    console.log('转换后的搜索响应:', searchResponse)
+
+    // 设置搜索日志ID
+    currentSearchLogId.value = searchResponse.searchLogId || null
 
     // 计算搜索耗时
     const duration = Date.now() - startTime
@@ -522,24 +549,42 @@ const realSearch = async () => {
       hasMore: searchResponse.hasMore,
       total: searchResponse.total,
       duration,
-      page: searchResponse.page
+      page: searchResponse.page,
+      error: null // 确保清除错误状态
     })
 
     console.log('搜索完成:', {
       total: searchResponse.total,
       results: searchResponse.results.length,
-      duration
+      duration,
+      searchLogId: currentSearchLogId.value
     })
 
   } catch (error) {
     console.error('真实搜索失败:', error)
-    throw error
+
+    // 设置详细的错误信息
+    let errorMessage = '搜索失败，请重试'
+    if (error instanceof Error) {
+      errorMessage = error.message
+    } else if (typeof error === 'string') {
+      errorMessage = error
+    }
+
+    // 更新错误状态
+    store.setSearchState({
+      loading: false,
+      error: errorMessage
+    })
+
+    // 注意：这里不再 throw error，避免外层 catch 重复设置错误状态
   }
 }
 
 const clearSearch = () => {
   searchQuery.value = ''
   store.clearResults()
+  currentSearchLogId.value = null
 }
 
 const retrySearch = () => {
@@ -609,8 +654,47 @@ const loadMore = async () => {
   }
 }
 
-const viewResult = (result: SearchResult) => {
+const viewResult = async (result: SearchResult) => {
   console.log('查看结果:', result)
+
+  // 记录点击行为
+  if (currentSearchLogId.value) {
+    try {
+      const clickRequest: ClickRecordRequest = {
+        searchLogId: currentSearchLogId.value,
+        documentId: result.id,
+        documentTitle: result.title,
+        documentUrl: result.source?.link || `#document-${result.id}`,
+        clickPosition: results.value.findIndex(r => r.id === result.id) + 1,
+        clickTime: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        clickType: 'view',
+        modifierKeys: {
+          ctrl: false,
+          shift: false,
+          alt: false
+        }
+      }
+
+      console.log('记录点击行为:', clickRequest)
+
+      // 异步记录点击，不阻塞用户操作
+      searchLogApi.recordClick(clickRequest).then(response => {
+        if (response.success) {
+          console.log('点击记录成功')
+        } else {
+          console.warn('点击记录失败:', response.message)
+        }
+      }).catch(error => {
+        console.error('点击记录出错:', error)
+      })
+    } catch (error) {
+      console.error('构建点击记录失败:', error)
+    }
+  } else {
+    console.warn('没有当前搜索日志ID，无法记录点击')
+  }
+
   selectedResult.value = result
   showDetail.value = true
 }

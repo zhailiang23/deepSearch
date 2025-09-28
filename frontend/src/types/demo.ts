@@ -203,6 +203,8 @@ export interface SearchResponse {
   suggestions?: string[]
   /** 聚合信息 */
   aggregations?: Record<string, any>
+  /** 搜索日志ID */
+  searchLogId?: number
 }
 
 // 搜索状态

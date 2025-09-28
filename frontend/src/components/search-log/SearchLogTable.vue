@@ -28,18 +28,18 @@
             <TableHead>
               <SortableHeader
                 field="id"
-                :current-sort="currentSort"
+                :current-sort="props.currentSort"
                 @sort="handleSort"
               >
                 ID
               </SortableHeader>
             </TableHead>
-            <TableHead>用户信息</TableHead>
-            <TableHead>搜索内容</TableHead>
+            <TableHead>搜索空间</TableHead>
+            <TableHead>查询关键字</TableHead>
             <TableHead>
               <SortableHeader
-                field="resultCount"
-                :current-sort="currentSort"
+                field="totalResults"
+                :current-sort="props.currentSort"
                 @sort="handleSort"
               >
                 结果数量
@@ -47,8 +47,8 @@
             </TableHead>
             <TableHead>
               <SortableHeader
-                field="responseTime"
-                :current-sort="currentSort"
+                field="totalTimeMs"
+                :current-sort="props.currentSort"
                 @sort="handleSort"
               >
                 响应时间
@@ -57,7 +57,7 @@
             <TableHead>
               <SortableHeader
                 field="status"
-                :current-sort="currentSort"
+                :current-sort="props.currentSort"
                 @sort="handleSort"
               >
                 状态
@@ -67,7 +67,7 @@
             <TableHead>
               <SortableHeader
                 field="createdAt"
-                :current-sort="currentSort"
+                :current-sort="props.currentSort"
                 @sort="handleSort"
               >
                 创建时间
@@ -87,44 +87,48 @@
               {{ log.id }}
             </TableCell>
             <TableCell>
-              <div class="user-info">
-                <div class="user-id">{{ log.userId }}</div>
-                <div class="user-ip">{{ log.userIp }}</div>
+              <div class="search-space-info">
+                <div class="space-name">{{ log.searchSpaceName || '未命名空间' }}</div>
               </div>
             </TableCell>
             <TableCell>
-              <div class="search-content">
-                <div class="search-space">{{ log.searchSpaceId }}</div>
-                <div class="search-query">{{ log.query }}</div>
-              </div>
+              <div class="search-query">{{ log.searchQuery }}</div>
             </TableCell>
             <TableCell>
               <span
                 class="result-count"
                 :class="{
-                  'text-green-600': log.resultCount > 0,
-                  'text-yellow-600': log.resultCount === 0
+                  'text-green-600': log.totalResults > 0,
+                  'text-yellow-600': log.totalResults === 0
                 }"
               >
-                {{ log.resultCount }}
+                {{ log.totalResults }}
               </span>
             </TableCell>
             <TableCell>
               <span
                 class="response-time font-mono"
-                :class="getResponseTimeClass(log.responseTime)"
+                :class="getResponseTimeClass(log.totalTimeMs)"
               >
-                {{ log.responseTime }}ms
+                {{ log.totalTimeMs }}ms
               </span>
             </TableCell>
             <TableCell>
-              <StatusBadge :status="log.status" />
+              <span
+                class="status-badge"
+                :class="{
+                  'bg-green-100 text-green-800': log.status === 'SUCCESS',
+                  'bg-red-100 text-red-800': log.status === 'ERROR'
+                }"
+              >
+                {{ log.status === 'SUCCESS' ? '成功' : '失败' }}
+              </span>
             </TableCell>
             <TableCell>
               <div class="click-info">
-                <span class="click-count font-medium">{{ log.clickCount }}</span>
+                <span class="click-count font-medium">{{ log.clickLogs?.length || 0 }}</span>
                 <button
-                  v-if="log.clickCount > 0"
+                  v-if="(log.clickLogs?.length || 0) > 0"
                   @click.stop="$emit('view-clicks', log.id)"
                   class="view-clicks-btn"
                 >
@@ -234,6 +238,10 @@ interface Props {
   data: SearchLog[]
   loading: boolean
   pagination: PaginatedResponse<SearchLog>
+  currentSort: {
+    field: string
+    direction: 'asc' | 'desc'
+  }
 }
 
 interface Emits {
@@ -247,13 +255,6 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-/**
- * 当前排序状态
- */
-const currentSort = computed(() => ({
-  field: 'createdAt', // 默认按创建时间排序
-  direction: 'desc' as 'asc' | 'desc'
-}))
 
 /**
  * 获取响应时间样式类
@@ -329,12 +330,12 @@ const handlePageChange = (page: number, size: number) => {
   @apply text-xs text-gray-500 font-mono;
 }
 
-.search-content {
-  @apply space-y-1 max-w-xs;
+.search-space-info {
+  @apply space-y-1;
 }
 
-.search-space {
-  @apply text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded font-mono;
+.space-name {
+  @apply font-medium text-gray-900 truncate max-w-[150px];
 }
 
 .search-query {

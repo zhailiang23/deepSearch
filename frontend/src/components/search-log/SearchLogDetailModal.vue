@@ -63,7 +63,7 @@
                 </div>
                 <div class="info-item">
                   <label>状态:</label>
-                  <StatusBadge :status="logDetail.status" />
+                  <component :is="StatusBadge" :status="logDetail.status" />
                 </div>
                 <div class="info-item">
                   <label>结果数量:</label>
@@ -84,7 +84,7 @@
                 </div>
                 <div class="info-item">
                   <label>点击次数:</label>
-                  <span class="font-semibold">{{ logDetail.clickCount }}</span>
+                  <span class="font-semibold">{{ logDetail.clickLogs?.length || 0 }}</span>
                 </div>
               </div>
             </section>
@@ -151,27 +151,13 @@
                   </div>
                   <div class="click-document">
                     <h5 class="document-title">{{ click.documentTitle }}</h5>
-                    <a
-                      :href="click.documentUrl"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="document-url"
-                    >
-                      {{ click.documentUrl }}
-                      <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </div>
-                  <div v-if="click.userAgent" class="click-meta">
-                    <span class="user-agent">{{ click.userAgent }}</span>
                   </div>
                 </div>
               </div>
             </section>
 
             <!-- 空状态 - 无点击记录 -->
-            <section v-else-if="logDetail.clickCount === 0" class="detail-section">
+            <section v-else-if="(!logDetail.clickLogs || logDetail.clickLogs.length === 0)" class="detail-section">
               <h3 class="section-title">点击记录</h3>
               <div class="empty-clicks">
                 <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,12 +183,6 @@
           <Button @click="handleClose" variant="outline">
             关闭
           </Button>
-          <Button v-if="logDetail" @click="exportDetail" variant="default">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            导出详情
-          </Button>
         </div>
       </div>
     </div>
@@ -210,9 +190,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, h } from 'vue'
 import { Teleport } from 'vue'
 import { formatDateTime } from '@/utils/date'
+import { searchLogApi } from '@/api/searchLog'
 import type { SearchLogDetail } from '@/types/searchLog'
 
 // 组件导入
@@ -220,13 +201,15 @@ import { Button } from '@/components/ui/button'
 import CodeBlock from '@/components/ui/CodeBlock.vue'
 
 // 状态徽章组件（内联定义）
-const StatusBadge = ({ status }: { status: 'SUCCESS' | 'ERROR' }) => {
+const StatusBadge = (props: { status: 'SUCCESS' | 'ERROR' }) => {
   const config = {
     SUCCESS: { text: '成功', class: 'bg-green-100 text-green-800 border-green-200' },
     ERROR: { text: '失败', class: 'bg-red-100 text-red-800 border-red-200' }
-  }[status]
+  }[props.status]
 
-  return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${config.class}">${config.text}</span>`
+  return h('span', {
+    class: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${config.class}`
+  }, config.text)
 }
 
 interface Props {
@@ -280,7 +263,7 @@ const exportDetail = () => {
       状态: logDetail.value.status,
       结果数量: logDetail.value.resultCount,
       响应时间: `${logDetail.value.responseTime}ms`,
-      点击次数: logDetail.value.clickCount,
+      点击次数: logDetail.value.clickLogs?.length || 0,
       创建时间: formatDateTime(logDetail.value.createdAt)
     },
     请求参数: JSON.parse(logDetail.value.requestParams || '{}'),
@@ -323,7 +306,7 @@ watch(
   }
 )
 
-// 模拟API调用加载日志详情
+// 加载日志详情
 const loadLogDetail = async () => {
   if (!props.logId) return
 
@@ -331,83 +314,14 @@ const loadLogDetail = async () => {
     loading.value = true
     logDetail.value = null
 
-    // 模拟API延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
+    // 调用真实的 API
+    const response = await searchLogApi.getSearchLogDetail(props.logId)
 
-    // 模拟数据，实际应该调用 searchLogApi.getSearchLogDetail(props.logId)
-    const mockDetail: SearchLogDetail = {
-      id: props.logId,
-      userId: 'user123',
-      userIp: '192.168.1.100',
-      searchSpaceId: 'space1',
-      query: 'Vue 3 Composition API',
-      resultCount: 25,
-      responseTime: 342,
-      status: 'SUCCESS',
-      createdAt: new Date().toISOString(),
-      clickCount: 3,
-      requestParams: JSON.stringify({
-        query: 'Vue 3 Composition API',
-        page: 0,
-        size: 10,
-        filters: {
-          type: 'document',
-          language: 'zh-CN'
-        }
-      }, null, 2),
-      responseData: JSON.stringify({
-        total: 25,
-        results: [
-          {
-            id: 'doc1',
-            title: 'Vue 3 Composition API 指南',
-            url: 'https://example.com/vue3-guide',
-            score: 0.95
-          },
-          {
-            id: 'doc2',
-            title: 'Vue 3 组件开发最佳实践',
-            url: 'https://example.com/vue3-practices',
-            score: 0.87
-          }
-        ]
-      }, null, 2),
-      errorMessage: undefined,
-      clickLogs: [
-        {
-          id: 1,
-          documentId: 'doc1',
-          documentTitle: 'Vue 3 Composition API 指南',
-          documentUrl: 'https://example.com/vue3-guide',
-          clickPosition: 1,
-          clickTime: new Date().toISOString(),
-          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-          clickType: 'click'
-        },
-        {
-          id: 2,
-          documentId: 'doc2',
-          documentTitle: 'Vue 3 组件开发最佳实践',
-          documentUrl: 'https://example.com/vue3-practices',
-          clickPosition: 2,
-          clickTime: new Date().toISOString(),
-          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-          clickType: 'click'
-        },
-        {
-          id: 3,
-          documentId: 'doc1',
-          documentTitle: 'Vue 3 Composition API 指南',
-          documentUrl: 'https://example.com/vue3-guide',
-          clickPosition: 1,
-          clickTime: new Date().toISOString(),
-          userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15',
-          clickType: 'click'
-        }
-      ]
+    if (response.success && response.data) {
+      logDetail.value = response.data
+    } else {
+      console.error('获取日志详情失败:', response.message)
     }
-
-    logDetail.value = mockDetail
   } catch (error) {
     console.error('加载日志详情失败:', error)
   } finally {
@@ -577,7 +491,7 @@ watch(() => props.visible, (visible) => {
 }
 
 .empty-clicks {
-  @apply flex flex-col items-center justify-center py-8 text-gray-500;
+  @apply flex flex-col items-center justify-center py-4 text-gray-500;
 }
 
 .empty-icon {

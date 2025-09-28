@@ -1,8 +1,9 @@
 ---
 name: search-log-manage
 description: 搜索日志记录与管理系统，提供搜索行为记录、日志查询和点击行为跟踪功能
-status: backlog
+status: complete
 created: 2025-09-27T01:39:45Z
+completed: 2025-09-27T09:56:35Z
 ---
 
 # PRD: search-log-manage

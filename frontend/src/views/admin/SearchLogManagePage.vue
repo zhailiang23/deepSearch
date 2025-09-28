@@ -1,89 +1,4 @@
 <template>
-  <div class="search-log-manage-page">
-    <!-- 页面头部 -->
-    <PageHeader
-      title="搜索日志管理"
-      description="查看和分析用户搜索行为数据，了解搜索效果和用户偏好"
-      :breadcrumbs="breadcrumbs"
-      :show-stats="true"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <div class="header-actions">
-          <Button
-            @click="refreshData"
-            :disabled="isRefreshing"
-            variant="outline"
-            size="sm"
-          >
-            <svg v-if="!isRefreshing" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <div v-else class="loading-spinner w-4 h-4 mr-2"></div>
-            刷新
-          </Button>
-          <Button
-            @click="exportData"
-            :disabled="isExporting || tableData.length === 0"
-            variant="default"
-            size="sm"
-          >
-            <svg v-if="!isExporting" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <div v-else class="loading-spinner w-4 h-4 mr-2"></div>
-            导出
-          </Button>
-        </div>
-      </template>
-    </PageHeader>
-
-    <!-- 统计数据看板 -->
-    <div class="stats-dashboard">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="总搜索次数"
-          :value="statistics.totalSearches"
-          :loading="statisticsLoading"
-          icon="search"
-          color="green"
-          :trend="statistics.searchTrend"
-          description="30天内累计搜索次数"
-          clickable
-          @click="() => handleStatClick('searches')"
-        />
-        <StatCard
-          title="搜索成功率"
-          :value="`${statistics.successRate}%`"
-          :loading="statisticsLoading"
-          icon="check"
-          color="blue"
-          :trend="statistics.successTrend"
-          description="返回结果的搜索占比"
-        />
-        <StatCard
-          title="平均响应时间"
-          :value="statistics.avgResponseTime"
-          unit="ms"
-          :loading="statisticsLoading"
-          icon="clock"
-          color="orange"
-          :trend="statistics.responseTrend"
-          description="搜索接口平均响应时间"
-        />
-        <StatCard
-          title="总点击次数"
-          :value="statistics.totalClicks"
-          :loading="statisticsLoading"
-          icon="cursor"
-          color="purple"
-          :trend="statistics.clickTrend"
-          description="用户点击搜索结果次数"
-          clickable
-          @click="() => handleStatClick('clicks')"
-        />
-      </div>
-    </div>
 
     <!-- 筛选器 -->
     <div class="filter-section mb-6">
@@ -103,6 +18,7 @@
           :data="tableData"
           :loading="tableLoading"
           :pagination="pagination"
+          :current-sort="{ field: filterParams.sort || 'createdAt', direction: filterParams.direction || 'desc' }"
           @page-change="handlePageChange"
           @sort-change="handleSortChange"
           @view-detail="handleViewDetail"
@@ -126,11 +42,10 @@
         <p class="loading-text">正在加载搜索日志数据...</p>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from '@/utils/message'
 import { searchLogApi } from '@/api/searchLog'
@@ -161,11 +76,12 @@ const statisticsLoading = ref(false)
 const tableLoading = ref(false)
 const detailModalVisible = ref(false)
 const selectedLogId = ref<number | null>(null)
+const isUnmounted = ref(false)
 
 // 面包屑导航
 const breadcrumbs = [
   { label: '首页', to: { name: 'Dashboard' } },
-  { label: '系统管理', to: { name: 'AdminDashboard' } },
+  { label: '系统管理', to: '/' },
   { label: '搜索日志管理' }
 ]
 
@@ -215,10 +131,7 @@ const pagination = reactive<PaginatedResponse<SearchLog>>({
 onMounted(async () => {
   try {
     isInitialLoading.value = true
-    await Promise.all([
-      loadStatistics(),
-      loadTableData()
-    ])
+    await loadTableData()
   } catch (error) {
     console.error('初始化数据失败:', error)
     message.error('数据初始化失败，请刷新页面重试')
@@ -230,10 +143,12 @@ onMounted(async () => {
 /**
  * 监听筛选参数变化
  */
-watch(
+const stopWatcher = watch(
   () => ({ ...filterParams }),
   () => {
-    loadTableData()
+    if (!isUnmounted.value) {
+      loadTableData()
+    }
   },
   { deep: true }
 )
@@ -242,6 +157,8 @@ watch(
  * 加载统计数据
  */
 const loadStatistics = async () => {
+  if (isUnmounted.value) return
+
   try {
     statisticsLoading.value = true
 
@@ -253,6 +170,9 @@ const loadStatistics = async () => {
       startTime.toISOString(),
       endTime.toISOString()
     )
+
+    // 检查组件是否已经卸载
+    if (isUnmounted.value) return
 
     if (response.success && response.data) {
       Object.assign(statistics, {
@@ -302,10 +222,15 @@ const loadStatistics = async () => {
  * 加载表格数据
  */
 const loadTableData = async () => {
+  if (isUnmounted.value) return
+
   try {
     tableLoading.value = true
 
     const response = await searchLogApi.getSearchLogs(filterParams)
+
+    // 检查组件是否已经卸载
+    if (isUnmounted.value) return
 
     if (response.success && response.data) {
       tableData.value = response.data.content || []
@@ -409,10 +334,7 @@ const handleCloseDetail = () => {
 const refreshData = async () => {
   isRefreshing.value = true
   try {
-    await Promise.all([
-      loadStatistics(),
-      loadTableData()
-    ])
+    await loadTableData()
     message.success('数据刷新成功')
   } catch (error) {
     message.error('数据刷新失败')
@@ -491,6 +413,29 @@ const handleStatClick = (type: 'searches' | 'clicks') => {
     })
   }
 }
+
+/**
+ * 组件卸载前的清理工作
+ */
+onBeforeUnmount(() => {
+  isUnmounted.value = true
+
+  // 停止监听器
+  if (stopWatcher) {
+    stopWatcher()
+  }
+
+  // 重置所有 loading 状态
+  isInitialLoading.value = false
+  isRefreshing.value = false
+  isExporting.value = false
+  statisticsLoading.value = false
+  tableLoading.value = false
+
+  // 关闭弹窗
+  detailModalVisible.value = false
+  selectedLogId.value = null
+})
 </script>
 
 <style scoped>

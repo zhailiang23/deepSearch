@@ -1,14 +1,31 @@
 package com.ynet.mgmt.searchlog.entity;
 
-import com.ynet.mgmt.common.BaseEntity;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import org.hibernate.annotations.Comment;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import org.hibernate.annotations.Comment;
+
+import com.ynet.mgmt.common.BaseEntity;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * 搜索日志实体类
@@ -71,8 +88,7 @@ public class SearchLog extends BaseEntity {
     /**
      * 用户代理信息
      */
-    @Lob
-    @Column(name = "user_agent")
+    @Column(name = "user_agent", length = 1000)
     @Comment("用户代理信息")
     private String userAgent;
 
@@ -102,8 +118,7 @@ public class SearchLog extends BaseEntity {
     /**
      * 搜索关键词
      */
-    @Lob
-    @Column(name = "search_query")
+    @Column(name = "search_query", length = 2000)
     @Comment("搜索关键词")
     @NotBlank(message = "搜索关键词不能为空")
     private String searchQuery;
@@ -138,6 +153,22 @@ public class SearchLog extends BaseEntity {
     @Min(value = 1, message = "页大小必须大于0")
     @Max(value = 1000, message = "页大小不能超过1000")
     private Integer pageSize = 10;
+
+    /**
+     * 请求参数JSON字符串
+     */
+    @Lob
+    @Column(name = "request_params")
+    @Comment("请求参数JSON字符串")
+    private String requestParams;
+
+    /**
+     * 响应数据JSON字符串
+     */
+    @Lob
+    @Column(name = "response_data")
+    @Comment("响应数据JSON字符串")
+    private String responseData;
 
     // ========== 响应信息 ==========
 
@@ -451,6 +482,22 @@ public class SearchLog extends BaseEntity {
 
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public String getRequestParams() {
+        return requestParams;
+    }
+
+    public void setRequestParams(String requestParams) {
+        this.requestParams = requestParams;
+    }
+
+    public String getResponseData() {
+        return responseData;
+    }
+
+    public void setResponseData(String responseData) {
+        this.responseData = responseData;
     }
 
     public Long getTotalResults() {

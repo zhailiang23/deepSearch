@@ -1,5 +1,6 @@
 package com.ynet.mgmt.searchlog.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ynet.mgmt.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -43,6 +44,7 @@ public class SearchClickLog extends BaseEntity {
     @JoinColumn(name = "search_log_id", nullable = false, foreignKey = @ForeignKey(name = "fk_search_click_logs_search_log"))
     @Comment("关联搜索日志ID")
     @NotNull(message = "关联搜索日志不能为空")
+    @JsonIgnore
     private SearchLog searchLog;
 
     /**

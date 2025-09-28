@@ -75,6 +75,8 @@ public class SearchLogServiceImpl implements SearchLogService {
             // 执行分页查询
             Page<SearchLog> result = searchLogRepository.findAll(spec, pageable);
 
+            result.forEach(log -> log.getClickLogs().iterator());
+
             log.debug("查询搜索日志: page={}, size={}, total={}",
                     pageable.getPageNumber(), pageable.getPageSize(), result.getTotalElements());
 
@@ -108,8 +110,8 @@ public class SearchLogServiceImpl implements SearchLogService {
                     .createdAt(searchLog.getCreatedAt())
                     .sessionId(searchLog.getSessionId())
                     .traceId(searchLog.getTraceId())
-                    .requestParams("{}") // 暂时使用空JSON，实际可根据需要构建
-                    .responseData("{}") // 暂时使用空JSON，实际可根据需要构建
+                    .requestParams(searchLog.getRequestParams())
+                    .responseData(searchLog.getResponseData())
                     .errorMessage(searchLog.getErrorMessage())
                     .userAgent(searchLog.getUserAgent())
                     .build();
@@ -290,14 +292,21 @@ public class SearchLogServiceImpl implements SearchLogService {
 
             // 搜索空间ID筛选
             if (StringUtils.hasText(request.getSearchSpaceId())) {
-                predicates.add(criteriaBuilder.equal(root.get("searchSpaceId"), request.getSearchSpaceId()));
+                try {
+                    Long searchSpaceId = Long.valueOf(request.getSearchSpaceId());
+                    predicates.add(criteriaBuilder.equal(root.get("searchSpaceId"), searchSpaceId));
+                } catch (NumberFormatException e) {
+                    log.warn("无效的搜索空间ID格式: {}", request.getSearchSpaceId());
+                    // 跳过无效的搜索空间ID筛选
+                }
             }
 
             // 查询关键词筛选
             if (StringUtils.hasText(request.getQuery())) {
+                // 现在searchQuery是普通字符串字段，可以直接使用LIKE查询
                 predicates.add(criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("searchQuery")),
-                        "%" + request.getQuery().toLowerCase() + "%"));
+                        root.get("searchQuery"),
+                        "%" + request.getQuery() + "%"));
             }
 
             // 状态筛选
