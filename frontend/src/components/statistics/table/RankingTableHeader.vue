@@ -5,7 +5,7 @@
       <TableHead class="w-16 text-center">
         <SortableHeader
           field="rank"
-          :current-sort="currentSort"
+          :current-sort="{ field: currentSort.field, direction: currentSort.order }"
           @sort="handleSort"
         >
           排名
@@ -16,7 +16,7 @@
       <TableHead class="min-w-[120px]">
         <SortableHeader
           field="keyword"
-          :current-sort="currentSort"
+          :current-sort="{ field: currentSort.field, direction: currentSort.order }"
           @sort="handleSort"
         >
           关键词
@@ -27,7 +27,7 @@
       <TableHead class="w-24 text-right">
         <SortableHeader
           field="count"
-          :current-sort="currentSort"
+          :current-sort="{ field: currentSort.field, direction: currentSort.order }"
           @sort="handleSort"
         >
           搜索次数

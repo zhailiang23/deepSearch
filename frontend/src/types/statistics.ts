@@ -62,6 +62,7 @@ export interface PaginationConfig {
   page: number
   pageSize: number
   total: number
+  totalPages: number
 }
 
 // 表格列配置
