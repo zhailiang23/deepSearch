@@ -16,6 +16,7 @@ import com.ynet.mgmt.searchspace.entity.SearchSpace;
 import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
 import com.ynet.mgmt.searchspace.service.FileStorageService;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
+import com.ynet.mgmt.searchdata.service.EmbeddingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -47,6 +48,7 @@ public class DataImportService {
     private final SearchSpaceService searchSpaceService;
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
+    private final EmbeddingService embeddingService;
 
     // 任务状态缓存
     private final Map<String, ImportTaskStatus> taskStatusCache = new ConcurrentHashMap<>();
@@ -579,6 +581,38 @@ public class DataImportService {
             case "object" -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
                     .object(o -> o.enabled(true))
             );
+            case "dense_vector" -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
+                    .denseVector(dv -> {
+                        if (mapping.getVectorConfig() != null) {
+                            IndexMappingConfig.VectorFieldConfig vectorConfig = mapping.getVectorConfig();
+                            dv.dims(vectorConfig.getDims());
+
+                            if (vectorConfig.getSimilarity() != null) {
+                                // 设置相似度算法
+                                dv.similarity(vectorConfig.getSimilarity());
+                            }
+
+                            if (vectorConfig.getIndex() != null) {
+                                dv.index(vectorConfig.getIndex());
+                            }
+
+                            // 如果是HNSW索引，添加索引选项
+                            if ("hnsw".equals(vectorConfig.getIndexType()) && vectorConfig.getIndex() != null && vectorConfig.getIndex()) {
+                                dv.indexOptions(indexOpts -> {
+                                    indexOpts.type("hnsw");
+                                    if (vectorConfig.getM() != null) {
+                                        indexOpts.m(vectorConfig.getM());
+                                    }
+                                    if (vectorConfig.getEfConstruction() != null) {
+                                        indexOpts.efConstruction(vectorConfig.getEfConstruction());
+                                    }
+                                    return indexOpts;
+                                });
+                            }
+                        }
+                        return dv;
+                    })
+            );
             default -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
                     .text(t -> t.analyzer("standard"))
             );
@@ -629,7 +663,7 @@ public class DataImportService {
 
             try {
                 // 执行批量导入
-                BulkResponse response = performBulkIndex(indexName, batchData, searchSpaceId);
+                BulkResponse response = performBulkIndex(indexName, batchData, searchSpaceId, indexConfig);
 
                 // 处理响应结果
                 if (response.errors()) {
@@ -717,7 +751,7 @@ public class DataImportService {
     /**
      * 执行批量索引操作
      */
-    private BulkResponse performBulkIndex(String indexName, List<Map<String, Object>> batchData, Long searchSpaceId) throws IOException {
+    private BulkResponse performBulkIndex(String indexName, List<Map<String, Object>> batchData, Long searchSpaceId, IndexMappingConfig indexConfig) throws IOException {
         List<BulkOperation> operations = new ArrayList<>();
 
         for (int i = 0; i < batchData.size(); i++) {
@@ -729,6 +763,9 @@ public class DataImportService {
             // 修复：使用符合Elasticsearch strict_date_time格式的时间戳
             document.put("_importTimestamp", LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT));
             document.put("_dataVersion", 1);
+
+            // 生成向量字段
+            generateVectorFields(document, indexConfig);
 
             IndexOperation<Map<String, Object>> indexOp = IndexOperation.of(io -> io
                     .index(indexName)
@@ -770,6 +807,70 @@ public class DataImportService {
             cancelledTasks.remove(taskId);
             throw new RuntimeException("任务已被取消");
         }
+    }
+
+    /**
+     * 为文档生成向量字段
+     */
+    private void generateVectorFields(Map<String, Object> document, IndexMappingConfig indexConfig) {
+        if (!embeddingService.isServiceAvailable()) {
+            log.debug("嵌入服务不可用，跳过向量生成");
+            return;
+        }
+
+        try {
+            // 遍历索引映射配置，查找需要生成向量的文本字段
+            for (Map.Entry<String, IndexMappingConfig.FieldMapping> entry : indexConfig.getFieldMappings().entrySet()) {
+                String fieldName = entry.getKey();
+                IndexMappingConfig.FieldMapping mapping = entry.getValue();
+
+                // 检查是否为文本字段且需要生成向量
+                if ("text".equals(mapping.getElasticsearchType()) && shouldGenerateVector(fieldName, mapping)) {
+                    Object fieldValue = document.get(fieldName);
+                    if (fieldValue != null && !fieldValue.toString().trim().isEmpty()) {
+                        String text = fieldValue.toString();
+
+                        // 生成向量字段名
+                        String vectorFieldName = fieldName + "_vector";
+
+                        // 检查索引配置中是否确实有对应的向量字段定义
+                        if (indexConfig.getFieldMappings().containsKey(vectorFieldName)) {
+                            try {
+                                // 生成嵌入向量
+                                List<Float> embedding = embeddingService.getTextEmbedding(text);
+                                if (embedding != null && !embedding.isEmpty()) {
+                                    // 转换为double数组以符合Elasticsearch要求
+                                    double[] embeddingArray = embedding.stream()
+                                            .mapToDouble(Float::doubleValue)
+                                            .toArray();
+                                    document.put(vectorFieldName, embeddingArray);
+                                    log.debug("为字段 {} 生成向量: {} 维", fieldName, embeddingArray.length);
+                                } else {
+                                    log.warn("字段 {} 向量生成失败：返回空向量", fieldName);
+                                }
+                            } catch (Exception e) {
+                                log.error("为字段 {} 生成向量时发生错误: {}", fieldName, e.getMessage(), e);
+                            }
+                        } else {
+                            log.debug("索引配置中不存在向量字段: {}", vectorFieldName);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("生成向量字段时发生错误: {}", e.getMessage(), e);
+            // 向量生成失败不应该影响数据导入，只记录错误
+        }
+    }
+
+    /**
+     * 判断是否应该为该字段生成向量
+     */
+    private boolean shouldGenerateVector(String fieldName, IndexMappingConfig.FieldMapping mapping) {
+        // 只为文本类型字段生成向量，且排除系统字段
+        return "text".equals(mapping.getElasticsearchType())
+               && !fieldName.startsWith("_")
+               && !fieldName.endsWith("_vector");
     }
 
     /**

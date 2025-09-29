@@ -89,6 +89,9 @@ const handleParameterChange = (event: ParameterChangeEvent) => {
   } else if (event.type === 'pinyin') {
     console.log('更新拼音配置:', event.value)
     store.updateConfig({ pinyinSearch: event.value })
+  } else if (event.type === 'semantic') {
+    console.log('更新语义搜索配置:', event.value)
+    store.updateConfig({ semanticSearch: event.value })
   } else if (event.type === 'pagination') {
     console.log('更新分页配置:', event.value)
     store.updateConfig({ pagination: event.value })

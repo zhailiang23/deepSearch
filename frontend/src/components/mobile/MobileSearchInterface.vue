@@ -523,7 +523,11 @@ const realSearch = async () => {
       enablePinyinSearch: store.config.pinyinSearch.enabled,
       pinyinMode: store.config.pinyinSearch.enabled ?
         (store.config.pinyinSearch.mode === 'fuzzy' ? 'FUZZY' as const :
-         store.config.pinyinSearch.mode === 'exact' ? 'STRICT' as const : 'AUTO' as const) : 'AUTO' as const
+         store.config.pinyinSearch.mode === 'exact' ? 'STRICT' as const : 'AUTO' as const) : 'AUTO' as const,
+      // 语义搜索参数
+      enableSemanticSearch: store.config.semanticSearch.enabled,
+      semanticMode: store.config.semanticSearch.mode,
+      semanticWeight: store.config.semanticSearch.weight
     }
 
     console.log('搜索请求参数:', searchRequest)
@@ -623,7 +627,11 @@ const loadMore = async () => {
       enablePinyinSearch: store.config.pinyinSearch.enabled,
       pinyinMode: store.config.pinyinSearch.enabled ?
         (store.config.pinyinSearch.mode === 'fuzzy' ? 'FUZZY' as const :
-         store.config.pinyinSearch.mode === 'exact' ? 'STRICT' as const : 'AUTO' as const) : 'AUTO' as const
+         store.config.pinyinSearch.mode === 'exact' ? 'STRICT' as const : 'AUTO' as const) : 'AUTO' as const,
+      // 语义搜索参数
+      enableSemanticSearch: store.config.semanticSearch.enabled,
+      semanticMode: store.config.semanticSearch.mode,
+      semanticWeight: store.config.semanticSearch.weight
     }
 
     console.log('加载更多请求参数:', searchRequest)

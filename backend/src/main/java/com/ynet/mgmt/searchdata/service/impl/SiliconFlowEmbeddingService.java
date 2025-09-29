@@ -57,10 +57,10 @@ public class SiliconFlowEmbeddingService implements EmbeddingService {
     @Value("${semantic.embedding.cache.max.size:1000}")
     private int maxCacheSize;
 
-    @Value("${semantic.embedding.timeout:10000}")
+    @Value("${semantic.embedding.timeout:60000}")
     private int connectionTimeout;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -97,8 +97,21 @@ public class SiliconFlowEmbeddingService implements EmbeddingService {
 
     @PostConstruct
     public void init() {
-        log.info("初始化硅基流动嵌入服务: model={}, dimension={}, enabled={}",
-                MODEL_NAME, VECTOR_DIMENSION, semanticEnabled);
+        // 初始化RestTemplate并配置超时
+        try {
+            // 使用SimpleClientHttpRequestFactory配置超时
+            org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+                new org.springframework.http.client.SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(connectionTimeout);
+            factory.setReadTimeout(connectionTimeout);
+            this.restTemplate = new RestTemplate(factory);
+        } catch (Exception e) {
+            log.warn("无法配置RestTemplate超时，将使用默认RestTemplate", e);
+            this.restTemplate = new RestTemplate();
+        }
+
+        log.info("初始化硅基流动嵌入服务: model={}, dimension={}, enabled={}, timeout={}ms",
+                MODEL_NAME, VECTOR_DIMENSION, semanticEnabled, connectionTimeout);
 
         if (semanticEnabled) {
             // 异步检查服务可用性

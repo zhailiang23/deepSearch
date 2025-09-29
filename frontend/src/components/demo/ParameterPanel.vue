@@ -39,6 +39,20 @@
         </CollapsibleContent>
       </Collapsible>
 
+      <!-- 语义搜索配置 -->
+      <Collapsible v-model:open="sections.semanticSearch" class="border rounded-lg">
+        <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
+          <span class="text-emerald-700">语义搜索配置</span>
+          <ChevronDown class="h-4 w-4 transition-transform duration-200"
+                      :class="{ 'rotate-180': sections.semanticSearch }" />
+        </CollapsibleTrigger>
+        <CollapsibleContent class="px-3 pb-3">
+          <SemanticSearchConfig
+            v-model="localConfig.semanticSearch"
+          />
+        </CollapsibleContent>
+      </Collapsible>
+
       <!-- 分页配置 -->
       <Collapsible v-model:open="sections.pagination" class="border rounded-lg">
         <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
@@ -160,6 +174,7 @@ import {
 
 import SearchSpaceSelector from './SearchSpaceSelector.vue'
 import PinyinSearchConfig from './PinyinSearchConfig.vue'
+import SemanticSearchConfig from './SemanticSearchConfig.vue'
 import PagingConfig from './PagingConfig.vue'
 
 import {
@@ -197,6 +212,7 @@ const collapsed = ref(props.collapsed)
 const sections = ref({
   searchSpaces: true,
   pinyinSearch: false,
+  semanticSearch: true,
   pagination: false,
   advanced: false
 })
@@ -254,6 +270,17 @@ function detectChanges(oldConfig: SearchDemoConfig, newConfig: SearchDemoConfig)
       key: 'config',
       value: newConfig.pinyinSearch,
       previous: oldConfig.pinyinSearch,
+      timestamp
+    })
+  }
+
+  // 检查语义搜索配置变更
+  if (JSON.stringify(oldConfig.semanticSearch) !== JSON.stringify(newConfig.semanticSearch)) {
+    changes.push({
+      type: 'semantic',
+      key: 'config',
+      value: newConfig.semanticSearch,
+      previous: oldConfig.semanticSearch,
       timestamp
     })
   }

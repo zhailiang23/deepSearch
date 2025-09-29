@@ -79,7 +79,7 @@ public class ElasticsearchDataService {
                     request.getEnablePinyinSearch(), request.getPinyinMode());
 
             // 构建查询
-            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName);
+            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName, request.getEnableSemanticSearch(), request.getSemanticWeight());
 
             // 计算分页参数
             int from = (request.getPage() - 1) * request.getSize();
@@ -396,24 +396,28 @@ public class ElasticsearchDataService {
     /**
      * 构建查询 - 支持拼音搜索和语义搜索增强
      */
-    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName) {
+    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName, Boolean enableSemanticSearch, Double requestSemanticWeight) {
         if (!StringUtils.hasText(queryString)) {
             return MatchAllQuery.of(m -> m)._toQuery();
         }
 
-        // 检查是否启用语义搜索
-        boolean enableSemanticSearch = semanticEnabled && embeddingService.isServiceAvailable();
+        // 检查是否启用语义搜索：请求参数、全局配置和服务可用性
+        boolean actualEnableSemanticSearch = (enableSemanticSearch != null ? enableSemanticSearch : true)
+            && semanticEnabled && embeddingService.isServiceAvailable();
+
+        log.debug("语义搜索状态检查: requestParam={}, globalEnabled={}, serviceAvailable={}, actualEnable={}",
+                enableSemanticSearch, semanticEnabled, embeddingService.isServiceAvailable(), actualEnableSemanticSearch);
 
         // 如果启用语义搜索，构建混合查询（关键词 + 向量）
-        if (enableSemanticSearch) {
+        if (actualEnableSemanticSearch) {
             try {
-                Query hybridQuery = buildHybridQuery(queryString, enablePinyinSearch, pinyinMode, indexName);
+                Query hybridQuery = buildHybridQuery(queryString, enablePinyinSearch, pinyinMode, indexName, requestSemanticWeight);
                 if (hybridQuery != null) {
                     log.debug("使用混合查询（关键词+语义）: query={}", queryString);
                     return hybridQuery;
                 }
             } catch (Exception e) {
-                log.warn("混合查询构建失败，降级为关键词查询: query={}, error={}", queryString, e.getMessage());
+                log.warn("混合查询构建失败，降级为关键词查询: query={}, error={}", queryString, e.getMessage(), e);
                 if (log.isDebugEnabled()) {
                     log.debug("混合查询构建异常详情", e);
                 }
@@ -597,8 +601,11 @@ public class ElasticsearchDataService {
      * 构建混合查询（关键词搜索 + 语义向量搜索）
      * 实现混合搜索策略：关键词搜索权重 + 语义搜索权重 = 1.0
      */
-    private Query buildHybridQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName) {
-        log.debug("构建混合查询: query={}, semanticWeight={}", queryString, semanticWeight);
+    private Query buildHybridQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName, Double requestSemanticWeight) {
+        // 使用请求中的权重值，如果没有则使用配置文件的默认值
+        double actualSemanticWeight = requestSemanticWeight != null ? requestSemanticWeight : this.semanticWeight;
+        log.debug("构建混合查询: query={}, requestSemanticWeight={}, actualSemanticWeight={}",
+                queryString, requestSemanticWeight, actualSemanticWeight);
 
         // 获取查询文本的向量表示
         List<Float> queryVector = embeddingService.getTextEmbedding(queryString);
@@ -608,7 +615,7 @@ public class ElasticsearchDataService {
         }
 
         // 计算权重
-        double keywordWeight = 1.0 - semanticWeight;
+        double keywordWeight = 1.0 - actualSemanticWeight;
 
         BoolQuery.Builder hybridBuilder = new BoolQuery.Builder();
 
@@ -631,11 +638,11 @@ public class ElasticsearchDataService {
         }
 
         // 2. 语义向量查询部分
-        if (semanticWeight > 0) {
-            Query vectorQuery = buildVectorQuery(queryVector, (float) semanticWeight);
+        if (actualSemanticWeight > 0) {
+            Query vectorQuery = buildVectorQuery(queryVector, (float) actualSemanticWeight, indexName);
             if (vectorQuery != null) {
                 hybridBuilder.should(vectorQuery);
-                log.debug("添加向量查询，权重: {}", semanticWeight);
+                log.debug("添加向量查询，权重: {}", actualSemanticWeight);
             }
         }
 
@@ -643,7 +650,7 @@ public class ElasticsearchDataService {
         hybridBuilder.minimumShouldMatch("1");
 
         Query finalQuery = hybridBuilder.build()._toQuery();
-        log.debug("混合查询构建完成: keyword_weight={}, semantic_weight={}", keywordWeight, semanticWeight);
+        log.debug("混合查询构建完成: keyword_weight={}, semantic_weight={}", keywordWeight, actualSemanticWeight);
 
         return finalQuery;
     }
@@ -652,7 +659,7 @@ public class ElasticsearchDataService {
      * 构建向量查询
      * 搜索所有包含向量子字段的字段
      */
-    private Query buildVectorQuery(List<Float> queryVector, float boost) {
+    private Query buildVectorQuery(List<Float> queryVector, float boost, String indexName) {
         if (queryVector == null || queryVector.isEmpty()) {
             return null;
         }
@@ -660,12 +667,16 @@ public class ElasticsearchDataService {
         BoolQuery.Builder vectorBuilder = new BoolQuery.Builder();
 
         // 构建对所有向量子字段的 KNN 查询
-        // 使用通配符搜索所有 *.vector 字段
-        List<String> vectorFields = getVectorFields();
+        // 动态获取索引中的向量字段
+        List<String> vectorFields = getVectorFields(indexName);
+
+        // 跟踪是否有成功的向量查询
+        boolean hasValidVectorQueries = false;
 
         for (String vectorField : vectorFields) {
             try {
                 // 使用 script_score 查询实现向量相似度搜索
+                // 根据官方文档使用正确的 cosineSimilarity 语法
                 Query vectorFieldQuery = ScriptScoreQuery.of(s -> s
                     .query(ExistsQuery.of(e -> e.field(vectorField))._toQuery())
                     .script(sc -> sc
@@ -678,6 +689,7 @@ public class ElasticsearchDataService {
                 )._toQuery();
 
                 vectorBuilder.should(vectorFieldQuery);
+                hasValidVectorQueries = true;
                 log.debug("添加向量字段查询: field={}", vectorField);
 
             } catch (Exception e) {
@@ -685,7 +697,7 @@ public class ElasticsearchDataService {
             }
         }
 
-        if (vectorBuilder.build().should().isEmpty()) {
+        if (!hasValidVectorQueries) {
             log.warn("没有可用的向量字段进行语义搜索");
             return null;
         }
@@ -875,11 +887,71 @@ public class ElasticsearchDataService {
      * 获取向量字段列表
      * 使用通配符搜索所有向量子字段，用于语义搜索
      */
-    private List<String> getVectorFields() {
-        // 使用通配符匹配所有字段的向量子字段
-        return Arrays.asList(
-            "*.vector"                // 匹配所有字段的 vector 子字段
-        );
+    private List<String> getVectorFields(String indexName) {
+        try {
+            // 获取索引映射
+            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(indexName));
+            GetMappingResponse response = elasticsearchClient.indices().getMapping(request);
+
+            List<String> vectorFields = new ArrayList<>();
+
+            // 获取映射信息
+            Map<String, IndexMappingRecord> mappings = response.result();
+            if (mappings.isEmpty()) {
+                log.warn("索引 {} 没有映射信息", indexName);
+                return vectorFields;
+            }
+
+            IndexMappingRecord indexMapping = mappings.values().iterator().next();
+
+            // 遍历所有字段，查找 dense_vector 类型的字段
+            extractVectorFields(indexMapping.mappings().properties(), "", vectorFields);
+
+            log.debug("从索引 {} 中找到向量字段: {}", indexName, vectorFields);
+            return vectorFields;
+
+        } catch (Exception e) {
+            log.warn("获取索引 {} 的向量字段失败: {}", indexName, e.getMessage());
+            // 降级：返回常见的向量字段名称作为备选
+            return Arrays.asList(
+                "content_vector",           // 内容向量字段
+                "title_vector",            // 标题向量字段
+                "description_vector",      // 描述向量字段
+                "text_vector",             // 文本向量字段
+                "name_vector",             // 名称向量字段
+                "body_vector"              // 正文向量字段
+            );
+        }
+    }
+
+    /**
+     * 递归提取索引映射中的向量字段
+     */
+    private void extractVectorFields(Map<String, co.elastic.clients.elasticsearch._types.mapping.Property> properties,
+                                   String parentPath, List<String> vectorFields) {
+        if (properties == null) {
+            return;
+        }
+
+        for (Map.Entry<String, co.elastic.clients.elasticsearch._types.mapping.Property> entry : properties.entrySet()) {
+            String fieldName = entry.getKey();
+            co.elastic.clients.elasticsearch._types.mapping.Property property = entry.getValue();
+
+            // 构建完整的字段路径
+            String fullPath = parentPath.isEmpty() ? fieldName : parentPath + "." + fieldName;
+
+            // 检查是否为dense_vector类型
+            if (property.isDenseVector()) {
+                vectorFields.add(fullPath);
+                log.debug("找到向量字段: {}", fullPath);
+            }
+
+            // 只递归检查object类型的子字段，不再检查text/keyword的multifields
+            // 因为向量字段现在是独立的顶级字段，不在multifields中
+            if (property.isObject() && property.object().properties() != null) {
+                extractVectorFields(property.object().properties(), fullPath, vectorFields);
+            }
+        }
     }
 
     /**

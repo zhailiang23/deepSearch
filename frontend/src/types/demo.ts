@@ -31,6 +31,13 @@ export interface PaginationConfig {
   prefetchNext: boolean
 }
 
+// 语义搜索配置
+export interface SemanticSearchConfig {
+  enabled: boolean
+  weight: number  // 语义搜索权重，范围 0.0-1.0
+  mode: 'AUTO' | 'KEYWORD_FIRST' | 'SEMANTIC_FIRST' | 'HYBRID'
+}
+
 // 搜索行为配置
 export interface SearchBehaviorConfig {
   debounceMs: number
@@ -59,6 +66,9 @@ export interface SearchDemoConfig {
   // 拼音搜索配置
   pinyinSearch: PinyinSearchConfig
 
+  // 语义搜索配置
+  semanticSearch: SemanticSearchConfig
+
   // 分页配置
   pagination: PaginationConfig
 
@@ -82,7 +92,7 @@ export interface ConfigPreset {
 
 // 参数变更事件
 export interface ParameterChangeEvent {
-  type: 'searchSpace' | 'pinyin' | 'pagination' | 'behavior' | 'display'
+  type: 'searchSpace' | 'pinyin' | 'semantic' | 'pagination' | 'behavior' | 'display'
   key: string
   value: any
   previous: any
@@ -141,6 +151,11 @@ export const DEFAULT_SEARCH_DEMO_CONFIG: SearchDemoConfig = {
     mode: 'both',
     toneIgnore: true,
     segmentMatch: true
+  },
+  semanticSearch: {
+    enabled: true,
+    weight: 0.3,
+    mode: 'AUTO'
   },
   pagination: {
     pageSize: 20,

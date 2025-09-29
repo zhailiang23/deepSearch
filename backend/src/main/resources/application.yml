@@ -176,7 +176,7 @@ semantic:
     # 是否启用语义搜索
     enabled: ${SEMANTIC_EMBEDDING_ENABLED:true}
     # 通用超时配置
-    timeout: ${SEMANTIC_EMBEDDING_TIMEOUT:10000}
+    timeout: ${SEMANTIC_EMBEDDING_TIMEOUT:60000}
     # 缓存配置
     cache:
       expire:

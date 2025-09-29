@@ -142,6 +142,29 @@ public class IndexConfigService {
         for (FieldAnalysisResult fieldResult : analysis.getFieldAnalysis().values()) {
             IndexMappingConfig.FieldMapping mapping = generateFieldMapping(fieldResult);
             mappings.put(fieldResult.getFieldName(), mapping);
+
+            // 如果需要语义搜索支持，为文本字段添加对应的向量字段
+            if ("text".equals(mapping.getElasticsearchType()) && shouldAddSemanticField(fieldResult)) {
+                String vectorFieldName = fieldResult.getFieldName() + "_vector";
+                log.debug("为字段 {} 创建独立的向量字段 {}", fieldResult.getFieldName(), vectorFieldName);
+
+                IndexMappingConfig.FieldMapping vectorMapping = IndexMappingConfig.FieldMapping.builder()
+                        .fieldName(vectorFieldName)
+                        .elasticsearchType("dense_vector")
+                        .vectorConfig(IndexMappingConfig.VectorFieldConfig.builder()
+                                .dims(embeddingService.getVectorDimension())
+                                .similarity("cosine")
+                                .index(true)
+                                .indexType("hnsw")
+                                .m(16)
+                                .efConstruction(200)
+                                .build())
+                        .index(false) // 向量字段不需要传统索引
+                        .docValues(false) // 向量字段不需要doc_values
+                        .build();
+
+                mappings.put(vectorFieldName, vectorMapping);
+            }
         }
 
         // 添加系统字段
@@ -268,25 +291,7 @@ public class IndexConfigService {
             }
         }
 
-        // 如果需要语义搜索支持，添加向量相关子字段
-        if (shouldAddSemanticField(fieldResult)) {
-            log.debug("为字段 {} 添加语义向量子字段支持", fieldResult.getFieldName());
-
-            // 添加向量子字段用于语义搜索
-            fields.put("vector", IndexMappingConfig.FieldMapping.builder()
-                    .elasticsearchType("dense_vector")
-                    .vectorConfig(IndexMappingConfig.VectorFieldConfig.builder()
-                            .dims(embeddingService.getVectorDimension())
-                            .similarity("cosine")
-                            .index(true)
-                            .indexType("hnsw")
-                            .m(16)
-                            .efConstruction(200)
-                            .build())
-                    .index(false) // 向量字段不需要传统索引
-                    .docValues(false) // 向量字段不需要doc_values
-                    .build());
-        }
+        // 注意：dense_vector字段不能作为multifields，需要在主字段级别单独创建
 
         builder.fields(fields);
 
