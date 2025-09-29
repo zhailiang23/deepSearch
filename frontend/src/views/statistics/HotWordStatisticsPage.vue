@@ -23,21 +23,15 @@
             <!-- 词云图组件 -->
             <div class="flex-1 relative px-6 pb-6 overflow-hidden">
               <div class="w-full h-full bg-gray-50 rounded-lg overflow-hidden">
-                <HotWordCloudChart
-                  ref="wordCloudRef"
+                <SimpleWordCloudChart
                   :words="wordCloudData"
-                  :theme="wordCloudConfig.theme"
-                  :responsive="true"
                   :loading="loading"
-                  :error="error || undefined"
-                  :options="wordCloudOptions"
-                  :show-toolbar="false"
+                  :error="error || ''"
+                  :theme="'light'"
+                  :max-words="50"
                   @word-click="handleWordClick"
-                  @word-hover="handleWordHover"
-                  @render-start="handleRenderStart"
                   @render-complete="handleRenderComplete"
                   @render-error="handleRenderError"
-                  @download="handleWordCloudDownload"
                 />
               </div>
             </div>
@@ -173,7 +167,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
-import HotWordCloudChart from '@/components/statistics/HotWordCloudChart.vue'
+import SimpleWordCloudChart from '@/components/statistics/SimpleWordCloudChart.vue'
 import HotWordFilter from '@/components/statistics/HotWordFilter.vue'
 import { useHotWordData } from '@/composables/useHotWordData'
 import { useHotWordStatisticsStore } from '@/stores/hotWordStatistics'
@@ -184,7 +178,7 @@ import type { HotWordItem } from '@/types/statistics'
 // 使用Pinia Store
 const store = useHotWordStatisticsStore()
 
-const wordCloudRef = ref()
+// 删除了wordCloudRef，新组件不需要引用
 const filterRef = ref()
 
 // 从store中获取响应式数据
@@ -233,11 +227,7 @@ const filterConfig = computed({
   }
 })
 
-// 词云配置
-const wordCloudConfig = reactive({
-  theme: 'light-green',
-  maxWords: 100
-})
+// 删除了复杂的词云配置，改用简单组件
 
 // 本地UI状态
 const searchKeyword = ref('')
@@ -247,9 +237,9 @@ const pageSize = ref(50)
 // ============= 计算属性 =============
 
 const wordCloudData = computed(() => {
-  // 从统计数据创建词云数据
+  // 从统计数据创建词云数据，限制为50个词
   return statistics.value
-    .slice(0, wordCloudConfig.maxWords)
+    .slice(0, 50)
     .map(item => ({
       text: item.keyword,
       weight: item.count,
@@ -257,20 +247,7 @@ const wordCloudData = computed(() => {
     }))
 })
 
-const wordCloudOptions = computed((): any => ({
-  gridSize: 8,
-  weightFactor: (weight: number) => Math.pow(weight, 0.8) * 25,
-  fontFamily: 'Arial, sans-serif',
-  rotateRatio: 0.5,
-  rotationSteps: 4,
-  backgroundColor: 'transparent',
-  color: (word: string, weight: number) => {
-    // 根据权重返回不同颜色
-    const colors = ['#10b981', '#059669', '#047857', '#065f46']
-    const index = Math.floor((weight / 100) * colors.length)
-    return colors[Math.min(index, colors.length - 1)]
-  }
-}))
+// 删除了复杂的词云选项配置，新组件内置了所有配置
 
 const summary = computed(() => {
   // 使用Store中的数据摘要
@@ -396,17 +373,9 @@ const handleFilterChange = async (filterData: any) => {
   await store.fetchHotWords()
 }
 
-const handleWordClick = (word: HotWordItem, event: Event) => {
+const handleWordClick = (word: any, event: Event) => {
   console.log('Word clicked:', word)
   // 可以在这里实现更多交互逻辑，比如显示详细信息
-}
-
-const handleWordHover = (word: HotWordItem, event: Event) => {
-  // 悬停效果已由组件内部处理
-}
-
-const handleRenderStart = () => {
-  console.log('Word cloud rendering started')
 }
 
 const handleRenderComplete = () => {
@@ -415,13 +384,6 @@ const handleRenderComplete = () => {
 
 const handleRenderError = (errorMessage: string) => {
   console.error('Word cloud rendering error:', errorMessage)
-}
-
-const handleWordCloudDownload = (canvas: HTMLCanvasElement) => {
-  const link = document.createElement('a')
-  link.download = `hot-word-cloud-${Date.now()}.png`
-  link.href = canvas.toDataURL()
-  link.click()
 }
 
 const highlightWord = (word: string) => {
@@ -477,15 +439,7 @@ const formatDate = (dateString?: string) => {
 }
 
 // ============= 监听器 =============
-
-watch([() => wordCloudConfig.theme, () => wordCloudConfig.maxWords], () => {
-  // 词云配置变化时重新渲染
-  nextTick(() => {
-    if (wordCloudRef.value?.refresh) {
-      wordCloudRef.value.refresh()
-    }
-  })
-})
+// 新的简单词云组件自动处理数据变化，无需手动监听
 
 watch(searchKeyword, () => {
   currentPage.value = 1
