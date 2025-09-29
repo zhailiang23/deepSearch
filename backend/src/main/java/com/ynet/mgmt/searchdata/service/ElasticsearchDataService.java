@@ -394,10 +394,10 @@ public class ElasticsearchDataService {
 
         switch (mode) {
             case "STRICT":
-                // 严格模式：优先原字段匹配，拼音作为辅助
+                // 严格模式：关键字匹配权重最高，拼音作为辅助
                 BoolQuery.Builder strictBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, indexName, 3.0f))  // 原字段权重更高
-                    .should(buildPinyinQuery(queryString, 1.0f))      // 拼音权重较低
+                    .should(buildMultiFieldQuery(queryString, indexName, 5.0f))  // 关键字权重大幅提升
+                    .should(buildPinyinQuery(queryString, 1.0f))      // 拼音权重保持较低
                     .minimumShouldMatch("1");
                 // 短中文查询避免使用首字母匹配
                 if (!isShortChinese) {
@@ -409,27 +409,27 @@ public class ElasticsearchDataService {
                 return strictBuilder.build()._toQuery();
 
             case "FUZZY":
-                // 模糊模式：增强拼音和首字母匹配权重
-                System.out.println("FUZZY模式: 使用所有匹配方式");
+                // 模糊模式：关键字匹配权重仍然要高于拼音匹配
+                System.out.println("FUZZY模式: 使用所有匹配方式，但确保关键字权重最高");
                 return BoolQuery.of(b -> b
-                    .should(buildMultiFieldQuery(queryString, indexName, 1.5f))  // 原字段权重降低
-                    .should(buildPinyinQuery(queryString, 2.0f))      // 拼音权重更高
-                    .should(buildFirstLetterQuery(queryString, 1.5f)) // 首字母权重提高
+                    .should(buildMultiFieldQuery(queryString, indexName, 3.0f))  // 关键字权重提升
+                    .should(buildPinyinQuery(queryString, 1.8f))      // 拼音权重降低但仍然较高
+                    .should(buildFirstLetterQuery(queryString, 1.2f)) // 首字母权重适中
                     .minimumShouldMatch("1")
                 )._toQuery();
 
             case "AUTO":
             default:
-                // 自动模式：平衡所有搜索策略
+                // 自动模式：进一步优化权重，确保关键字匹配优先级最高
                 BoolQuery.Builder autoBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, indexName, 2.0f))  // 原字段精确匹配，权重2.0
+                    .should(buildMultiFieldQuery(queryString, indexName, 4.0f))  // 关键字权重大幅提升至4.0
                     .minimumShouldMatch("1"); // 至少匹配一个should条件
 
                 // 对于短中文查询，只使用原字段匹配，避免拼音分析器导致的过度匹配
                 if (!isShortChinese) {
                     System.out.println("AUTO模式: 添加拼音和首字母匹配 (非短中文)");
-                    autoBuilder.should(buildPinyinQuery(queryString, 1.5f));      // 拼音字段匹配，权重1.5
-                    autoBuilder.should(buildFirstLetterQuery(queryString, 1.0f)); // 首字母匹配，权重1.0
+                    autoBuilder.should(buildPinyinQuery(queryString, 1.5f));      // 拼音字段匹配，权重保持1.5
+                    autoBuilder.should(buildFirstLetterQuery(queryString, 1.0f)); // 首字母匹配，权重保持1.0
                 } else {
                     System.out.println("AUTO模式: 跳过拼音和首字母匹配 (短中文，避免过度匹配)");
                 }
@@ -635,13 +635,13 @@ public class ElasticsearchDataService {
 
     /**
      * 获取拼音字段列表
-     * 使用通配符搜索所有拼音字段，解决字段名不匹配问题
+     * 使用通配符搜索所有拼音字段，降低权重确保关键字匹配优先
      */
     private List<String> getPinyinFields() {
-        // 使用通配符匹配所有字段的拼音子字段
+        // 使用通配符匹配所有字段的拼音子字段，降低权重
         return Arrays.asList(
-            "*.pinyin^2.0",           // 匹配所有字段的 pinyin 子字段，权重2.0
-            "*.chinese_pinyin^1.5"    // 匹配所有字段的 chinese_pinyin 子字段，权重1.5
+            "*.pinyin^1.2",           // 匹配所有字段的 pinyin 子字段，权重降至1.2
+            "*.chinese_pinyin^1.0"    // 匹配所有字段的 chinese_pinyin 子字段，权重降至1.0
         );
     }
 
