@@ -2,17 +2,17 @@ package com.ynet.mgmt.searchdata.service;
 
 import com.ynet.mgmt.searchdata.dto.*;
 import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
+import com.ynet.mgmt.searchdata.service.EmbeddingService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.elasticsearch.core.search.Highlight;
 import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.elasticsearch.core.search.HighlighterType;
-import co.elastic.clients.util.NamedValue;
 import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
 import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
 import co.elastic.clients.elasticsearch.indices.get_mapping.IndexMappingRecord;
@@ -21,6 +21,7 @@ import co.elastic.clients.elasticsearch._types.mapping.ObjectProperty;
 import co.elastic.clients.json.JsonData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -40,10 +41,25 @@ import java.util.stream.Collectors;
 public class ElasticsearchDataService {
 
     private final ElasticsearchClient elasticsearchClient;
+    private final EmbeddingService embeddingService;
+
+    /**
+     * 是否启用语义搜索功能
+     */
+    @Value("${semantic.embedding.enabled:true}")
+    private boolean semanticEnabled;
+
+    /**
+     * 语义搜索权重（0.0-1.0），剩余权重分配给关键词搜索
+     */
+    @Value("${semantic.search.weight:0.3}")
+    private double semanticWeight;
 
     @Autowired
-    public ElasticsearchDataService(ElasticsearchClient elasticsearchClient) {
+    public ElasticsearchDataService(ElasticsearchClient elasticsearchClient,
+                                  EmbeddingService embeddingService) {
         this.elasticsearchClient = elasticsearchClient;
+        this.embeddingService = embeddingService;
     }
 
     /**
@@ -378,11 +394,30 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 构建查询 - 支持拼音搜索增强
+     * 构建查询 - 支持拼音搜索和语义搜索增强
      */
     private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName) {
         if (!StringUtils.hasText(queryString)) {
             return MatchAllQuery.of(m -> m)._toQuery();
+        }
+
+        // 检查是否启用语义搜索
+        boolean enableSemanticSearch = semanticEnabled && embeddingService.isServiceAvailable();
+
+        // 如果启用语义搜索，构建混合查询（关键词 + 向量）
+        if (enableSemanticSearch) {
+            try {
+                Query hybridQuery = buildHybridQuery(queryString, enablePinyinSearch, pinyinMode, indexName);
+                if (hybridQuery != null) {
+                    log.debug("使用混合查询（关键词+语义）: query={}", queryString);
+                    return hybridQuery;
+                }
+            } catch (Exception e) {
+                log.warn("混合查询构建失败，降级为关键词查询: query={}, error={}", queryString, e.getMessage());
+                if (log.isDebugEnabled()) {
+                    log.debug("混合查询构建异常详情", e);
+                }
+            }
         }
 
         // 如果拼音搜索被禁用，直接使用标准查询
@@ -556,6 +591,106 @@ public class ElasticsearchDataService {
             .boost(boost)
             .operator(Operator.Or)
         )._toQuery();
+    }
+
+    /**
+     * 构建混合查询（关键词搜索 + 语义向量搜索）
+     * 实现混合搜索策略：关键词搜索权重 + 语义搜索权重 = 1.0
+     */
+    private Query buildHybridQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName) {
+        log.debug("构建混合查询: query={}, semanticWeight={}", queryString, semanticWeight);
+
+        // 获取查询文本的向量表示
+        List<Float> queryVector = embeddingService.getTextEmbedding(queryString);
+        if (queryVector == null || queryVector.isEmpty()) {
+            log.warn("无法获取查询文本的向量表示，降级为关键词查询: query={}", queryString);
+            return null;
+        }
+
+        // 计算权重
+        double keywordWeight = 1.0 - semanticWeight;
+
+        BoolQuery.Builder hybridBuilder = new BoolQuery.Builder();
+
+        // 1. 关键词查询部分（支持拼音搜索）
+        if (keywordWeight > 0) {
+            Query keywordQuery;
+            if (enablePinyinSearch != null && enablePinyinSearch) {
+                keywordQuery = buildPinyinEnhancedQuery(queryString, pinyinMode, indexName);
+            } else {
+                keywordQuery = buildMultiFieldQuery(queryString, indexName, 1.0f);
+            }
+
+            if (keywordQuery != null) {
+                hybridBuilder.should(BoolQuery.of(b -> b
+                    .must(keywordQuery)
+                    .boost((float) keywordWeight)
+                )._toQuery());
+                log.debug("添加关键词查询，权重: {}", keywordWeight);
+            }
+        }
+
+        // 2. 语义向量查询部分
+        if (semanticWeight > 0) {
+            Query vectorQuery = buildVectorQuery(queryVector, (float) semanticWeight);
+            if (vectorQuery != null) {
+                hybridBuilder.should(vectorQuery);
+                log.debug("添加向量查询，权重: {}", semanticWeight);
+            }
+        }
+
+        // 设置至少匹配一个条件
+        hybridBuilder.minimumShouldMatch("1");
+
+        Query finalQuery = hybridBuilder.build()._toQuery();
+        log.debug("混合查询构建完成: keyword_weight={}, semantic_weight={}", keywordWeight, semanticWeight);
+
+        return finalQuery;
+    }
+
+    /**
+     * 构建向量查询
+     * 搜索所有包含向量子字段的字段
+     */
+    private Query buildVectorQuery(List<Float> queryVector, float boost) {
+        if (queryVector == null || queryVector.isEmpty()) {
+            return null;
+        }
+
+        BoolQuery.Builder vectorBuilder = new BoolQuery.Builder();
+
+        // 构建对所有向量子字段的 KNN 查询
+        // 使用通配符搜索所有 *.vector 字段
+        List<String> vectorFields = getVectorFields();
+
+        for (String vectorField : vectorFields) {
+            try {
+                // 使用 script_score 查询实现向量相似度搜索
+                Query vectorFieldQuery = ScriptScoreQuery.of(s -> s
+                    .query(ExistsQuery.of(e -> e.field(vectorField))._toQuery())
+                    .script(sc -> sc
+                        .inline(InlineScript.of(is -> is
+                            .source("cosineSimilarity(params.query_vector, '" + vectorField + "') + 1.0")
+                            .params("query_vector", JsonData.of(queryVector))
+                        ))
+                    )
+                    .boost(boost)
+                )._toQuery();
+
+                vectorBuilder.should(vectorFieldQuery);
+                log.debug("添加向量字段查询: field={}", vectorField);
+
+            } catch (Exception e) {
+                log.warn("构建向量字段查询失败: field={}, error={}", vectorField, e.getMessage());
+            }
+        }
+
+        if (vectorBuilder.build().should().isEmpty()) {
+            log.warn("没有可用的向量字段进行语义搜索");
+            return null;
+        }
+
+        return vectorBuilder.minimumShouldMatch("1").build()._toQuery();
     }
 
     /**
@@ -733,6 +868,17 @@ public class ElasticsearchDataService {
         // 使用通配符匹配所有字段的首字母子字段
         return Arrays.asList(
             "*.first_letter^1.0"      // 匹配所有字段的 first_letter 子字段，权重1.0
+        );
+    }
+
+    /**
+     * 获取向量字段列表
+     * 使用通配符搜索所有向量子字段，用于语义搜索
+     */
+    private List<String> getVectorFields() {
+        // 使用通配符匹配所有字段的向量子字段
+        return Arrays.asList(
+            "*.vector"                // 匹配所有字段的 vector 子字段
         );
     }
 

@@ -46,6 +46,19 @@ public class SearchDataRequest {
             defaultValue = "AUTO")
     private String pinyinMode = "AUTO";
 
+    @Schema(description = "启用语义搜索", example = "true", defaultValue = "true")
+    private Boolean enableSemanticSearch = true;
+
+    @Schema(description = "语义搜索模式", example = "AUTO",
+            allowableValues = {"AUTO", "KEYWORD_FIRST", "SEMANTIC_FIRST", "HYBRID", "KEYWORD_ONLY", "SEMANTIC_ONLY"},
+            defaultValue = "AUTO")
+    private String semanticMode = "AUTO";
+
+    @Schema(description = "语义搜索权重", example = "0.3",
+            minimum = "0.0", maximum = "1.0",
+            defaultValue = "0.3")
+    private Double semanticWeight;
+
     /**
      * 排序配置
      */

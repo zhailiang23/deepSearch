@@ -162,6 +162,11 @@ public class IndexMappingConfig {
          * 数值字段的特殊配置
          */
         private NumericFieldConfig numericConfig;
+
+        /**
+         * 向量字段的特殊配置
+         */
+        private VectorFieldConfig vectorConfig;
     }
 
     /**
@@ -207,6 +212,48 @@ public class IndexMappingConfig {
          * 缩放因子（用于scaled_float）
          */
         private Integer scalingFactor;
+    }
+
+    /**
+     * 向量字段配置
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VectorFieldConfig {
+
+        /**
+         * 向量维度
+         */
+        private Integer dims;
+
+        /**
+         * 向量相似度算法
+         * 支持 "cosine", "dot_product", "l2_norm"
+         */
+        private String similarity;
+
+        /**
+         * 是否索引向量以支持搜索
+         */
+        private Boolean index;
+
+        /**
+         * 向量索引类型
+         * 支持 "hnsw", "flat"
+         */
+        private String indexType;
+
+        /**
+         * HNSW算法参数 - 构建时的最大连接数
+         */
+        private Integer m;
+
+        /**
+         * HNSW算法参数 - 构建时的候选数
+         */
+        private Integer efConstruction;
     }
 
     /**
@@ -322,6 +369,33 @@ public class IndexMappingConfig {
             }
             if (numericConfig.getScalingFactor() != null) {
                 fieldMap.put("scaling_factor", numericConfig.getScalingFactor());
+            }
+        }
+
+        // 处理向量字段的特殊配置
+        if (fieldMapping.getVectorConfig() != null) {
+            VectorFieldConfig vectorConfig = fieldMapping.getVectorConfig();
+            if (vectorConfig.getDims() != null) {
+                fieldMap.put("dims", vectorConfig.getDims());
+            }
+            if (vectorConfig.getSimilarity() != null) {
+                fieldMap.put("similarity", vectorConfig.getSimilarity());
+            }
+            if (vectorConfig.getIndex() != null) {
+                fieldMap.put("index", vectorConfig.getIndex());
+            }
+
+            // HNSW索引参数
+            if ("hnsw".equals(vectorConfig.getIndexType())) {
+                Map<String, Object> indexOptions = new HashMap<>();
+                indexOptions.put("type", "hnsw");
+                if (vectorConfig.getM() != null) {
+                    indexOptions.put("m", vectorConfig.getM());
+                }
+                if (vectorConfig.getEfConstruction() != null) {
+                    indexOptions.put("ef_construction", vectorConfig.getEfConstruction());
+                }
+                fieldMap.put("index_options", indexOptions);
             }
         }
 

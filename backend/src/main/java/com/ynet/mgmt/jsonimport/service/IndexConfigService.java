@@ -4,6 +4,7 @@ import com.ynet.mgmt.jsonimport.enums.FieldType;
 import com.ynet.mgmt.jsonimport.model.FieldAnalysisResult;
 import com.ynet.mgmt.jsonimport.model.IndexMappingConfig;
 import com.ynet.mgmt.jsonimport.model.JsonSchemaAnalysis;
+import com.ynet.mgmt.searchdata.service.EmbeddingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,11 +25,23 @@ import java.util.stream.Collectors;
 public class IndexConfigService {
 
     /**
+     * 语义嵌入服务
+     */
+    private final EmbeddingService embeddingService;
+
+    /**
      * 是否启用拼音分析器功能
      * 可以通过配置文件控制是否启用拼音功能
      */
     @Value("${elasticsearch.pinyin.enabled:true}")
     private boolean pinyinEnabled;
+
+    /**
+     * 是否启用语义搜索功能
+     * 可以通过配置文件控制是否为文本字段添加向量子字段
+     */
+    @Value("${semantic.embedding.enabled:true}")
+    private boolean semanticEnabled;
 
     /**
      * 拼音插件可用性缓存
@@ -255,6 +268,26 @@ public class IndexConfigService {
             }
         }
 
+        // 如果需要语义搜索支持，添加向量相关子字段
+        if (shouldAddSemanticField(fieldResult)) {
+            log.debug("为字段 {} 添加语义向量子字段支持", fieldResult.getFieldName());
+
+            // 添加向量子字段用于语义搜索
+            fields.put("vector", IndexMappingConfig.FieldMapping.builder()
+                    .elasticsearchType("dense_vector")
+                    .vectorConfig(IndexMappingConfig.VectorFieldConfig.builder()
+                            .dims(embeddingService.getVectorDimension())
+                            .similarity("cosine")
+                            .index(true)
+                            .indexType("hnsw")
+                            .m(16)
+                            .efConstruction(200)
+                            .build())
+                    .index(false) // 向量字段不需要传统索引
+                    .docValues(false) // 向量字段不需要doc_values
+                    .build());
+        }
+
         builder.fields(fields);
 
         // 文本字段特殊配置
@@ -362,6 +395,77 @@ public class IndexConfigService {
 
         log.debug("字段 {} 不包含中文内容，跳过拼音支持", fieldResult.getFieldName());
         return false;
+    }
+
+    /**
+     * 判断字段是否应该添加语义向量字段支持
+     *
+     * @param fieldResult 字段分析结果
+     * @return 是否需要语义搜索支持
+     */
+    private boolean shouldAddSemanticField(FieldAnalysisResult fieldResult) {
+        // 首先检查语义搜索功能是否启用
+        if (!semanticEnabled) {
+            log.debug("语义搜索功能已禁用");
+            return false;
+        }
+
+        // 检查语义嵌入服务是否可用
+        if (!embeddingService.isServiceAvailable()) {
+            log.debug("语义嵌入服务不可用，跳过字段 {} 的向量支持", fieldResult.getFieldName());
+            return false;
+        }
+
+        // 只为字符串类型字段考虑语义搜索支持
+        if (fieldResult.getInferredType() != FieldType.STRING) {
+            log.trace("字段 {} 不是字符串类型，跳过语义支持", fieldResult.getFieldName());
+            return false;
+        }
+
+        String fieldName = fieldResult.getFieldName().toLowerCase();
+
+        // 重要的文本字段应该支持语义搜索
+        if (fieldResult.getImportance() >= 80 || fieldResult.isSuggestIndex()) {
+            log.debug("字段 {} 重要性高（{}），添加语义支持",
+                     fieldResult.getFieldName(), fieldResult.getImportance());
+            return true;
+        }
+
+        // 内容类字段适合语义搜索
+        if (isSemanticContentField(fieldName)) {
+            log.debug("字段 {} 适合语义搜索，添加向量支持", fieldResult.getFieldName());
+            return true;
+        }
+
+        // 如果字段包含较多文本内容，也考虑添加语义支持
+        if (fieldResult.getStatistics() != null &&
+            fieldResult.getStatistics().getAvgLength() != null &&
+            fieldResult.getStatistics().getAvgLength() > 20) {
+            log.debug("字段 {} 内容较长（平均长度: {}），添加语义支持",
+                     fieldResult.getFieldName(), fieldResult.getStatistics().getAvgLength());
+            return true;
+        }
+
+        log.debug("字段 {} 不需要语义搜索支持", fieldResult.getFieldName());
+        return false;
+    }
+
+    /**
+     * 判断字段名称是否为语义内容字段候选
+     * 这些字段类型适合进行语义搜索
+     */
+    private boolean isSemanticContentField(String fieldName) {
+        return fieldName.contains("title") || fieldName.contains("标题") ||
+               fieldName.contains("name") || fieldName.contains("名称") || fieldName.contains("姓名") ||
+               fieldName.contains("content") || fieldName.contains("内容") || fieldName.contains("正文") ||
+               fieldName.contains("description") || fieldName.contains("描述") || fieldName.contains("说明") ||
+               fieldName.contains("summary") || fieldName.contains("摘要") || fieldName.contains("概述") ||
+               fieldName.contains("remark") || fieldName.contains("备注") || fieldName.contains("注释") ||
+               fieldName.contains("comment") || fieldName.contains("评论") || fieldName.contains("留言") ||
+               fieldName.contains("text") || fieldName.contains("文本") || fieldName.contains("正文") ||
+               fieldName.contains("abstract") || fieldName.contains("摘要") ||
+               fieldName.contains("introduction") || fieldName.contains("介绍") ||
+               fieldName.contains("detail") || fieldName.contains("详情") || fieldName.contains("详细");
     }
 
     /**

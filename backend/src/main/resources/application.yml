@@ -167,3 +167,33 @@ search:
       max-response-length: ${SEARCH_LOG_MAX_RESPONSE_LENGTH:10000}
       record-request-headers: ${SEARCH_LOG_RECORD_HEADERS:false}
       timeout-threshold-ms: ${SEARCH_LOG_TIMEOUT_THRESHOLD:30000}
+
+# 语义搜索配置
+semantic:
+  embedding:
+    # 嵌入服务提供商: siliconflow(远程) 或 local(本地)，默认使用siliconflow
+    provider: ${SEMANTIC_EMBEDDING_PROVIDER:siliconflow}
+    # 是否启用语义搜索
+    enabled: ${SEMANTIC_EMBEDDING_ENABLED:true}
+    # 通用超时配置
+    timeout: ${SEMANTIC_EMBEDDING_TIMEOUT:10000}
+    # 缓存配置
+    cache:
+      expire:
+        hours: ${SEMANTIC_EMBEDDING_CACHE_EXPIRE_HOURS:24}
+      max:
+        size: ${SEMANTIC_EMBEDDING_CACHE_MAX_SIZE:1000}
+
+    # 硅基流动嵌入服务配置
+    siliconflow:
+      api-key: ${SILICONFLOW_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+      api-url: ${SILICONFLOW_API_URL:https://api.siliconflow.cn/v1/embeddings}
+      model: ${SILICONFLOW_MODEL:BAAI/bge-large-zh-v1.5}
+      dimension: ${SILICONFLOW_DIMENSION:1024}
+
+    # 本地嵌入服务配置
+    local:
+      service:
+        url: ${LOCAL_EMBEDDING_SERVICE_URL:http://localhost:8001}
+      model: ${LOCAL_EMBEDDING_MODEL:paraphrase-multilingual-MiniLM-L12-v2}
+      dimension: ${LOCAL_EMBEDDING_DIMENSION:384}

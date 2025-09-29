@@ -74,6 +74,34 @@ services:
       retries: 5
       start_period: 60s
 
+  semantic-embedding:
+    build:
+      context: ./docker/semantic-embedding
+      dockerfile: Dockerfile
+    container_name: mgmt-semantic-embedding-dev
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    volumes:
+      - semantic_logs:/app/logs
+    ports:
+      - "8001:8001"
+    networks:
+      - mgmt-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
   backend:
     build:
       context: ./backend
@@ -92,6 +120,9 @@ services:
       SEARCH_LOG_ENABLED: true
       SEARCH_LOG_RETENTION_DAYS: 30
       SEARCH_LOG_MONITOR_ENABLED: true
+      SEMANTIC_EMBEDDING_SERVICE_URL: http://semantic-embedding:8001
+      SEMANTIC_EMBEDDING_ENABLED: true
+      SEMANTIC_SEARCH_WEIGHT: 0.3
     ports:
       - "8080:8080"
     depends_on:
@@ -100,6 +131,8 @@ services:
       redis:
         condition: service_healthy
       elasticsearch:
+        condition: service_healthy
+      semantic-embedding:
         condition: service_healthy
     networks:
       - mgmt-network
@@ -132,6 +165,8 @@ volumes:
   redis_data:
     driver: local
   elasticsearch_data:
+    driver: local
+  semantic_logs:
     driver: local
 
 networks:

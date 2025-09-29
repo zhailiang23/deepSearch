@@ -40,6 +40,9 @@ public class SearchDataResponse {
     @Schema(description = "搜索日志ID", example = "123")
     private Long searchLogId;
 
+    @Schema(description = "搜索元数据")
+    private SearchMetadata searchMetadata;
+
     /**
      * 文档数据
      */
@@ -84,5 +87,56 @@ public class SearchDataResponse {
 
         @Schema(description = "映射属性")
         private Map<String, Object> mappings;
+    }
+
+    /**
+     * 搜索元数据
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "搜索元数据")
+    public static class SearchMetadata {
+
+        @Schema(description = "使用的搜索模式", example = "HYBRID")
+        private String searchMode;
+
+        @Schema(description = "是否启用语义搜索", example = "true")
+        private Boolean semanticEnabled;
+
+        @Schema(description = "语义搜索权重", example = "0.3")
+        private Double semanticWeight;
+
+        @Schema(description = "是否启用拼音搜索", example = "true")
+        private Boolean pinyinEnabled;
+
+        @Schema(description = "拼音搜索模式", example = "AUTO")
+        private String pinyinMode;
+
+        @Schema(description = "查询构建耗时(毫秒)", example = "15")
+        private Long queryBuildTime;
+
+        @Schema(description = "向量生成耗时(毫秒)", example = "50")
+        private Long vectorGenerationTime;
+
+        @Schema(description = "ES查询耗时(毫秒)", example = "120")
+        private Long elasticsearchTime;
+
+        @Schema(description = "总耗时(毫秒)", example = "185")
+        private Long totalTime;
+
+        @Schema(description = "向量服务状态", example = "available")
+        private String vectorServiceStatus;
+
+        @Schema(description = "实际使用的查询类型", example = "hybrid",
+                allowableValues = {"keyword", "semantic", "hybrid"})
+        private String actualQueryType;
+
+        @Schema(description = "查询文本长度", example = "12")
+        private Integer queryLength;
+
+        @Schema(description = "搜索策略自动调整说明")
+        private String adjustmentReason;
     }
 }
