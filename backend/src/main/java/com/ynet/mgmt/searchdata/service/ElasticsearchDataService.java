@@ -474,10 +474,10 @@ public class ElasticsearchDataService {
 
         switch (mode) {
             case "STRICT":
-                // 严格模式：关键字匹配权重最高，拼音作为辅助
+                // 严格模式：关键字匹配权重最高，拼音作为辅助，降低权重以平衡语义搜索
                 BoolQuery.Builder strictBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, indexName, 5.0f))  // 关键字权重大幅提升
-                    .should(buildPinyinQuery(queryString, 1.0f))      // 拼音权重保持较低
+                    .should(buildMultiFieldQuery(queryString, indexName, 1.0f))  // 降低关键字权重
+                    .should(buildPinyinQuery(queryString, 0.8f))      // 拼音权重保持较低
                     .minimumShouldMatch("1");
                 // 短中文查询避免使用首字母匹配
                 if (!isShortChinese) {
@@ -489,27 +489,27 @@ public class ElasticsearchDataService {
                 return strictBuilder.build()._toQuery();
 
             case "FUZZY":
-                // 模糊模式：关键字匹配权重仍然要高于拼音匹配
-                System.out.println("FUZZY模式: 使用所有匹配方式，但确保关键字权重最高");
+                // 模糊模式：降低权重以平衡语义搜索
+                System.out.println("FUZZY模式: 使用所有匹配方式，降低权重以平衡语义搜索");
                 return BoolQuery.of(b -> b
-                    .should(buildMultiFieldQuery(queryString, indexName, 3.0f))  // 关键字权重提升
-                    .should(buildPinyinQuery(queryString, 1.8f))      // 拼音权重降低但仍然较高
-                    .should(buildFirstLetterQuery(queryString, 1.2f)) // 首字母权重适中
+                    .should(buildMultiFieldQuery(queryString, indexName, 1.0f))  // 降低关键字权重
+                    .should(buildPinyinQuery(queryString, 0.8f))      // 降低拼音权重
+                    .should(buildFirstLetterQuery(queryString, 0.6f)) // 降低首字母权重
                     .minimumShouldMatch("1")
                 )._toQuery();
 
             case "AUTO":
             default:
-                // 自动模式：进一步优化权重，确保关键字匹配优先级最高
+                // 自动模式：降低权重以平衡语义搜索
                 BoolQuery.Builder autoBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, indexName, 4.0f))  // 关键字权重大幅提升至4.0
+                    .should(buildMultiFieldQuery(queryString, indexName, 1.0f))  // 降低关键字权重至1.0
                     .minimumShouldMatch("1"); // 至少匹配一个should条件
 
                 // 对于短中文查询，只使用原字段匹配，避免拼音分析器导致的过度匹配
                 if (!isShortChinese) {
                     System.out.println("AUTO模式: 添加拼音和首字母匹配 (非短中文)");
-                    autoBuilder.should(buildPinyinQuery(queryString, 1.5f));      // 拼音字段匹配，权重保持1.5
-                    autoBuilder.should(buildFirstLetterQuery(queryString, 1.0f)); // 首字母匹配，权重保持1.0
+                    autoBuilder.should(buildPinyinQuery(queryString, 0.8f));      // 降低拼音权重
+                    autoBuilder.should(buildFirstLetterQuery(queryString, 0.6f)); // 降低首字母权重
                 } else {
                     System.out.println("AUTO模式: 跳过拼音和首字母匹配 (短中文，避免过度匹配)");
                 }
@@ -536,23 +536,23 @@ public class ElasticsearchDataService {
         BoolQuery.Builder boolBuilder = new BoolQuery.Builder();
         List<String> searchableFields = getSearchableFields(indexName);
 
-        // 1. 完全短语匹配（最高权重：boost * 3.0）
-        // 用于匹配"取钱"这样的完整短语
+        // 1. 完全短语匹配（最高权重：boost * 1.5）
+        // 用于匹配"取钱"这样的完整短语，降低权重以平衡语义搜索
         boolBuilder.should(MultiMatchQuery.of(m -> m
             .query(queryString)
             .fields(searchableFields)
             .type(TextQueryType.Phrase)
-            .boost(boost * 3.0f)
+            .boost(boost * 1.5f)
         )._toQuery());
 
-        // 2. 所有词都匹配（次高权重：boost * 2.0）
-        // 确保包含所有搜索词的文档有较高权重
+        // 2. 所有词都匹配（次高权重：boost * 1.2）
+        // 确保包含所有搜索词的文档有较高权重，降低权重以平衡语义搜索
         boolBuilder.should(MultiMatchQuery.of(m -> m
             .query(queryString)
             .fields(searchableFields)
             .type(TextQueryType.BestFields)
             .operator(Operator.And)
-            .boost(boost * 2.0f)
+            .boost(boost * 1.2f)
         )._toQuery());
 
         // 3. 任意词匹配（基础权重：boost * 1.0）

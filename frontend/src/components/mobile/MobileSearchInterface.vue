@@ -302,7 +302,7 @@
                   </div>
 
                   <!-- 大家都在搜 -->
-                  <div class="search-section">
+                  <div class="search-section mt-6">
                     <h3 class="section-title">大家都在搜</h3>
                     <div class="tag-list">
                       <button
