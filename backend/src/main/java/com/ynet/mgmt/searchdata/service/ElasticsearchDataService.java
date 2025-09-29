@@ -9,6 +9,10 @@ import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.Highlight;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
+import co.elastic.clients.elasticsearch.core.search.HighlighterType;
+import co.elastic.clients.util.NamedValue;
 import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
 import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
 import co.elastic.clients.elasticsearch.indices.get_mapping.IndexMappingRecord;
@@ -82,6 +86,17 @@ public class ElasticsearchDataService {
                                 co.elastic.clients.elasticsearch._types.SortOrder.Desc :
                                 co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
                 log.debug("添加排序: field={}, order={}", sortField, sortOrder);
+            }
+
+            // 添加高亮配置
+            if (StringUtils.hasText(request.getQuery())) {
+                searchBuilder.highlight(h -> h
+                    .type(HighlighterType.Unified)  // 使用unified highlighter获得最佳性能
+                    .fragmentSize(0)  // 设置为0显示完整字段内容
+                    .numberOfFragments(0)  // 设置为0忽略fragment限制
+                    .fields(buildHighlightFields(indexName))  // 动态配置高亮字段
+                );
+                log.debug("添加高亮配置: index={}", indexName);
             }
 
             // 执行搜索
@@ -337,6 +352,32 @@ public class ElasticsearchDataService {
     // 私有辅助方法
 
     /**
+     * 构建高亮字段配置
+     * 基于可搜索字段动态生成高亮字段配置，确保与查询字段匹配
+     */
+    private Map<String, HighlightField> buildHighlightFields(String indexName) {
+        List<String> searchableFields = getSearchableFields(indexName);
+        Map<String, HighlightField> highlightFields = new HashMap<>();
+
+        for (String field : searchableFields) {
+            // 移除字段权重标记（如 ^2.0）以适配高亮字段格式
+            String cleanField = field.split("\\^")[0];
+
+            // 为每个字段创建高亮配置
+            HighlightField highlightField = HighlightField.of(hf -> hf
+                .fragmentSize(0)  // 显示完整字段内容
+                .numberOfFragments(0)  // 不分片
+                .preTags("<em>")  // 高亮开始标签
+                .postTags("</em>")  // 高亮结束标签
+            );
+            highlightFields.put(cleanField, highlightField);
+        }
+
+        log.debug("构建高亮字段配置: index={}, fields={}", indexName, highlightFields.size());
+        return highlightFields;
+    }
+
+    /**
      * 构建查询 - 支持拼音搜索增强
      */
     private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName) {
@@ -440,16 +481,55 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 构建多字段搜索查询
+     * 构建多字段搜索查询 - 支持渐进式匹配
+     * 优先级：完全匹配 > 全词匹配 > 部分匹配
      */
     private Query buildMultiFieldQuery(String queryString, String indexName, float boost) {
-        return MultiMatchQuery.of(m -> m
+        // 原始实现（备份）：
+        // return MultiMatchQuery.of(m -> m
+        //     .query(queryString)
+        //     .fields(getSearchableFields(indexName))
+        //     .type(TextQueryType.BestFields)
+        //     .boost(boost)
+        //     .operator(Operator.And)
+        // )._toQuery();
+
+        BoolQuery.Builder boolBuilder = new BoolQuery.Builder();
+        List<String> searchableFields = getSearchableFields(indexName);
+
+        // 1. 完全短语匹配（最高权重：boost * 3.0）
+        // 用于匹配"取钱"这样的完整短语
+        boolBuilder.should(MultiMatchQuery.of(m -> m
             .query(queryString)
-            .fields(getSearchableFields(indexName))
+            .fields(searchableFields)
+            .type(TextQueryType.Phrase)
+            .boost(boost * 3.0f)
+        )._toQuery());
+
+        // 2. 所有词都匹配（次高权重：boost * 2.0）
+        // 确保包含所有搜索词的文档有较高权重
+        boolBuilder.should(MultiMatchQuery.of(m -> m
+            .query(queryString)
+            .fields(searchableFields)
             .type(TextQueryType.BestFields)
-            .boost(boost)
             .operator(Operator.And)
-        )._toQuery();
+            .boost(boost * 2.0f)
+        )._toQuery());
+
+        // 3. 任意词匹配（基础权重：boost * 1.0）
+        // 允许部分匹配，如只包含"取"或"钱"的文档
+        boolBuilder.should(MultiMatchQuery.of(m -> m
+            .query(queryString)
+            .fields(searchableFields)
+            .type(TextQueryType.BestFields)
+            .operator(Operator.Or)
+            .boost(boost)
+        )._toQuery());
+
+        // 至少匹配一个条件
+        boolBuilder.minimumShouldMatch("1");
+
+        return boolBuilder.build()._toQuery();
     }
 
     /**
@@ -692,12 +772,20 @@ public class ElasticsearchDataService {
      * 转换搜索结果
      */
     private SearchDataResponse.DocumentData convertHitToDocument(Hit<Map> hit) {
+        // 提取高亮信息
+        Map<String, List<String>> highlight = null;
+        if (hit.highlight() != null && !hit.highlight().isEmpty()) {
+            highlight = hit.highlight();
+            log.debug("提取高亮信息: docId={}, highlight={}", hit.id(), highlight.keySet());
+        }
+
         return SearchDataResponse.DocumentData.builder()
                 ._id(hit.id())
                 ._score(hit.score())
                 ._source(hit.source())
                 ._index(hit.index())
                 ._version(null) // Hit对象中通常不包含version信息
+                .highlight(highlight)
                 .build();
     }
 

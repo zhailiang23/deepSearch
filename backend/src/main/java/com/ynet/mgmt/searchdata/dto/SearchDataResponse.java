@@ -67,6 +67,9 @@ public class SearchDataResponse {
 
         @Schema(description = "文档版本", example = "1")
         private Long _version;
+
+        @Schema(description = "高亮信息")
+        private Map<String, List<String>> highlight;
     }
 
     /**

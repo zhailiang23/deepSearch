@@ -252,12 +252,12 @@
                 >
                   <div class="result-header">
                     <div class="result-title-wrapper">
-                      <h3 class="result-title" v-html="highlightText(result.title)"></h3>
+                      <h3 class="result-title" v-html="highlightText(result.title, result, 'name')"></h3>
                       <span v-if="result.source?.type && !groupByType" class="result-type-tag">{{ result.source.type }}</span>
                     </div>
                     <span v-if="showScore" class="result-score">{{ result.score?.toFixed(2) }}</span>
                   </div>
-                  <p class="result-summary" v-html="highlightText(result.source?.descript || result.summary)"></p>
+                  <p class="result-summary" v-html="highlightText(result.source?.descript || result.summary, result, 'descript')"></p>
                 </div>
               </div>
 
@@ -704,13 +704,50 @@ const backToResults = () => {
   selectedResult.value = null
 }
 
-const highlightText = (text: string): string => {
-  // 如果没有搜索词或者高亮匹配功能被关闭，直接返回原文本
-  if (!searchQuery.value || !highlightMatch.value) return text
+const highlightText = (text: string, result?: any, fieldName?: string): string => {
+  console.log('highlightText被调用:', { text, fieldName, hasResult: !!result, hasHighlight: !!result?.highlight })
 
+  // 如果没有搜索词或者高亮匹配功能被关闭，直接返回原文本
+  if (!searchQuery.value || !highlightMatch.value) {
+    console.log('高亮被跳过:', { hasQuery: !!searchQuery.value, highlightEnabled: highlightMatch.value })
+    return text
+  }
+
+  // 优先使用后端返回的高亮信息
+  if (result?.highlight) {
+    console.log('使用后端高亮数据:', result.highlight)
+
+    // 直接尝试使用指定的字段名
+    if (fieldName && result.highlight[fieldName]) {
+      const highlightData = result.highlight[fieldName]
+      if (highlightData && highlightData.length > 0) {
+        console.log('字段匹配成功:', { field: fieldName, data: highlightData[0] })
+        return highlightData[0].replace(/<em>/g, '<mark class="search-highlight">').replace(/<\/em>/g, '</mark>')
+      }
+    }
+
+    // 如果直接匹配失败，尝试所有可用的高亮字段
+    for (const [field, highlightData] of Object.entries(result.highlight)) {
+      if (highlightData && Array.isArray(highlightData) && highlightData.length > 0) {
+        console.log('使用字段:', { field, data: highlightData[0] })
+        return highlightData[0].replace(/<em>/g, '<mark class="search-highlight">').replace(/<\/em>/g, '</mark>')
+      }
+    }
+  }
+
+  // 如果没有后端高亮信息，降级为前端简单匹配
+  console.log('使用前端匹配')
   const query = searchQuery.value.trim()
-  const regex = new RegExp(`(${query})`, 'gi')
-  return text.replace(regex, '<mark class="search-highlight">$1</mark>')
+
+  // 为中文搜索优化：分别匹配每个字符
+  let highlightedText = text
+  for (const char of query) {
+    const regex = new RegExp(`(${char})`, 'gi')
+    highlightedText = highlightedText.replace(regex, '<mark class="search-highlight">$1</mark>')
+  }
+
+  console.log('前端匹配结果:', highlightedText)
+  return highlightedText
 }
 
 const formatCount = (count: number): string => {
@@ -1210,7 +1247,7 @@ watch(() => availableTabs.value, (newTabs) => {
 
 /* 搜索高亮 */
 :deep(.search-highlight) {
-  @apply bg-yellow-200 text-yellow-900 px-1 rounded;
+  @apply bg-yellow-200 text-yellow-900 rounded;
 }
 
 /* 滚动条样式 */
