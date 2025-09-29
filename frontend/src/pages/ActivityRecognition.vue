@@ -103,7 +103,7 @@
           <form @submit.prevent="saveActivity" class="space-y-3">
             <!-- 活动名称 -->
             <div>
-              <label class="block text-sm font-medium text-foreground mb-2">活动名称</label>
+              <label class="block text-sm font-medium text-foreground mb-1">活动名称</label>
               <input
                 v-model="activityForm.name"
                 type="text"
@@ -115,7 +115,7 @@
 
             <!-- 活动描述 -->
             <div>
-              <label class="block text-sm font-medium text-foreground mb-2">活动描述</label>
+              <label class="block text-sm font-medium text-foreground mb-1">活动描述</label>
               <textarea
                 v-model="activityForm.descript"
                 rows="4"
@@ -126,7 +126,7 @@
 
             <!-- 活动链接 -->
             <div>
-              <label class="block text-sm font-medium text-foreground mb-2">活动链接</label>
+              <label class="block text-sm font-medium text-foreground mb-1">活动链接</label>
               <input
                 v-model="activityForm.link"
                 type="text"
@@ -137,7 +137,7 @@
 
             <!-- 开始日期 -->
             <div>
-              <label class="block text-sm font-medium text-foreground mb-2">开始日期</label>
+              <label class="block text-sm font-medium text-foreground mb-1">开始日期</label>
               <input
                 v-model="activityForm.startDate"
                 type="date"
@@ -147,7 +147,7 @@
 
             <!-- 结束日期 -->
             <div>
-              <label class="block text-sm font-medium text-foreground mb-2">结束日期</label>
+              <label class="block text-sm font-medium text-foreground mb-1">结束日期</label>
               <input
                 v-model="activityForm.endDate"
                 type="date"
@@ -157,7 +157,7 @@
 
             <!-- 活动状态 -->
             <div>
-              <label class="block text-sm font-medium text-foreground mb-2">活动状态</label>
+              <label class="block text-sm font-medium text-foreground mb-1">活动状态</label>
               <select
                 v-model="activityForm.status"
                 class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-background text-foreground"
