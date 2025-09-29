@@ -51,6 +51,15 @@ const routes = [
         }
       },
       {
+        path: 'mismatch-keyword',
+        name: 'MismatchKeyword',
+        component: () => import('@/views/statistics/MismatchKeywordPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '搜索效果分析'
+        }
+      },
+      {
         path: 'channels',
         name: 'Channels',
         component: () => import('@/pages/channels/ChannelManage.vue'),
@@ -110,15 +119,6 @@ const routes = [
         meta: {
           requiresAuth: false,
           title: '词云图组件测试'
-        }
-      },
-      {
-        path: 'hot-word-statistics',
-        name: 'HotWordStatistics',
-        component: () => import('@/views/statistics/HotWordStatisticsPage.vue'),
-        meta: {
-          requiresAuth: true,
-          title: '热词统计分析'
         }
       },
       {
