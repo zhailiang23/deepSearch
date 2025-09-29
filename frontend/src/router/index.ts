@@ -138,6 +138,15 @@ const routes = [
           requiresAuth: true,
           title: '热词统计分析 - 管理后台'
         }
+      },
+      {
+        path: 'activity-recognition',
+        name: 'ActivityRecognition',
+        component: () => import('@/pages/ActivityRecognition.vue'),
+        meta: {
+          requiresAuth: false,
+          title: '智能活动识别'
+        }
       }
     ]
   },
