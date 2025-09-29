@@ -5,9 +5,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 筛选条件 -->
         <HotWordFilter
+          ref="filterRef"
           v-model="filterConfig as any"
-          @search="handleFilterChange"
-          @reset="handleFilterChange"
+          @filter="handleFilterChange"
           :loading="loading"
         />
 
@@ -224,6 +224,7 @@ import type { HotWordItem } from '@/types/statistics'
 const store = useHotWordStatisticsStore()
 
 const wordCloudRef = ref()
+const filterRef = ref()
 
 // 从store中获取响应式数据
 const hotWords = computed(() => store.hotWords)
@@ -399,7 +400,37 @@ const exportData = async () => {
   }
 }
 
-const handleFilterChange = async () => {
+const handleFilterChange = async (filterData: any) => {
+  console.log('Filter changed:', filterData)
+
+  // 根据时间范围设置store的时间范围
+  let startDate: Date
+  let endDate = new Date()
+
+  switch (filterData.timeRange) {
+    case 'last7days':
+      startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      break
+    case 'last30days':
+      startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      break
+    case 'last90days':
+      startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+      break
+    case 'custom':
+      if (filterData.customStartDate && filterData.customEndDate) {
+        startDate = new Date(filterData.customStartDate)
+        endDate = new Date(filterData.customEndDate)
+      } else {
+        startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      }
+      break
+    default:
+      startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  }
+
+  // 设置时间范围并重新获取数据
+  await store.setTimeRange(startDate, endDate)
   currentPage.value = 1
   await store.fetchHotWords()
 }
@@ -502,11 +533,11 @@ watch(searchKeyword, () => {
 // ============= 生命周期 =============
 
 onMounted(async () => {
-  // 初始化时设置默认时间范围并加载数据
-  await store.setTimeRange(
-    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 默认最近7天
-    new Date()
-  )
+  // 等待DOM渲染完成后调用过滤器初始化
+  await nextTick()
+  if (filterRef.value && filterRef.value.initializeFilter) {
+    filterRef.value.initializeFilter()
+  }
   await loadStatistics()
 })
 </script>

@@ -47,25 +47,6 @@
 
       </div>
 
-      <!-- 操作按钮 -->
-      <div class="filter-actions-footer">
-        <button
-          @click="applyFilter"
-          class="apply-button"
-          type="button"
-          :disabled="loading"
-        >
-          {{ loading ? '查询中...' : '应用过滤器' }}
-        </button>
-        <button
-          @click="resetFilter"
-          class="reset-button-footer"
-          type="button"
-          :disabled="loading"
-        >
-          重置
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -93,52 +74,40 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 // 响应式数据
-const isCollapsed = ref(false)
 
 const filterData = reactive({
-  timeRange: '',
+  timeRange: 'last7days',
   customStartDate: '',
   customEndDate: '',
   limit: 5000
 })
 
-// 计算属性
-const hasActiveFilters = computed(() => {
-  return !!(
-    filterData.timeRange ||
-    filterData.limit !== 5000
-  )
-})
 
 
 // 方法
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
-}
 
 const handleTimeRangeChange = () => {
   if (filterData.timeRange !== 'custom') {
     filterData.customStartDate = ''
     filterData.customEndDate = ''
   }
+  // 自动触发过滤
+  emit('filter', { ...filterData })
 }
 
 const handleCustomDateChange = () => {
   // 验证日期范围
+  if (filterData.customStartDate && filterData.customEndDate) {
+    // 自动触发过滤
+    emit('filter', { ...filterData })
+  }
 }
 
-const applyFilter = () => {
+
+// 初始化，自动触发默认过滤
+const initializeFilter = () => {
+  // 组件初始化时自动触发过滤，获取默认7天数据
   emit('filter', { ...filterData })
-}
-
-const resetFilter = () => {
-  Object.assign(filterData, {
-    timeRange: '',
-    customStartDate: '',
-    customEndDate: '',
-    limit: 5000
-  })
-  emit('reset')
 }
 
 // 监听器
@@ -148,6 +117,11 @@ watch(() => props.loading, (newVal) => {
   } else {
     // 加载结束
   }
+})
+
+// 暴露初始化方法
+defineExpose({
+  initializeFilter
 })
 </script>
 
@@ -255,68 +229,11 @@ watch(() => props.loading, (newVal) => {
 }
 
 
-.filter-actions-footer {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.apply-button {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.apply-button:hover:not(:disabled) {
-  background: #059669;
-}
-
-.apply-button:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-.reset-button-footer {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.reset-button-footer:hover:not(:disabled) {
-  background: #e5e7eb;
-}
-
-.reset-button-footer:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .filter-section {
     grid-template-columns: 1fr;
-  }
-
-  .filter-actions-footer {
-    flex-direction: column;
-  }
-
-  .apply-button,
-  .reset-button-footer {
-    width: 100%;
   }
 }
 
