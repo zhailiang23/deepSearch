@@ -1,127 +1,18 @@
 <template>
-  <div class="hot-word-statistics-page min-h-screen bg-gray-50">
-    <!-- 页面头部 -->
-    <div class="bg-white shadow-sm border-b">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="py-6">
-          <div class="md:flex md:items-center md:justify-between">
-            <div class="flex-1 min-w-0">
-              <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                热词统计分析
-              </h1>
-              <p class="mt-1 text-sm text-gray-500">
-                基于搜索日志的热词分析和可视化展示
-              </p>
-            </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-              <button
-                @click="refreshData"
-                :disabled="loading"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                刷新数据
-              </button>
-              <button
-                @click="exportData"
-                :disabled="loading || !hotWords.length"
-                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
-              >
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                导出报告
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  
+    
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 筛选条件 -->
-      <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">筛选条件</h2>
-
         <HotWordFilter
           v-model="filterConfig as any"
           @search="handleFilterChange"
           @reset="handleFilterChange"
           :loading="loading"
         />
-      </div>
-
-      <!-- 统计概览 -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-emerald-100 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">总搜索次数</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ summary.totalSearches.toLocaleString() }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-              </div>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">热词数量</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ summary.uniqueKeywords }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">平均搜索频次</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ summary.averageFrequency.toFixed(1) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
-                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">统计时间段</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ summary.timePeriod }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 主内容区域 -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <!-- 词云图 -->
         <div class="lg:col-span-2">
           <div class="bg-white rounded-lg shadow-sm border p-6">
@@ -317,7 +208,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">

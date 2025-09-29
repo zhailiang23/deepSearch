@@ -1,29 +1,6 @@
 <template>
   <div class="hot-word-filter">
-    <!-- 过滤器标题栏 -->
-    <div class="hot-word-filter__header">
-      <div class="filter-header-content">
-        <h3 class="filter-title">热词过滤器</h3>
-        <div class="filter-actions">
-          <button
-            @click="toggleCollapse"
-            class="collapse-button"
-            type="button"
-            :title="isCollapsed ? '展开过滤器' : '收起过滤器'"
-          >
-            {{ isCollapsed ? '展开' : '收起' }}
-          </button>
-          <button
-            @click="resetFilter"
-            class="reset-button"
-            type="button"
-            :disabled="loading || !hasActiveFilters"
-          >
-            重置
-          </button>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- 过滤器主体 -->
     <div v-show="!isCollapsed" class="hot-word-filter__body">
@@ -39,12 +16,9 @@
               class="time-range-select"
               :disabled="loading"
             >
-              <option value="">全部时间</option>
-              <option value="today">今天</option>
-              <option value="yesterday">昨天</option>
               <option value="last7days">最近7天</option>
               <option value="last30days">最近30天</option>
-              <option value="custom">自定义</option>
+              <option value="last90days">最近90天</option>
             </select>
           </div>
         </div>
@@ -71,38 +45,6 @@
           </div>
         </div>
 
-        <!-- 关键词搜索 -->
-        <div class="filter-group">
-          <label class="filter-label">关键词</label>
-          <div class="keyword-input-wrapper">
-            <input
-              v-model="filterData.keyword"
-              type="text"
-              placeholder="输入关键词搜索..."
-              class="keyword-input"
-              :disabled="loading"
-              @input="debounceKeywordChange"
-            />
-          </div>
-        </div>
-
-        <!-- 数据量限制 -->
-        <div class="filter-group">
-          <label class="filter-label">数据量限制</label>
-          <div class="limit-selector">
-            <select
-              v-model="filterData.limit"
-              @change="handleLimitChange"
-              class="limit-select"
-              :disabled="loading"
-            >
-              <option :value="50">50条</option>
-              <option :value="100">100条</option>
-              <option :value="200">200条</option>
-              <option :value="500">500条</option>
-            </select>
-          </div>
-        </div>
       </div>
 
       <!-- 操作按钮 -->
@@ -157,29 +99,17 @@ const filterData = reactive({
   timeRange: '',
   customStartDate: '',
   customEndDate: '',
-  keyword: '',
-  limit: 100
+  limit: 5000
 })
 
 // 计算属性
 const hasActiveFilters = computed(() => {
   return !!(
     filterData.timeRange ||
-    filterData.keyword ||
-    filterData.limit !== 100
+    filterData.limit !== 5000
   )
 })
 
-// 防抖关键词输入
-let keywordTimeout: number | null = null
-const debounceKeywordChange = () => {
-  if (keywordTimeout) {
-    clearTimeout(keywordTimeout)
-  }
-  keywordTimeout = setTimeout(() => {
-    // 自动应用过滤器
-  }, 500) as unknown as number
-}
 
 // 方法
 const toggleCollapse = () => {
@@ -197,10 +127,6 @@ const handleCustomDateChange = () => {
   // 验证日期范围
 }
 
-const handleLimitChange = () => {
-  // 处理数据量限制变化
-}
-
 const applyFilter = () => {
   emit('filter', { ...filterData })
 }
@@ -210,8 +136,7 @@ const resetFilter = () => {
     timeRange: '',
     customStartDate: '',
     customEndDate: '',
-    keyword: '',
-    limit: 100
+    limit: 5000
   })
   emit('reset')
 }
@@ -303,9 +228,7 @@ watch(() => props.loading, (newVal) => {
 }
 
 .time-range-select,
-.limit-select,
-.date-input,
-.keyword-input {
+.date-input {
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -314,9 +237,7 @@ watch(() => props.loading, (newVal) => {
 }
 
 .time-range-select:focus,
-.limit-select:focus,
-.date-input:focus,
-.keyword-input:focus {
+.date-input:focus {
   outline: none;
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
@@ -333,18 +254,6 @@ watch(() => props.loading, (newVal) => {
   font-size: 14px;
 }
 
-.keyword-input-wrapper {
-  position: relative;
-}
-
-.keyword-input {
-  width: 100%;
-}
-
-.limit-selector {
-  display: flex;
-  align-items: center;
-}
 
 .filter-actions-footer {
   display: flex;
