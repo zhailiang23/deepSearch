@@ -280,6 +280,9 @@ export function useWordCloud(
       renderState.isRendering = false
       renderState.error = error instanceof Error ? error.message : '渲染失败'
 
+      // 渲染失败时清理画布
+      clearCanvas()
+
       if (events.onRenderError) {
         events.onRenderError(renderState.error)
       }
@@ -300,9 +303,17 @@ export function useWordCloud(
   const clearCanvas = () => {
     if (!canvasElement.value) return
 
-    const ctx = canvasElement.value.getContext('2d')
+    const canvas = canvasElement.value
+    const ctx = canvas.getContext('2d')
     if (ctx) {
-      ctx.clearRect(0, 0, dimensions.width, dimensions.height)
+      // 使用画布的实际尺寸进行清理
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // 重新设置背景色
+      if (mergedOptions.value.backgroundColor) {
+        ctx.fillStyle = mergedOptions.value.backgroundColor
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      }
     }
   }
 

@@ -476,6 +476,8 @@ const handleCanvasMouseLeave = () => {
 /** 处理重新渲染 */
 const handleRefresh = async () => {
   if (canRender.value) {
+    // 先清理画布再重新渲染
+    clearCanvas()
     await renderWordCloud()
   }
 }
