@@ -69,6 +69,15 @@ const routes = [
         }
       },
       {
+        path: 'hot-topics',
+        name: 'HotTopics',
+        component: () => import('@/pages/hot-topics/HotTopicManage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '热门话题管理'
+        }
+      },
+      {
         path: 'roles',
         name: 'Roles',
         component: () => import('@/pages/roles/RoleManage.vue'),
