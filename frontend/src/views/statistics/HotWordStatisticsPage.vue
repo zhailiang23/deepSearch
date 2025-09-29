@@ -2,7 +2,7 @@
   
     
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-1">
       <!-- 筛选条件 -->
         <HotWordFilter
           ref="filterRef"
@@ -12,59 +12,34 @@
         />
 
       <!-- 主内容区域 -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+      <div class="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-2 gap-6 mt-1">
         <!-- 词云图 -->
-        <div class="lg:col-span-2">
-          <div class="bg-white rounded-lg shadow-sm border p-6">
-            <div class="flex items-center justify-between mb-6">
+        <div class="xl:col-span-2 lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-sm border h-[420px] flex flex-col">
+            <div class="p-6 pb-4 flex-shrink-0">
               <h2 class="text-lg font-semibold text-gray-900">热词云图</h2>
-              <div class="flex items-center space-x-4">
-                <!-- 主题切换 -->
-                <div class="flex items-center space-x-2">
-                  <label class="text-sm text-gray-500">主题:</label>
-                  <select
-                    v-model="wordCloudConfig.theme"
-                    class="text-sm border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option value="light-green">淡绿色</option>
-                    <option value="dark-green">深绿色</option>
-                    <option value="blue">蓝色</option>
-                    <option value="purple">紫色</option>
-                  </select>
-                </div>
-
-                <!-- 显示数量 -->
-                <div class="flex items-center space-x-2">
-                  <label class="text-sm text-gray-500">显示:</label>
-                  <select
-                    v-model="wordCloudConfig.maxWords"
-                    class="text-sm border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option :value="50">50个词</option>
-                    <option :value="100">100个词</option>
-                    <option :value="200">200个词</option>
-                  </select>
-                </div>
-              </div>
             </div>
 
             <!-- 词云图组件 -->
-            <div class="h-96 relative">
-              <HotWordCloudChart
-                ref="wordCloudRef"
-                :words="wordCloudData"
-                :theme="wordCloudConfig.theme"
-                :responsive="true"
-                :loading="loading"
-                :error="error || undefined"
-                :options="wordCloudOptions"
-                @word-click="handleWordClick"
-                @word-hover="handleWordHover"
-                @render-start="handleRenderStart"
-                @render-complete="handleRenderComplete"
-                @render-error="handleRenderError"
-                @download="handleWordCloudDownload"
-              />
+            <div class="flex-1 relative px-6 pb-6 overflow-hidden">
+              <div class="w-full h-full bg-gray-50 rounded-lg overflow-hidden">
+                <HotWordCloudChart
+                  ref="wordCloudRef"
+                  :words="wordCloudData"
+                  :theme="wordCloudConfig.theme"
+                  :responsive="true"
+                  :loading="loading"
+                  :error="error || undefined"
+                  :options="wordCloudOptions"
+                  :show-toolbar="false"
+                  @word-click="handleWordClick"
+                  @word-hover="handleWordHover"
+                  @render-start="handleRenderStart"
+                  @render-complete="handleRenderComplete"
+                  @render-error="handleRenderError"
+                  @download="handleWordCloudDownload"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -72,50 +47,36 @@
         <!-- 热词排行榜 -->
         <div class="space-y-6">
           <!-- TOP 10 热词 -->
-          <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">TOP 10 热词</h3>
-            <div class="space-y-3">
-              <div
-                v-for="(item, index) in topWords"
-                :key="item.text"
-                class="flex items-center justify-between p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-                @click="highlightWord(item.text)"
-              >
-                <div class="flex items-center space-x-3">
-                  <div
-                    class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                    :class="getRankingClass(index)"
-                  >
-                    {{ index + 1 }}
+          <div class="bg-white rounded-lg shadow-sm border h-[420px] flex flex-col">
+            <div class="p-6 pb-4 flex-shrink-0">
+              <h3 class="text-lg font-semibold text-gray-900">TOP 10 热词</h3>
+            </div>
+            <div class="flex-1 overflow-y-auto px-6 pb-6">
+              <div class="space-y-3">
+                <div
+                  v-for="(item, index) in topWords"
+                  :key="item.text"
+                  class="flex items-center justify-between p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                  @click="highlightWord(item.text)"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div
+                      class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      :class="getRankingClass(index)"
+                    >
+                      {{ index + 1 }}
+                    </div>
+                    <span class="font-medium text-gray-900">{{ item.text }}</span>
                   </div>
-                  <span class="font-medium text-gray-900">{{ item.text }}</span>
-                </div>
-                <div class="text-right">
-                  <div class="text-sm font-semibold text-gray-900">{{ item.weight }}</div>
-                  <div class="text-xs text-gray-500">搜索次数</div>
+                  <div class="text-right">
+                    <div class="text-sm font-semibold text-gray-900">{{ item.weight }}</div>
+                    <div class="text-xs text-gray-500">搜索次数</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 趋势信息 -->
-          <div class="bg-white rounded-lg shadow-sm border p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">趋势分析</h3>
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">上升最快</span>
-                <span class="text-sm font-medium text-green-600">{{ trendInfo.rising || '-' }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">下降最快</span>
-                <span class="text-sm font-medium text-red-600">{{ trendInfo.falling || '-' }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">新热词</span>
-                <span class="text-sm font-medium text-blue-600">{{ trendInfo.new || '-' }}</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

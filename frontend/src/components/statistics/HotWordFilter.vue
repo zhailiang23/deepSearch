@@ -1,5 +1,4 @@
 <template>
-  <div class="hot-word-filter">
     
 
     <!-- 过滤器主体 -->
@@ -8,18 +7,40 @@
       <div class="filter-section">
         <!-- 时间范围选择 -->
         <div class="filter-group">
-          <label class="filter-label">时间范围</label>
-          <div class="time-range-selector">
-            <select
-              v-model="filterData.timeRange"
-              @change="handleTimeRangeChange"
-              class="time-range-select"
-              :disabled="loading"
-            >
-              <option value="last7days">最近7天</option>
-              <option value="last30days">最近30天</option>
-              <option value="last90days">最近90天</option>
-            </select>
+          <div class="time-range-buttons">
+            <label class="time-range-button" :class="{ active: filterData.timeRange === 'last7days' }">
+              <input
+                type="radio"
+                value="last7days"
+                v-model="filterData.timeRange"
+                @change="handleTimeRangeChange"
+                :disabled="loading"
+                class="sr-only"
+              />
+              <span>最近7天</span>
+            </label>
+            <label class="time-range-button" :class="{ active: filterData.timeRange === 'last30days' }">
+              <input
+                type="radio"
+                value="last30days"
+                v-model="filterData.timeRange"
+                @change="handleTimeRangeChange"
+                :disabled="loading"
+                class="sr-only"
+              />
+              <span>最近30天</span>
+            </label>
+            <label class="time-range-button" :class="{ active: filterData.timeRange === 'last90days' }">
+              <input
+                type="radio"
+                value="last90days"
+                v-model="filterData.timeRange"
+                @change="handleTimeRangeChange"
+                :disabled="loading"
+                class="sr-only"
+              />
+              <span>最近90天</span>
+            </label>
           </div>
         </div>
 
@@ -48,11 +69,10 @@
       </div>
 
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, watch } from 'vue'
 
 // 组件属性
 interface Props {
@@ -74,6 +94,7 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 // 响应式数据
+const isCollapsed = ref(false)
 
 const filterData = reactive({
   timeRange: 'last7days',
@@ -201,7 +222,43 @@ defineExpose({
   font-size: 14px;
 }
 
-.time-range-select,
+.time-range-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.time-range-button {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+}
+
+.time-range-button:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.time-range-button.active {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.time-range-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .date-input {
   padding: 8px 12px;
   border: 1px solid #d1d5db;
@@ -210,7 +267,6 @@ defineExpose({
   transition: border-color 0.2s ease;
 }
 
-.time-range-select:focus,
 .date-input:focus {
   outline: none;
   border-color: #10b981;

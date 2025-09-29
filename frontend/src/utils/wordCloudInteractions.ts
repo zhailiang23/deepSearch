@@ -451,7 +451,7 @@ export function createWordCloudInteractionCallbacks(
         onWordHover?.(word, item)
       } else {
         // 鼠标离开词语
-        onWordHover?(null, null)
+        onWordHover?.(null, null)
       }
     }
   }
