@@ -238,7 +238,7 @@ const props = defineProps({
   /** 是否启用性能优化 */
   enablePerformanceOptimization: {
     type: Boolean,
-    default: true
+    default: false
   },
   /** 最大词语数量 */
   maxWords: {

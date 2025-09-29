@@ -110,8 +110,8 @@ export function useWordCloud(
     minRotation: -Math.PI / 4,
     maxRotation: Math.PI / 4,
     gridSize: 8,
-    weightFactor: (size: number) => Math.pow(size, 2.3) / 600,
-    clearCanvas: true,
+    weightFactor: (size: number) => Math.pow(size, 0.8) * 25,
+    clearCanvas: false,
     shrinkToFit: true,
     hover: (item: any, dimension: any, event: Event) => {
       if (events.onWordHover) {
@@ -175,7 +175,7 @@ export function useWordCloud(
     if (!canvasElement.value) return
 
     const canvas = canvasElement.value
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) return
 
     // 设置画布尺寸
@@ -186,6 +186,10 @@ export function useWordCloud(
 
     // 缩放上下文以适应高DPI显示器
     ctx.scale(dimensions.devicePixelRatio, dimensions.devicePixelRatio)
+
+    // 设置白色背景
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, dimensions.width, dimensions.height)
   }
 
   /** 渲染词云 */

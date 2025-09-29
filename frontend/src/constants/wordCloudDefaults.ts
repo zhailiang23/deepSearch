@@ -60,9 +60,9 @@ export const DEFAULT_COLOR_CONFIG: WordCloudColorConfig = {
 export const DEFAULT_FONT_CONFIG: WordCloudFontConfig = {
   family: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   weight: 'bold',
-  minSize: 12,
-  maxSize: 60,
-  weightFactor: 1
+  minSize: 20,
+  maxSize: 80,
+  weightFactor: 3
 }
 
 // 默认旋转配置
@@ -273,9 +273,9 @@ export const SHAPE_FUNCTIONS = {
 
 // 响应式断点
 export const RESPONSIVE_BREAKPOINTS = {
-  mobile: { maxWidth: 640, gridSize: 6, minSize: 10, maxSize: 40 },
-  tablet: { maxWidth: 1024, gridSize: 8, minSize: 12, maxSize: 50 },
-  desktop: { maxWidth: Infinity, gridSize: 10, minSize: 14, maxSize: 60 }
+  mobile: { maxWidth: 640, gridSize: 6, minSize: 16, maxSize: 50 },
+  tablet: { maxWidth: 1024, gridSize: 8, minSize: 18, maxSize: 65 },
+  desktop: { maxWidth: Infinity, gridSize: 10, minSize: 20, maxSize: 80 }
 } as const
 
 // 性能阈值

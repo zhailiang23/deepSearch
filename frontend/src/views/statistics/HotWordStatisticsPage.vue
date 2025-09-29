@@ -259,7 +259,7 @@ const wordCloudData = computed(() => {
 
 const wordCloudOptions = computed((): any => ({
   gridSize: 8,
-  weightFactor: (weight: number) => Math.pow(weight, 2.3) / 600,
+  weightFactor: (weight: number) => Math.pow(weight, 0.8) * 25,
   fontFamily: 'Arial, sans-serif',
   rotateRatio: 0.5,
   rotationSteps: 4,
