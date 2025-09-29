@@ -165,10 +165,10 @@ const renderWordCloud = async () => {
     // 词云配置
     const options = {
       list: processedWords.value,
-      gridSize: Math.round(16 * Math.min(width / 800, 1)),
+      gridSize: Math.round(8 * Math.min(width / 800, 1)), // 减小网格尺寸，让词语排列更紧密
       weightFactor: (size: number) => {
         const baseFactor = Math.min(width / 800, 1)
-        return Math.pow(size, 0.8) * 1.5 * baseFactor
+        return Math.pow(size, 0.7) * 2.5 * baseFactor // 增加权重因子，让词语更大更分散
       },
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontWeight: '600',
@@ -177,13 +177,13 @@ const renderWordCloud = async () => {
         return colors[Math.floor(Math.random() * colors.length)]
       },
       backgroundColor: themeConfig.value.backgroundColor,
-      rotateRatio: 0.3,
-      rotationSteps: 2,
-      minRotation: -Math.PI / 4,
-      maxRotation: Math.PI / 4,
-      shuffle: false,
+      rotateRatio: 0.5, // 增加旋转比例，增加布局多样性
+      rotationSteps: 4, // 增加旋转步数
+      minRotation: -Math.PI / 2, // 扩大旋转角度范围
+      maxRotation: Math.PI / 2,
+      shuffle: true, // 启用随机排列
       clearCanvas: true,
-      shrinkToFit: true,
+      shrinkToFit: false, // 禁用自动收缩，让词云保持原始大小
       origin: [width / 2, height / 2],
 
       // 事件处理
