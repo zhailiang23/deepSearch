@@ -77,18 +77,21 @@
             </div>
             <div class="flex flex-col space-y-3">
               <span class="text-sm text-muted-foreground">识别完成时间: {{ recognitionTime }}</span>
-              <button
-                @click="autoFillForm"
-                class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Wand2 class="h-4 w-4 mr-2 inline" />
-                智能填充表单
-              </button>
+              <span class="text-sm text-green-600">已自动填充表单字段</span>
             </div>
           </div>
           <div v-else-if="isRecognizing" class="flex flex-col items-center justify-center h-full">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-4"></div>
             <p class="text-muted-foreground">正在识别图片中的文字...</p>
+          </div>
+          <div v-else-if="recognitionError" class="flex flex-col items-center justify-center h-full text-red-600">
+            <p class="text-center mb-4">{{ recognitionError }}</p>
+            <button
+              @click="recognizeText"
+              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            >
+              重试识别
+            </button>
           </div>
           <div v-else class="flex flex-col items-center justify-center h-full text-muted-foreground">
             <FileText class="h-12 w-12 mb-4 opacity-50" />
@@ -101,6 +104,24 @@
       <div class="lg:col-span-3">
         <div class="bg-background border border-border rounded-lg p-6">
           <form @submit.prevent="saveActivity" class="space-y-3">
+            <!-- 搜索空间 -->
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1">搜索空间</label>
+              <select
+                v-model="activityForm.searchSpaceId"
+                class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-background text-foreground"
+              >
+                <option value="">选择搜索空间</option>
+                <option
+                  v-for="space in searchSpaces"
+                  :key="space.id"
+                  :value="space.id"
+                >
+                  {{ space.name }}
+                </option>
+              </select>
+            </div>
+
             <!-- 活动名称 -->
             <div>
               <label class="block text-sm font-medium text-foreground mb-1">活动名称</label>
@@ -169,6 +190,13 @@
               </select>
             </div>
 
+            <!-- 错误提示 -->
+            <div v-if="saveError" class="bg-red-50 border border-red-200 rounded-md p-3">
+              <div class="flex items-center">
+                <div class="text-red-600 text-sm">{{ saveError }}</div>
+              </div>
+            </div>
+
             <!-- 操作按钮 -->
             <div class="flex space-x-3 pt-4">
               <button
@@ -180,11 +208,14 @@
               </button>
               <button
                 type="submit"
-                :disabled="!isFormValid"
+                :disabled="!isFormValid || isSaving"
                 class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <Save class="h-4 w-4 mr-2 inline" />
-                保存活动
+                <div class="flex items-center justify-center">
+                  <div v-if="isSaving" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <Save v-else class="h-4 w-4 mr-2" />
+                  {{ isSaving ? '保存中...' : '保存活动' }}
+                </div>
               </button>
             </div>
           </form>
@@ -208,13 +239,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import http from '@/utils/http'
 import {
   Upload,
   X,
   Eye,
   ImageIcon,
   FileText,
-  Wand2,
   Save,
   CheckCircle
 } from 'lucide-vue-next'
@@ -232,9 +263,22 @@ const isRecognizing = ref(false)
 const recognizedText = ref('')
 const recognitionTime = ref('')
 const showSuccessNotification = ref(false)
+const recognitionError = ref('')
+const activityData = ref<any>(null)
+const isSaving = ref(false)
+const saveError = ref('')
+
+// 搜索空间相关数据
+const searchSpaces = ref<Array<{id: string; name: string}>>([])
+
+interface SearchSpace {
+  id: string
+  name: string
+}
 
 // 活动表单数据
 const activityForm = ref({
+  searchSpaceId: '',
   name: '',
   type: '活动',
   descript: '',
@@ -244,33 +288,11 @@ const activityForm = ref({
   status: '进行中'
 })
 
-// 模拟识别的文字内容
-const mockRecognizedTexts = [
-  `新春理财节
-活动类型：理财活动
-活动描述：新春特惠理财产品，年化收益率高达5.8%，限时抢购
-活动时间：2024年2月1日 - 2024年2月29日
-活动链接：/activity/spring-finance
-活动状态：进行中`,
-
-  `数字化转型实战培训
-活动类型：培训
-活动描述：企业数字化转型专业培训，由资深技术专家团队授课
-活动时间：2024年5月20日 - 2024年5月22日
-活动链接：/activity/digital-training
-活动状态：即将开始`,
-
-  `绿色技术创新研讨会
-活动类型：会议
-活动描述：可持续发展与绿色技术创新学术研讨会，汇聚国内外知名学者
-活动时间：2024年6月8日 - 2024年6月10日
-活动链接：/activity/green-tech-seminar
-活动状态：即将开始`
-]
 
 // 计算属性
 const isFormValid = computed(() => {
-  return activityForm.value.name &&
+  return activityForm.value.searchSpaceId &&
+         activityForm.value.name &&
          activityForm.value.descript
 })
 
@@ -308,6 +330,8 @@ const removeImage = () => {
     uploadedImage.value = null
     recognizedText.value = ''
     recognitionTime.value = ''
+    recognitionError.value = ''
+    activityData.value = null
   }
 }
 
@@ -316,60 +340,82 @@ const recognizeText = async () => {
   if (!uploadedImage.value) return
 
   isRecognizing.value = true
+  recognitionError.value = ''
 
-  // 模拟API调用延迟
-  await new Promise(resolve => setTimeout(resolve, 2000))
+  try {
+    // 构建 FormData 对象
+    const formData = new FormData()
+    formData.append('file', uploadedImage.value.file)
 
-  // 随机选择一个模拟文字
-  const randomIndex = Math.floor(Math.random() * mockRecognizedTexts.length)
-  recognizedText.value = mockRecognizedTexts[randomIndex]
-  recognitionTime.value = new Date().toLocaleString()
+    // 调用后端图片识别 API
+    const response = await http.post('/image/recognize', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 300000 // 5分钟超时
+    })
 
-  isRecognizing.value = false
+    if (response.success) {
+      activityData.value = response.data
+      // 显示识别到的所有文字
+      recognizedText.value = response.data.all || '未识别到文字内容'
+      recognitionTime.value = new Date().toLocaleString()
+
+      // 自动填充表单
+      autoFillForm()
+    } else {
+      recognitionError.value = response.message || '图片识别失败'
+      recognizedText.value = ''
+    }
+  } catch (error: any) {
+    console.error('图片识别API调用失败:', error)
+    if (error.status) {
+      // 服务器返回错误响应
+      recognitionError.value = error.message || `服务器错误 (${error.status})`
+    } else {
+      // 网络错误或其他错误
+      recognitionError.value = error.message || '图片识别失败，请稍后重试'
+    }
+    recognizedText.value = ''
+  } finally {
+    isRecognizing.value = false
+  }
 }
 
 const autoFillForm = () => {
-  if (!recognizedText.value) return
+  if (!activityData.value) return
 
-  // 简单的文字解析逻辑，实际项目中会使用更复杂的NLP
-  const text = recognizedText.value
+  // 直接使用后端识别返回的结构化数据填充表单
+  const data = activityData.value
 
-  // 提取活动名称（从第一行提取）
-  const firstLine = text.split('\n')[0]
-  if (firstLine && !firstLine.includes('活动类型') && !firstLine.includes('活动描述')) {
-    activityForm.value.name = firstLine.trim()
+  if (data.name) {
+    activityForm.value.name = data.name
   }
 
-
-  // 提取活动描述
-  const descriptMatch = text.match(/活动描述[:：]\s*(.+)/m)
-  if (descriptMatch) {
-    activityForm.value.descript = descriptMatch[1].trim()
+  if (data.descript) {
+    activityForm.value.descript = data.descript
   }
 
-  // 提取活动链接
-  const linkMatch = text.match(/活动链接[:：]\s*(.+)/m)
-  if (linkMatch) {
-    activityForm.value.link = linkMatch[1].trim()
+  if (data.link) {
+    activityForm.value.link = data.link
   }
 
-  // 提取活动时间（开始和结束日期）
-  const timeMatch = text.match(/活动时间[:：]\s*(\d{4})年(\d{1,2})月(\d{1,2})日\s*-\s*(\d{4})年(\d{1,2})月(\d{1,2})日/m)
-  if (timeMatch) {
-    const [, startYear, startMonth, startDay, endYear, endMonth, endDay] = timeMatch
-    activityForm.value.startDate = `${startYear}-${startMonth.padStart(2, '0')}-${startDay.padStart(2, '0')}`
-    activityForm.value.endDate = `${endYear}-${endMonth.padStart(2, '0')}-${endDay.padStart(2, '0')}`
+  if (data.startDate) {
+    activityForm.value.startDate = data.startDate
   }
 
-  // 提取活动状态
-  const statusMatch = text.match(/活动状态[:：]\s*(.+)/m)
-  if (statusMatch) {
-    activityForm.value.status = statusMatch[1].trim()
+  if (data.endDate) {
+    activityForm.value.endDate = data.endDate
+  }
+
+  if (data.status) {
+    activityForm.value.status = data.status
   }
 }
 
 const resetForm = () => {
   activityForm.value = {
+    searchSpaceId: '',
     name: '',
     type: '活动',
     descript: '',
@@ -378,23 +424,82 @@ const resetForm = () => {
     endDate: '',
     status: '进行中'
   }
+  saveError.value = ''
 }
 
-const saveActivity = () => {
+const saveActivity = async () => {
   if (!isFormValid.value) return
 
-  // 模拟保存操作
-  console.log('保存活动:', activityForm.value)
+  isSaving.value = true
+  saveError.value = ''
 
-  // 显示成功通知
-  showSuccessNotification.value = true
-  setTimeout(() => {
-    showSuccessNotification.value = false
-  }, 3000)
+  try {
+    // 构建活动数据，按照后端要求的格式
+    const activityData = [{
+      id: `activity_${Date.now()}`, // 生成唯一ID
+      name: activityForm.value.name,
+      type: activityForm.value.type,
+      descript: activityForm.value.descript,
+      link: activityForm.value.link || '',
+      startDate: activityForm.value.startDate || '',
+      endDate: activityForm.value.endDate || '',
+      status: activityForm.value.status
+    }]
 
-  // 重置表单
-  resetForm()
+    // 调用导入API
+    const response = await http.post(`/search-spaces/${activityForm.value.searchSpaceId}/import-json-content`, activityData)
+
+    if (response.success) {
+      // 显示成功通知
+      showSuccessNotification.value = true
+      setTimeout(() => {
+        showSuccessNotification.value = false
+      }, 3000)
+
+      // 重置表单
+      resetForm()
+      console.log('活动保存成功:', response.data)
+    } else {
+      saveError.value = response.message || '保存失败'
+    }
+  } catch (error: any) {
+    console.error('保存活动失败:', error)
+    saveError.value = error.message || '网络错误，保存失败'
+  } finally {
+    isSaving.value = false
+  }
 }
+
+// 加载搜索空间列表
+const loadSearchSpaces = async () => {
+  try {
+    const result = await http.get('/search-spaces', {
+      params: {
+        page: 0,
+        size: 100
+      }
+    })
+
+    if (result && result.success && result.data && result.data.content && Array.isArray(result.data.content)) {
+      searchSpaces.value = result.data.content.map((space: any) => ({
+        id: space.id.toString(),
+        name: space.name
+      }))
+    } else {
+      searchSpaces.value = []
+    }
+  } catch (error) {
+    console.error('加载搜索空间列表失败:', error)
+    searchSpaces.value = []
+  }
+}
+
+// 组件挂载时加载搜索空间列表
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  loadSearchSpaces()
+})
 </script>
 
 <style scoped>

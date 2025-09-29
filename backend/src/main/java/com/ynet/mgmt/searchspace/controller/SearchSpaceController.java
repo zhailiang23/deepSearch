@@ -496,6 +496,131 @@ public class SearchSpaceController {
     }
 
     /**
+     * 同步导入JSON字符串数据
+     * 接收JSON字符串并导入到指定搜索空间的Elasticsearch索引中
+     */
+    @Operation(
+            summary = "同步导入JSON字符串数据",
+            description = "直接接收JSON字符串内容并导入到指定搜索空间的索引中"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "导入成功",
+                    content = @Content(schema = @Schema(implementation = com.ynet.mgmt.common.dto.ApiResponse.class))),
+            @ApiResponse(responseCode = "400", description = "JSON格式错误或参数验证失败",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "搜索空间不存在",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @PostMapping("/{id}/import-json-content")
+    public ResponseEntity<com.ynet.mgmt.common.dto.ApiResponse<ImportSyncResponse>> importJsonContentSync(
+            @Parameter(description = "搜索空间ID", required = true) @PathVariable Long id,
+            @Parameter(description = "JSON字符串内容", required = true) @RequestBody String jsonContent,
+            @Parameter(description = "导入模式：APPEND(追加) 或 REPLACE(替换)", required = false)
+            @RequestParam(value = "mode", defaultValue = "APPEND") String mode,
+            @Parameter(description = "批处理大小", required = false)
+            @RequestParam(value = "batchSize", defaultValue = "1000") Integer batchSize,
+            @Parameter(description = "错误处理：STOP_ON_ERROR 或 SKIP_ERROR", required = false)
+            @RequestParam(value = "errorHandling", defaultValue = "SKIP_ERROR") String errorHandling) {
+
+        logger.info("开始同步JSON字符串导入: searchSpaceId={}, contentLength={}, mode={}",
+                id, jsonContent != null ? jsonContent.length() : 0, mode);
+
+        long startTimeMs = System.currentTimeMillis();
+        LocalDateTime startTime = LocalDateTime.now();
+
+        try {
+            // 1. 基本参数验证
+            if (jsonContent == null || jsonContent.trim().isEmpty()) {
+                logger.warn("JSON内容为空: searchSpaceId={}", id);
+                return ResponseEntity.badRequest()
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("JSON内容不能为空"));
+            }
+
+            // 2. 验证JSON格式
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.readTree(jsonContent);
+            } catch (JsonProcessingException e) {
+                logger.warn("JSON格式验证失败: searchSpaceId={}, error={}", id, e.getMessage());
+                return ResponseEntity.badRequest()
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest("JSON格式错误: " + e.getMessage()));
+            }
+
+            // 3. 验证搜索空间是否存在
+            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(id);
+            logger.debug("搜索空间验证通过: id={}, name={}", searchSpace.getId(), searchSpace.getName());
+
+            // 4. 执行导入处理
+            ImportSyncResponse response = performJsonContentImport(
+                    searchSpace, jsonContent, mode, batchSize, errorHandling, startTime);
+
+            long duration = System.currentTimeMillis() - startTimeMs;
+            logger.info("同步JSON字符串导入完成: searchSpaceId={}, contentLength={}, duration={}ms, success={}, imported={}, errors={}",
+                    id, jsonContent.length(), duration, response.isSuccess(),
+                    response.getSuccessRecords(), response.getFailedRecords());
+
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(com.ynet.mgmt.common.dto.ApiResponse.success("导入完成", response));
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(com.ynet.mgmt.common.dto.ApiResponse.badRequest(response.getMessage()));
+            }
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage();
+            if (message != null && (message.contains("不存在") || message.contains("未找到"))) {
+                logger.warn("搜索空间不存在: searchSpaceId={}", id);
+                return ResponseEntity.notFound().build();
+            }
+
+            logger.error("同步导入JSON字符串过程中发生未知错误: searchSpaceId={}, contentLength={}",
+                    id, jsonContent != null ? jsonContent.length() : 0, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("导入失败: " + message));
+
+        } catch (Exception e) {
+            logger.error("同步导入JSON字符串异常: searchSpaceId={}, contentLength={}",
+                    id, jsonContent != null ? jsonContent.length() : 0, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.ynet.mgmt.common.dto.ApiResponse.error("系统异常，请稍后重试"));
+        }
+    }
+
+    /**
+     * 执行JSON字符串同步导入处理
+     * 直接调用DataImportService的JSON字符串导入方法
+     */
+    private ImportSyncResponse performJsonContentImport(
+            SearchSpaceDTO searchSpace,
+            String jsonContent,
+            String mode,
+            Integer batchSize,
+            String errorHandling,
+            LocalDateTime startTime) {
+
+        try {
+            logger.info("开始执行DataImportService JSON字符串同步导入: searchSpace={}, mode={}",
+                    searchSpace.getCode(), mode);
+
+            // 调用DataImportService的JSON字符串导入方法
+            ImportTaskStatus taskStatus = dataImportService.executeImportFromJsonContent(
+                    searchSpace.getId(),
+                    jsonContent,
+                    mode,
+                    batchSize,
+                    errorHandling
+            );
+
+            // 将ImportTaskStatus转换为ImportSyncResponse
+            return convertTaskStatusToSyncResponse(taskStatus, startTime);
+
+        } catch (Exception e) {
+            logger.error("DataImportService JSON字符串同步导入失败", e);
+            return ImportSyncResponse.failure("导入失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 获取索引mapping配置
      *
      * @param id 搜索空间ID

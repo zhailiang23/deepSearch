@@ -197,3 +197,29 @@ semantic:
         url: ${LOCAL_EMBEDDING_SERVICE_URL:http://localhost:8001}
       model: ${LOCAL_EMBEDDING_MODEL:paraphrase-multilingual-MiniLM-L12-v2}
       dimension: ${LOCAL_EMBEDDING_DIMENSION:384}
+
+# 硅基流动 Vision API 配置
+siliconflow:
+  vision:
+    # API 基础配置
+    api-key: ${SILICONFLOW_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+    api-url: ${SILICONFLOW_VISION_API_URL:https://api.siliconflow.cn/v1/chat/completions}
+    model: ${SILICONFLOW_VISION_MODEL:Qwen/QVQ-72B-Preview}
+
+    # 模型参数配置
+    temperature: ${SILICONFLOW_VISION_TEMPERATURE:0.1}
+    max-tokens: ${SILICONFLOW_VISION_MAX_TOKENS:2048}
+    top-p: ${SILICONFLOW_VISION_TOP_P:0.8}
+    stream: ${SILICONFLOW_VISION_STREAM:false}
+
+    # 超时配置
+    timeout: ${SILICONFLOW_VISION_TIMEOUT:300000}
+
+    # 图片处理配置
+    image:
+      max-file-size: ${SILICONFLOW_VISION_MAX_FILE_SIZE:10485760}  # 10MB
+      supported-formats: ${SILICONFLOW_VISION_SUPPORTED_FORMATS:jpg,jpeg,png}
+      max-width: ${SILICONFLOW_VISION_MAX_WIDTH:3584}
+      max-height: ${SILICONFLOW_VISION_MAX_HEIGHT:3584}
+      min-width: ${SILICONFLOW_VISION_MIN_WIDTH:56}
+      min-height: ${SILICONFLOW_VISION_MIN_HEIGHT:56}
