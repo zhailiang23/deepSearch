@@ -153,8 +153,12 @@ public class DataImportService {
 
             throw new RuntimeException("数据导入失败: " + e.getMessage(), e);
         } finally {
-            // 清理临时文件
-            cleanupTemporaryFiles(taskId, searchSpaceId);
+            // 清理临时文件 - 不抛出异常，只记录日志
+            try {
+                cleanupTemporaryFiles(taskId, searchSpaceId);
+            } catch (Exception cleanupError) {
+                log.warn("清理临时文件时发生错误，但不影响导入结果: {}", cleanupError.getMessage());
+            }
         }
     }
 
@@ -162,44 +166,41 @@ public class DataImportService {
      * 基于JSON内容创建临时文件并执行同步导入
      * 为SearchSpaceController的同步导入提供便捷方法
      */
-    public ImportTaskStatus executeImportFromJsonContent(Long searchSpaceId, String jsonContent, 
+    public ImportTaskStatus executeImportFromJsonContent(Long searchSpaceId, String jsonContent,
             String mode, Integer batchSize, String errorHandling) throws IOException {
-        
+
         // 生成临时任务ID
         String taskId = UUID.randomUUID().toString();
-        
-        // 创建临时文件
-        String fileName = "sync-import-" + taskId + ".json";
-        Path tempFilePath = fileStorageService.getTemporaryFilePath(fileName);
-        
-        // 确保临时目录存在
-        if (!Files.exists(tempFilePath.getParent())) {
-            Files.createDirectories(tempFilePath.getParent());
-        }
-        
-        // 写入文件内容
-        Files.write(tempFilePath, jsonContent.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        log.debug("创建临时文件用于同步导入: {}", tempFilePath);
-        
-        // 构建导入请求
-        ImportExecuteRequest request = ImportExecuteRequest.builder()
-                .taskId(taskId)
-                .mode(ImportExecuteRequest.ImportMode.valueOf(mode.toUpperCase()))
-                .batchSize(batchSize)
-                .errorHandling(ImportExecuteRequest.ErrorHandlingStrategy.valueOf(errorHandling.toUpperCase()))
-                .enableIndexOptimization(false) // 同步导入默认不开启索引优化
-                .build();
-        
+        Path tempFilePath = null;
+
         try {
-            return executeImportSync(searchSpaceId, request);
-        } finally {
-            // 确保清理临时文件
-            try {
-                Files.deleteIfExists(tempFilePath);
-                log.debug("清理临时文件: {}", tempFilePath);
-            } catch (IOException e) {
-                log.warn("清理临时文件失败: {}", e.getMessage());
+            // 创建临时文件
+            String fileName = "sync-import-" + taskId + ".json";
+            tempFilePath = fileStorageService.getTemporaryFilePath(fileName);
+
+            // 确保临时目录存在
+            if (!Files.exists(tempFilePath.getParent())) {
+                Files.createDirectories(tempFilePath.getParent());
             }
+
+            // 写入文件内容
+            Files.write(tempFilePath, jsonContent.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            log.debug("创建临时文件用于同步导入: {}", tempFilePath);
+
+            // 构建导入请求
+            ImportExecuteRequest request = ImportExecuteRequest.builder()
+                    .taskId(taskId)
+                    .mode(ImportExecuteRequest.ImportMode.valueOf(mode.toUpperCase()))
+                    .batchSize(batchSize)
+                    .errorHandling(ImportExecuteRequest.ErrorHandlingStrategy.valueOf(errorHandling.toUpperCase()))
+                    .enableIndexOptimization(false) // 同步导入默认不开启索引优化
+                    .build();
+
+            return executeImportSync(searchSpaceId, request);
+
+        } finally {
+            // 确保清理临时文件 - 直接清理，不依赖cleanupTemporaryFiles方法
+            safeCleanupFile(tempFilePath);
         }
     }
 
@@ -288,8 +289,12 @@ public class DataImportService {
 
             return CompletableFuture.failedFuture(e);
         } finally {
-            // 清理临时文件
-            cleanupTemporaryFiles(taskId, searchSpaceId);
+            // 清理临时文件 - 不抛出异常，只记录日志
+            try {
+                cleanupTemporaryFiles(taskId, searchSpaceId);
+            } catch (Exception cleanupError) {
+                log.warn("清理临时文件时发生错误，但不影响导入结果: {}", cleanupError.getMessage());
+            }
         }
     }
 
@@ -678,11 +683,16 @@ public class DataImportService {
                         
                         if (item.error() != null) {
                             batchErrorCount++;
-                            log.error("文档 {} 导入失败: 错误类型={}, 错误原因={}, 错误详情={}", 
-                                itemIndex, 
-                                item.error().type(),
-                                item.error().reason(),
-                                item.error().toString());
+                            var error = item.error();
+                            if (error != null) {
+                                log.error("文档 {} 导入失败: 错误类型={}, 错误原因={}, 错误详情={}",
+                                    itemIndex,
+                                    error.type() != null ? error.type() : "unknown",
+                                    error.reason() != null ? error.reason() : "unknown",
+                                    error.toString());
+                            } else {
+                                log.error("文档 {} 导入失败: 未知错误", itemIndex);
+                            }
                         } else {
                             batchSuccessCount++;
                             log.debug("文档 {} 导入成功", itemIndex);
@@ -752,6 +762,13 @@ public class DataImportService {
      * 执行批量索引操作
      */
     private BulkResponse performBulkIndex(String indexName, List<Map<String, Object>> batchData, Long searchSpaceId, IndexMappingConfig indexConfig) throws IOException {
+        // 动态调整批次大小以避免内存溢出
+        int maxBatchSize = calculateOptimalBatchSize(batchData);
+        if (batchData.size() > maxBatchSize) {
+            log.warn("批次大小 {} 过大，将拆分为多个子批次进行处理，最大子批次大小: {}", batchData.size(), maxBatchSize);
+            return performBulkIndexInChunks(indexName, batchData, searchSpaceId, indexConfig, maxBatchSize);
+        }
+
         List<BulkOperation> operations = new ArrayList<>();
 
         for (int i = 0; i < batchData.size(); i++) {
@@ -781,7 +798,241 @@ public class DataImportService {
                 .operations(operations)
         );
 
-        return elasticsearchClient.bulk(request);
+        return executeWithRetry(() -> elasticsearchClient.bulk(request));
+    }
+
+    /**
+     * 分块执行批量索引操作
+     */
+    private BulkResponse performBulkIndexInChunks(String indexName, List<Map<String, Object>> batchData,
+                                                   Long searchSpaceId, IndexMappingConfig indexConfig, int chunkSize) throws IOException {
+        int totalItems = batchData.size();
+        int successCount = 0;
+        int errorCount = 0;
+        List<co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem> allItems = new ArrayList<>();
+        boolean hasErrors = false;
+
+        log.info("开始分块处理批次数据，总计 {} 条记录，分为 {} 个子批次", totalItems, (int) Math.ceil((double) totalItems / chunkSize));
+
+        for (int i = 0; i < totalItems; i += chunkSize) {
+            int endIndex = Math.min(i + chunkSize, totalItems);
+            List<Map<String, Object>> chunk = batchData.subList(i, endIndex);
+
+            log.debug("处理子批次 {}-{} / {}", i + 1, endIndex, totalItems);
+
+            try {
+                BulkResponse chunkResponse = performBulkIndexSingle(indexName, chunk, searchSpaceId, indexConfig);
+                allItems.addAll(chunkResponse.items());
+
+                if (chunkResponse.errors()) {
+                    hasErrors = true;
+                    // 计算子批次的成功和失败数量
+                    for (var item : chunkResponse.items()) {
+                        if (item.error() != null) {
+                            errorCount++;
+                        } else {
+                            successCount++;
+                        }
+                    }
+                } else {
+                    successCount += chunk.size();
+                }
+            } catch (Exception e) {
+                log.error("子批次 {}-{} 处理失败: {}", i + 1, endIndex, e.getMessage());
+                hasErrors = true;
+                errorCount += chunk.size();
+
+                // 为失败的子批次创建错误项
+                for (int j = 0; j < chunk.size(); j++) {
+                    // 这里需要创建模拟的错误响应项，但ES客户端的BulkResponseItem构造比较复杂
+                    // 实际上我们应该让异常向上传播，让上层处理
+                }
+                throw e; // 重新抛出异常让上层处理
+            }
+
+            // 在每个子批次之间添加短暂延迟，减少ES压力
+            if (i + chunkSize < totalItems) {
+                try {
+                    Thread.sleep(100); // 100ms延迟
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("批次处理被中断", ie);
+                }
+            }
+        }
+
+        log.info("分块处理完成，成功: {}, 失败: {}, 总计: {}", successCount, errorCount, totalItems);
+
+        // 构造聚合响应 - 这里需要构造一个BulkResponse
+        // 由于ES Java客户端的BulkResponse构造较为复杂，我们创建一个简化的方法
+        return createAggregatedBulkResponse(allItems, hasErrors);
+    }
+
+    /**
+     * 执行单个子批次的批量索引操作
+     */
+    private BulkResponse performBulkIndexSingle(String indexName, List<Map<String, Object>> chunk,
+                                                Long searchSpaceId, IndexMappingConfig indexConfig) throws IOException {
+        List<BulkOperation> operations = new ArrayList<>();
+
+        for (Map<String, Object> originalDocument : chunk) {
+            Map<String, Object> document = new HashMap<>(originalDocument);
+
+            // 添加系统字段
+            document.put("_searchSpaceId", searchSpaceId);
+            document.put("_documentId", UUID.randomUUID().toString());
+            document.put("_importTimestamp", LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT));
+            document.put("_dataVersion", 1);
+
+            // 生成向量字段
+            generateVectorFields(document, indexConfig);
+
+            IndexOperation<Map<String, Object>> indexOp = IndexOperation.of(io -> io
+                    .index(indexName)
+                    .id(UUID.randomUUID().toString())
+                    .document(document)
+            );
+
+            operations.add(BulkOperation.of(bo -> bo.index(indexOp)));
+        }
+
+        BulkRequest request = BulkRequest.of(br -> br
+                .index(indexName)
+                .operations(operations)
+        );
+
+        return executeWithRetry(() -> elasticsearchClient.bulk(request));
+    }
+
+    /**
+     * 创建聚合的批量响应
+     */
+    private BulkResponse createAggregatedBulkResponse(List<co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem> allItems, boolean hasErrors) {
+        // 由于ES Java客户端的构造器较为复杂，这里使用简化的方式
+        // 在实际应用中，可能需要更复杂的响应构造逻辑
+        return BulkResponse.of(br -> br
+                .errors(hasErrors)
+                .items(allItems)
+                .took(0L) // 简化处理
+                .ingestTook(0L)
+        );
+    }
+
+    /**
+     * 计算最优批次大小
+     */
+    private int calculateOptimalBatchSize(List<Map<String, Object>> batchData) {
+        if (batchData.isEmpty()) {
+            return 100; // 默认最小批次
+        }
+
+        // 估算单个文档的内存大小
+        Map<String, Object> sampleDoc = batchData.get(0);
+        int estimatedDocSize = estimateDocumentSize(sampleDoc);
+
+        // 目标：单次请求不超过50MB（保守估计，为ES熔断器留出充足空间）
+        int targetBatchSizeInBytes = 50 * 1024 * 1024; // 50MB
+        int optimalBatchSize = targetBatchSizeInBytes / Math.max(estimatedDocSize, 1024); // 至少1KB
+
+        // 限制批次大小范围
+        optimalBatchSize = Math.max(10, Math.min(optimalBatchSize, 500)); // 10-500之间
+
+        log.debug("估算文档大小: {} 字节，计算出的最优批次大小: {}", estimatedDocSize, optimalBatchSize);
+        return optimalBatchSize;
+    }
+
+    /**
+     * 估算文档大小（字节）
+     */
+    private int estimateDocumentSize(Map<String, Object> document) {
+        if (document == null) {
+            return 1024; // 默认1KB
+        }
+
+        int totalSize = 0;
+        for (Map.Entry<String, Object> entry : document.entrySet()) {
+            // 键的大小
+            totalSize += entry.getKey().length() * 2; // UTF-16编码，每字符2字节
+
+            // 值的大小
+            Object value = entry.getValue();
+            if (value instanceof String) {
+                totalSize += ((String) value).length() * 2;
+            } else if (value instanceof Number) {
+                totalSize += 8; // 假设是double
+            } else if (value instanceof Boolean) {
+                totalSize += 1;
+            } else if (value instanceof List) {
+                List<?> list = (List<?>) value;
+                totalSize += list.size() * 8; // 粗略估算
+                for (Object item : list) {
+                    if (item instanceof String) {
+                        totalSize += ((String) item).length() * 2;
+                    } else if (item instanceof Number) {
+                        totalSize += 8;
+                    }
+                }
+            } else if (value instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> mapValue = (Map<String, Object>) value;
+                totalSize += estimateDocumentSize(mapValue);
+            } else {
+                totalSize += 50; // 其他类型的默认估算
+            }
+        }
+
+        // 添加JSON序列化开销和ES元数据开销
+        totalSize = (int) (totalSize * 1.3); // 30%的开销
+
+        return Math.max(totalSize, 512); // 最小512字节
+    }
+
+    /**
+     * 带重试机制的执行方法
+     */
+    private <T> T executeWithRetry(java.util.concurrent.Callable<T> operation) throws IOException {
+        int maxRetries = 3;
+        int retryDelay = 1000; // 1秒
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return operation.call();
+            } catch (Exception e) {
+                if (isCircuitBreakerException(e) && attempt < maxRetries) {
+                    log.warn("遇到熔断器错误，等待 {} ms 后重试 (第 {} 次重试)", retryDelay, attempt);
+                    try {
+                        Thread.sleep(retryDelay);
+                        retryDelay *= 2; // 指数退避
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException("重试过程被中断", ie);
+                    }
+                } else {
+                    if (e instanceof IOException) {
+                        throw (IOException) e;
+                    } else {
+                        throw new IOException("批量操作失败", e);
+                    }
+                }
+            }
+        }
+
+        throw new IOException("批量操作经过 " + maxRetries + " 次重试后仍然失败");
+    }
+
+    /**
+     * 检查是否为熔断器异常
+     */
+    private boolean isCircuitBreakerException(Exception e) {
+        if (e == null) return false;
+
+        String message = e.getMessage();
+        if (message == null) return false;
+
+        return message.contains("circuit_breaking_exception")
+                || message.contains("Too Many Requests")
+                || message.contains("Data too large")
+                || e.getCause() instanceof org.elasticsearch.client.ResponseException;
     }
 
     /**
@@ -878,22 +1129,55 @@ public class DataImportService {
      */
     private void cleanupTemporaryFiles(String taskId, Long searchSpaceId) {
         try {
-            // 尝试清理新格式的临时文件
+            // 尝试清理新格式的临时文件（用于executeImportFromJsonContent）
             String fileName = "sync-import-" + taskId + ".json";
-            Path newFormatPath = fileStorageService.getTemporaryFilePath(fileName);
-            if (Files.exists(newFormatPath)) {
-                Files.delete(newFormatPath);
-                log.info("临时文件清理完成: {}", newFormatPath);
+            try {
+                Path newFormatPath = fileStorageService.getTemporaryFilePath(fileName);
+                if (Files.exists(newFormatPath)) {
+                    Files.delete(newFormatPath);
+                    log.debug("临时文件清理完成: {}", newFormatPath);
+                } else {
+                    log.debug("新格式临时文件不存在，无需清理: {}", newFormatPath);
+                }
+            } catch (Exception e) {
+                log.debug("新格式临时文件清理失败（可能不存在）: {}", fileName);
             }
-            
-            // 同时尝试清理旧格式的临时文件
-            Path oldFormatPath = fileStorageService.getTemporaryFilePath(taskId, searchSpaceId);
-            if (Files.exists(oldFormatPath)) {
-                Files.delete(oldFormatPath);
-                log.info("旧格式临时文件清理完成: {}", oldFormatPath);
+
+            // 同时尝试清理旧格式的临时文件（用于传统文件上传导入）
+            try {
+                Path oldFormatPath = fileStorageService.getTemporaryFilePath(taskId, searchSpaceId);
+                if (Files.exists(oldFormatPath)) {
+                    Files.delete(oldFormatPath);
+                    log.debug("旧格式临时文件清理完成: {}", oldFormatPath);
+                } else {
+                    log.debug("旧格式临时文件不存在，无需清理: {}", oldFormatPath);
+                }
+            } catch (Exception e) {
+                log.debug("旧格式临时文件清理失败（可能不存在）: taskId={}, searchSpaceId={}", taskId, searchSpaceId);
             }
+
         } catch (Exception e) {
-            log.warn("清理临时文件失败: taskId={}, searchSpaceId={}", taskId, searchSpaceId, e);
+            // 这里不应该再抛出异常，只记录警告
+            log.warn("清理临时文件过程中发生意外错误: taskId={}, searchSpaceId={}, error={}",
+                    taskId, searchSpaceId, e.getMessage());
+        }
+    }
+
+    /**
+     * 安全清理指定路径的临时文件
+     */
+    private void safeCleanupFile(Path filePath) {
+        if (filePath != null) {
+            try {
+                if (Files.exists(filePath)) {
+                    Files.delete(filePath);
+                    log.debug("临时文件清理完成: {}", filePath);
+                } else {
+                    log.debug("文件不存在，无需清理: {}", filePath);
+                }
+            } catch (Exception e) {
+                log.warn("清理文件失败: {}, 错误: {}", filePath, e.getMessage());
+            }
         }
     }
 }

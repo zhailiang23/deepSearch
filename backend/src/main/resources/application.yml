@@ -124,6 +124,16 @@ server:
   port: 8080
   servlet:
     context-path: /api
+  # Tomcat连接超时配置
+  tomcat:
+    connection-timeout: 300000  # 5分钟连接超时
+    keep-alive-timeout: 300000  # 5分钟保活超时
+    max-keep-alive-requests: 100
+  # 压缩配置
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,text/plain,text/xml,application/json,application/javascript
+    min-response-size: 1024
 
 # JWT配置
 jwt:
@@ -141,6 +151,16 @@ app:
     file-expiry-hours: ${FILE_EXPIRY_HOURS:24}
     max-file-size: 20971520  # 20MB in bytes
     allowed-extensions: json
+    # 数据导入服务超时配置
+    timeout:
+      sync-import: ${IMPORT_SYNC_TIMEOUT:300000}  # 同步导入超时: 5分钟
+      async-import: ${IMPORT_ASYNC_TIMEOUT:1800000}  # 异步导入超时: 30分钟
+    # 批处理配置
+    batch:
+      default-size: ${IMPORT_DEFAULT_BATCH_SIZE:100}  # 默认批次大小：100（更保守）
+      max-size: ${IMPORT_MAX_BATCH_SIZE:500}  # 最大批次大小：500
+      min-size: ${IMPORT_MIN_BATCH_SIZE:10}   # 最小批次大小：10
+      max-memory-per-batch: ${IMPORT_MAX_MEMORY_PER_BATCH:52428800}  # 单批次最大内存：50MB
 
   # 缓存配置
   cache:

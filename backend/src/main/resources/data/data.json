@@ -1,0 +1,5491 @@
+[ {
+  "id" : "activity_989",
+  "name" : "助力拼券验证",
+  "type" : "活动",
+  "descript" : "一种旨在通过用户间的互助来验证拼券资格的营销活动。",
+  "link" : "https://dev-pkg.finmall.com/game/game_assist_group/index.html?acId=2024070113017047691",
+  "startDate" : "2024-07-01",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1017",
+  "name" : "刮刮乐-客群用户",
+  "type" : "活动",
+  "descript" : "专门面向特定用户群体推出的刮刮乐抽奖活动，提供专属奖品。",
+  "link" : "https://dev-pkg.finmall.com/game/game_scratch/index.html?acId=2024070117017067704",
+  "startDate" : "2024-07-01",
+  "endDate" : "2024-07-31",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1022",
+  "name" : "普通签到-标签客群",
+  "type" : "活动",
+  "descript" : "针对被特定标签标记的用户群体，每日进行的普通签到活动，可获得相应奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_sign_normal/index.html?acId=2024070209017102694",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1031",
+  "name" : "口红机活动-每人领取权益数-部分-2选1",
+  "type" : "活动",
+  "descript" : "一种趣味性强的口红机互动活动，用户每人可在两种权益中选择领取其一，且领取数量有限。",
+  "link" : "https://dev-pkg.finmall.com/game/game_lipstick/index.html?acId=2024070210017117774",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-03",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1034",
+  "name" : "摇奖机-资格抽奖",
+  "type" : "活动",
+  "descript" : "一种摇奖抽奖活动，用户需要满足特定资格条件才能参与，确保奖励的精准发放。",
+  "link" : "https://dev-pkg.finmall.com/game/game_lotteryDraw/index.html?acId=2024062816016965291",
+  "startDate" : "2024-06-28",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1038",
+  "name" : "叠元宝活动-标签客群验证",
+  "type" : "活动",
+  "descript" : "针对被特定标签标记的用户群体，参与叠元宝游戏，并需通过验证才能获得奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_jenga/index.html?acId=2024070211017117839",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1040",
+  "name" : "助力拼券-验证",
+  "type" : "活动",
+  "descript" : "一项通过用户互助来验证拼券资格，确保活动公平性的流程。",
+  "link" : "https://dev-pkg.finmall.com/game/game_assist_group/index.html?acId=2024070213017117864",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1048",
+  "name" : "答题活动-按单局分数验证",
+  "type" : "活动",
+  "descript" : "一场以答题形式进行的活动，用户需达到单局特定分数才能通过验证，获取参与资格或奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_answer/index.html?acId=2024070214017122758",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-03",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1050",
+  "name" : "答题活动-用户报名验证",
+  "type" : "活动",
+  "descript" : "答题活动开始前，用户必须通过报名验证才能获得参与资格。",
+  "link" : "https://dev-pkg.finmall.com/game/game_answer/index.html?acId=2024070116017047831",
+  "startDate" : "2024-07-01",
+  "endDate" : "2024-07-03",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1058",
+  "name" : "摇奖机-标签客群",
+  "type" : "活动",
+  "descript" : "专门面向被特定标签标记的用户群体推出的摇奖机活动，奖品与用户属性高度匹配。",
+  "link" : "https://dev-pkg.finmall.com/game/game_lotteryDraw/index.html?acId=2024070215017122850",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-02",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1067",
+  "name" : "九宫格-客群",
+  "type" : "活动",
+  "descript" : "针对特定用户群体设计的九宫格抽奖活动，提供与客群偏好相关的奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_squared_paper/index.html?acId=2024070217017122907",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-02",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1068",
+  "name" : "刮刮乐-标签客群验证",
+  "type" : "活动",
+  "descript" : "刮刮乐活动的一种，用户必须属于特定标签客群，才能进行刮奖并验证其获奖资格。",
+  "link" : "https://dev-pkg.finmall.com/game/game_scratch/index.html?acId=2024070216017122885",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-02",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1069",
+  "name" : "连续签到-标签客群权益",
+  "type" : "活动",
+  "descript" : "鼓励特定标签用户连续签到的活动，签到天数越多，获得的专属权益也越多。",
+  "link" : "https://dev-pkg.finmall.com/game/game_sign/index.html?acId=2024070217017122921",
+  "startDate" : "2024-07-02",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1070",
+  "name" : "刮刮乐-活动",
+  "type" : "活动",
+  "descript" : "一种广受欢迎的即时抽奖活动，用户通过刮开涂层来揭晓是否中奖。",
+  "link" : "https://dev-pkg.finmall.com/game/game_scratch/index.html?acId=2024070217017122931",
+  "startDate" : "2024-07-03",
+  "endDate" : "2024-07-03",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1071",
+  "name" : "推荐活动-流程",
+  "type" : "活动",
+  "descript" : "推荐活动的完整操作流程，包含邀请、参与、奖励发放等环节，确保活动顺利进行。",
+  "link" : "https://dev-pkg.finmall.com/game/game_recommend/index.html?acId=2024070309017137692",
+  "startDate" : "2024-07-03",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1072",
+  "name" : "推荐活动-邀请链接",
+  "type" : "活动",
+  "descript" : "用户用于邀请好友参与推荐活动的专属链接，是活动成功的重要媒介。",
+  "link" : "https://dev-pkg.finmall.com/game/game_recommend/index.html?acId=2024070309017137711",
+  "startDate" : "2024-07-03",
+  "endDate" : "2024-07-06",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1155",
+  "name" : "捕鱼活动-指定批次投放",
+  "type" : "活动",
+  "descript" : "捕鱼游戏活动中的一种特殊形式，只在特定批次或时间段内投放，增加了稀缺性。",
+  "link" : "https://dev-pkg.finmall.com/game/game_card/index.html?acId=2024072917017313154",
+  "startDate" : "2024-07-29",
+  "endDate" : "2024-07-31",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1159",
+  "name" : "刮刮乐流程",
+  "type" : "活动",
+  "descript" : "刮刮乐活动的详细执行步骤，从用户参与到最终领奖的完整过程。",
+  "link" : "https://dev-pkg.finmall.com/game/game_scratch/index.html?acId=2024070110017022990",
+  "startDate" : "2024-07-01",
+  "endDate" : "2024-07-31",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1160",
+  "name" : "普通签到-资格抽奖",
+  "type" : "活动",
+  "descript" : "用户通过每日普通签到，获得参与资格抽奖的机会，签到越多，中奖机会越大。",
+  "link" : "https://dev-pkg.finmall.com/game/game_sign_normal/index.html?acId=2024073014017313215",
+  "startDate" : "2024-07-30",
+  "endDate" : "2024-07-31",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1166",
+  "name" : "连续签到-任务补签",
+  "type" : "活动",
+  "descript" : "一种人性化的连续签到活动机制，允许用户通过完成特定任务来弥补漏签的天数。",
+  "link" : "https://dev-pkg.finmall.com/game/game_sign/index.html?acId=2024073015017313241",
+  "startDate" : "2024-07-30",
+  "endDate" : "2024-08-03",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1175",
+  "name" : "叠元宝活动-按最高分排名-用户领取",
+  "type" : "活动",
+  "descript" : "叠元宝游戏结束后，根据用户的最高得分进行排名，排名靠前的用户可领取相应奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_jenga/index.html?acId=2024073111017313333",
+  "startDate" : "2024-07-31",
+  "endDate" : "2024-07-31",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1184",
+  "name" : "超级新手礼活动",
+  "type" : "活动",
+  "descript" : "专门为新注册用户设计的迎新活动，提供丰厚的礼品或权益，吸引并留住新用户。",
+  "link" : "https://www.baidu.com/",
+  "startDate" : "2024-08-08",
+  "endDate" : "2025-09-30",
+  "status" : "进行中"
+}, {
+  "id" : "activity_1191",
+  "name" : "信用卡消费达标返奖活动满1000元",
+  "type" : "活动",
+  "descript" : "一种信用卡消费返现活动，用户消费满1000元即可获得奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_treasure_chest/index.html?acId=2024082615017492741",
+  "startDate" : "2024-08-26",
+  "endDate" : "2024-09-30",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1192",
+  "name" : "信用卡消费满5000元返奖活动",
+  "type" : "活动",
+  "descript" : "鼓励大额消费的信用卡活动，用户消费满5000元即可获得更高价值的返奖。",
+  "link" : "https://dev-pkg.finmall.com/game/game_treasure_chest/index.html?acId=2024082616019942705",
+  "startDate" : "2024-08-26",
+  "endDate" : "2024-09-30",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1193",
+  "name" : "信用卡消费达标返奖活动满1000元",
+  "type" : "活动",
+  "descript" : "一种信用卡消费返现活动，用户消费满1000元即可获得奖励。",
+  "link" : "https://dev-pkg.finmall.com/game/game_treasure_chest/index.html?acId=2024082615017492741",
+  "startDate" : "2024-08-26",
+  "endDate" : "2024-09-30",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1196",
+  "name" : "信用卡消费抽奖活动",
+  "type" : "活动",
+  "descript" : "信用卡消费后，用户可凭消费记录参与抽奖，有机会获得额外大奖。",
+  "link" : "https://dev-pkg.finmall.com/game/game_zhuanpan/index.html?acId=2024082714021042746",
+  "startDate" : "2024-08-27",
+  "endDate" : "2024-09-30",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1322",
+  "name" : "安慰奖",
+  "type" : "活动",
+  "descript" : "一种为未中大奖的用户准备的奖励，旨在安抚情绪，提升用户参与体验。",
+  "link" : "https://dev-pkg.finmall.com/game/game_squared_paper/index.html?acId=2025062415027297955",
+  "startDate" : "2025-06-24",
+  "endDate" : "2025-07-31",
+  "status" : "已删除"
+}, {
+  "id" : "activity_1333",
+  "name" : "一二等奖",
+  "type" : "活动",
+  "descript" : "抽奖活动中设定的最高级别奖励，通常代表着最丰厚的奖品。",
+  "link" : "https://dev-pkg.finmall.com/game/game_squared_paper/index.html?acId=2025062711027298027",
+  "startDate" : "2025-06-27",
+  "endDate" : "2025-07-31",
+  "status" : "已结束"
+}, {
+  "id" : "activity_1334",
+  "name" : "生活抵扣券 1",
+  "type" : "活动",
+  "descript" : "一种可用于日常消费的抵扣券，为用户提供实际优惠。",
+  "link" : "https://dev-pkg.finmall.com/game/game_crowd_operation/index.html?acId=2025082210028227876",
+  "startDate" : "2025-08-22",
+  "endDate" : "2025-09-30",
+  "status" : "进行中"
+}, {
+  "id" : "activity_1335",
+  "name" : "Playwright测试活动",
+  "type" : "活动",
+  "descript" : "一项使用Playwright自动化测试框架进行的活动，旨在验证活动流程和功能。",
+  "link" : "https://test.example.com/activity/playwright-test",
+  "startDate" : "2025-09-09",
+  "endDate" : "2025-12-31",
+  "status" : "已删除"
+}, {
+  "id" : "activity_1336",
+  "name" : "多空间测试活动",
+  "type" : "活动",
+  "descript" : "在多个测试环境或空间中进行的活动测试，以确保其在不同场景下的稳定性和兼容性。",
+  "link" : "https://test.example.com/activity/playwright-test2",
+  "startDate" : "2025-09-09",
+  "endDate" : "2025-10-31",
+  "status" : "已删除"
+}, {
+  "id" : "activity_1337",
+  "name" : "空间字段修复测试活动",
+  "type" : "活动",
+  "descript" : "旨在修复活动中与空间字段相关的错误或问题的测试活动。",
+  "link" : "https://test.example.com/space-fix-test",
+  "startDate" : "2025-09-09",
+  "endDate" : "2025-10-31",
+  "status" : "已删除"
+}, {
+  "id" : "activity_1338",
+  "name" : "易精灵手机专享活动",
+  "type" : "活动",
+  "descript" : "一项仅限易精灵手机用户参与的专属活动，提供特殊的权益或优惠。",
+  "link" : "https://test.example.com/space-fix-test2",
+  "startDate" : "2025-09-09",
+  "endDate" : "2025-09-30",
+  "status" : "已删除"
+}, {
+  "id" : "func_026",
+  "name" : "转账",
+  "type" : "功能",
+  "descript" : "允许您将资金从您的账户转移到其他银行账户，支持单笔或批量转账，操作便捷且安全。您可以使用此功能将钱转给其它人",
+  "link" : "https://app.com.cn/web/025221",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_027",
+  "name" : "理财",
+  "type" : "功能",
+  "descript" : "提供多种理财产品供您选择，包括基金、债券和银行理财等，帮助您实现资产增值。",
+  "link" : "https://example.com/app/203562",
+  "category" : "投资理财",
+  "permission" : "INVESTMENT",
+  "frequency" : 65
+}, {
+  "id" : "func_028",
+  "name" : "存款",
+  "type" : "功能",
+  "descript" : "包含了各类存款服务，如活期、定期、通知存款和大额存单，满足您不同的储蓄和流动性需求。",
+  "link" : "https://app.com.cn/page/228005",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 58
+}, {
+  "id" : "func_029",
+  "name" : "贷款",
+  "type" : "功能",
+  "descript" : "提供贷款产品的查询、申请、支取、还款等一站式服务，助您解决资金周转问题。",
+  "link" : "https://demo.net/function/652179",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 75
+}, {
+  "id" : "func_030",
+  "name" : "在线开户",
+  "type" : "功能",
+  "descript" : "无需前往银行网点，您可以通过手机或电脑在线申请并开立新的银行账户。",
+  "link" : "https://example.com/service/958594",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 82
+}, {
+  "id" : "func_031",
+  "name" : "电子回单",
+  "type" : "功能",
+  "descript" : "方便您查询和下载电子交易回单，作为交易凭证，支持自助打印。",
+  "link" : "https://demo.net/page/434727",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 22
+}, {
+  "id" : "func_032",
+  "name" : "生活缴费",
+  "type" : "功能",
+  "descript" : "集成了多种便民服务，如水、电、燃气、通信费用的缴纳，让您足不出户轻松缴费。",
+  "link" : "https://test.cn/page/203005",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 53
+}, {
+  "id" : "func_033",
+  "name" : "权益平台",
+  "type" : "功能",
+  "descript" : "提供各类会员权益和优惠活动，包括影音、出行、购物等，丰富您的日常生活。",
+  "link" : "https://example.com/page/226085",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 72
+}, {
+  "id" : "func_034",
+  "name" : "明细查询",
+  "type" : "功能",
+  "descript" : "让您随时查看账户的收支详情，所有交易记录一目了然。",
+  "link" : "https://demo.net/page/644522",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_035",
+  "name" : "账户总览",
+  "type" : "功能",
+  "descript" : "集中展示您名下所有银行账户的资产和负债情况，便于您全面掌握个人财务状况。",
+  "link" : "https://demo.net/web/835913",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 34
+}, {
+  "id" : "func_036",
+  "name" : "转帐设置",
+  "type" : "功能",
+  "descript" : "您可以对转账限额、收款人等进行个性化设置，提高交易效率和安全性。",
+  "link" : "https://test.cn/app/821831",
+  "category" : "系统设置",
+  "permission" : "SETTING",
+  "frequency" : 72
+}, {
+  "id" : "func_037",
+  "name" : "登录管理",
+  "type" : "功能",
+  "descript" : "允许您管理登录方式和设备，例如指纹、面容或手势密码登录，确保账户安全。",
+  "link" : "https://app.com.cn/service/818212",
+  "category" : "安全中心",
+  "permission" : "",
+  "frequency" : 67
+}, {
+  "id" : "func_038",
+  "name" : "密码管理",
+  "type" : "功能",
+  "descript" : "提供修改、重置或找回交易密码等服务，保障您的资金安全。",
+  "link" : "https://demo.net/web/078355",
+  "category" : "安全中心",
+  "permission" : "SECURITY",
+  "frequency" : 36
+}, {
+  "id" : "func_039",
+  "name" : "设备管理",
+  "type" : "功能",
+  "descript" : "您可以查看并管理已绑定的设备，如有异常可及时处理，防止账户被盗用。",
+  "link" : "https://example.com/mobile/406974",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 66
+}, {
+  "id" : "func_040",
+  "name" : "他行卡转入",
+  "type" : "功能",
+  "descript" : "支持将资金从其他银行卡转入到您的本行账户，资金归集更加方便。",
+  "link" : "https://example.com/service/428143",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 48
+}, {
+  "id" : "func_041",
+  "name" : "大额预约",
+  "type" : "功能",
+  "descript" : "提前预约大额现金取款或转账，确保资金准备充足，节省您的时间。",
+  "link" : "https://example.com/mobile/889966",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 28
+}, {
+  "id" : "func_042",
+  "name" : "电子工资单",
+  "type" : "功能",
+  "descript" : "方便您在线查询和管理每月工资明细，支持下载和打印，安全又环保。",
+  "link" : "https://test.cn/function/517484",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 57
+}, {
+  "id" : "func_043",
+  "name" : "银行账号转账",
+  "type" : "功能",
+  "descript" : "通过输入对方的银行账号信息进行转账，是传统的资金划转方式。",
+  "link" : "https://test.cn/web/484445",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_044",
+  "name" : "打印回单",
+  "type" : "功能",
+  "descript" : "提供线下打印交易回单的服务，可前往指定网点自助打印。",
+  "link" : "https://example.com/web/773662",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 72
+}, {
+  "id" : "func_045",
+  "name" : "动账短信通知",
+  "type" : "功能",
+  "descript" : "订阅账户资金变动提醒，确保您第一时间掌握每一笔交易动态。",
+  "link" : "https://demo.net/service/344555",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 33
+}, {
+  "id" : "func_046",
+  "name" : "热门活动",
+  "type" : "功能",
+  "descript" : "汇集了最新的银行优惠、促销和金融教育活动，让您不错过任何一个福利。",
+  "link" : "https://app.com.cn/web/839979",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 28
+}, {
+  "id" : "func_047",
+  "name" : "购物",
+  "type" : "功能",
+  "descript" : "提供了各类线上购物平台的入口，让您享受便捷的消费体验和专属优惠。",
+  "link" : "https://test.cn/mobile/432872",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 80
+}, {
+  "id" : "func_048",
+  "name" : "美食",
+  "type" : "功能",
+  "descript" : "整合了餐饮优惠和美食推荐信息，为您带来更多用餐选择和折扣。",
+  "link" : "https://example.com/service/763769",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 69
+}, {
+  "id" : "func_049",
+  "name" : "数字食堂",
+  "type" : "功能",
+  "descript" : "针对特定场景推出的食堂消费服务，实现无现金支付，方便快捷。",
+  "link" : "https://demo.net/mobile/027763",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 46
+}, {
+  "id" : "func_050",
+  "name" : "影音",
+  "type" : "功能",
+  "descript" : "提供了热门视频、音乐平台的会员权益或优惠券，满足您的娱乐需求。",
+  "link" : "https://demo.net/app/599968",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 22
+}, {
+  "id" : "func_051",
+  "name" : "出行",
+  "type" : "功能",
+  "descript" : "提供了机票、火车票、打车等出行相关的服务或优惠，让您的旅程更加顺畅。",
+  "link" : "https://test.cn/web/979147",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 38
+}, {
+  "id" : "func_052",
+  "name" : "党费缴费",
+  "type" : "功能",
+  "descript" : "专为党员提供的线上党费缴纳服务，流程简化，操作方便。",
+  "link" : "https://example.com/web/042988",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 56
+}, {
+  "id" : "func_053",
+  "name" : "黄金积存",
+  "type" : "功能",
+  "descript" : "允许您定期或不定额地积存黄金，实现小额投资，积累财富。",
+  "link" : "https://test.cn/web/504921",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 42
+}, {
+  "id" : "func_054",
+  "name" : "银证服务",
+  "type" : "功能",
+  "descript" : "连接银行账户和证券账户，方便您进行资金划转，实现银证转账。",
+  "link" : "https://example.com/page/028595",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 35
+}, {
+  "id" : "func_055",
+  "name" : "结汇购汇",
+  "type" : "功能",
+  "descript" : "提供了外汇买卖服务，您可以根据需求将外币兑换成人民币或反之。",
+  "link" : "https://app.com.cn/service/164604",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 66
+}, {
+  "id" : "func_056",
+  "name" : "账户管理",
+  "type" : "功能",
+  "descript" : "包含账户信息查询、挂失、冻结等多种服务，帮助您全面管理您的银行账户。",
+  "link" : "https://test.cn/page/025473",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 58
+}, {
+  "id" : "func_057",
+  "name" : "更多",
+  "type" : "功能",
+  "descript" : "集中展示更多功能和服务，方便您探索和使用。",
+  "link" : "https://example.com/mobile/480613",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 26
+}, {
+  "id" : "func_058",
+  "name" : "小额免密",
+  "type" : "功能",
+  "descript" : "设置小额支付免输密码，提高交易效率，适合日常小额消费。",
+  "link" : "https://example.com/page/703436",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 43
+}, {
+  "id" : "func_059",
+  "name" : "测试勿用",
+  "type" : "功能",
+  "descript" : "这是一个内部测试功能，请勿使用。",
+  "link" : "https://test.cn/web/290013",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 55
+}, {
+  "id" : "func_060",
+  "name" : "测试001Name",
+  "type" : "功能",
+  "descript" : "这是一个内部测试功能，请勿使用。",
+  "link" : "https://test.cn/mobile/249120",
+  "category" : "其他服务",
+  "permission" : "001NAME",
+  "frequency" : 34
+}, {
+  "id" : "func_061",
+  "name" : "测试001Name2",
+  "type" : "功能",
+  "descript" : "这是一个内部测试功能，请勿使用。",
+  "link" : "https://demo.net/web/711864",
+  "category" : "其他服务",
+  "permission" : "001NAME2",
+  "frequency" : 36
+}, {
+  "id" : "func_062",
+  "name" : "对账结果查询",
+  "type" : "功能",
+  "descript" : "方便您查询账户的对账结果，确保账务清晰准确。",
+  "link" : "https://example.com/web/270481",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_063",
+  "name" : "银企对账单查询",
+  "type" : "功能",
+  "descript" : "专为企业客户设计的对账单查询功能，方便企业进行财务管理。",
+  "link" : "https://demo.net/web/791303",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 78
+}, {
+  "id" : "func_064",
+  "name" : "首页",
+  "type" : "功能",
+  "descript" : "返回主界面，是所有功能的起点。",
+  "link" : "https://test.cn/service/589249",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 67
+}, {
+  "id" : "func_065",
+  "name" : "账户管理工作台",
+  "type" : "功能",
+  "descript" : "为企业客户提供的综合账户管理平台，可以进行限额设置、操作员管理等。",
+  "link" : "https://demo.net/web/336559",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 23
+}, {
+  "id" : "func_066",
+  "name" : "安全中心",
+  "type" : "功能",
+  "descript" : "提供了多种安全设置，如手机号变更、证书管理、密码修改等，保障您的账户安全。",
+  "link" : "https://demo.net/function/224857",
+  "category" : "安全中心",
+  "permission" : "SECURITY",
+  "frequency" : 41
+}, {
+  "id" : "func_067",
+  "name" : "资金上划",
+  "type" : "功能",
+  "descript" : "专为集团客户设计，用于将下级单位的资金划拨至上级账户。",
+  "link" : "https://demo.net/function/612975",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 41
+}, {
+  "id" : "func_068",
+  "name" : "集团关系查询",
+  "type" : "功能",
+  "descript" : "方便企业客户查询其集团内部的账户关系和资金流向。",
+  "link" : "https://demo.net/web/159768",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_069",
+  "name" : "划拨交易查询",
+  "type" : "功能",
+  "descript" : "查询集团内部的资金划拨交易记录，便于追踪资金使用情况。",
+  "link" : "https://demo.net/page/721160",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_070",
+  "name" : "自动划拨计划",
+  "type" : "功能",
+  "descript" : "允许企业设置自动资金划拨规则，实现资金的自动化归集。",
+  "link" : "https://test.cn/function/532267",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 57
+}, {
+  "id" : "func_071",
+  "name" : "划拨计划维护",
+  "type" : "功能",
+  "descript" : "维护和修改自动划拨计划，确保资金管理策略的灵活性。",
+  "link" : "https://example.com/service/300093",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 29
+}, {
+  "id" : "func_072",
+  "name" : "内部划拨",
+  "type" : "功能",
+  "descript" : "在同一企业或集团内部不同账户间进行资金划转。",
+  "link" : "https://test.cn/service/515251",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 45
+}, {
+  "id" : "func_073",
+  "name" : "资金下拨",
+  "type" : "功能",
+  "descript" : "专为集团客户设计，用于将资金从上级账户划拨至下级单位。",
+  "link" : "https://app.com.cn/app/757932",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 62
+}, {
+  "id" : "func_074",
+  "name" : "对外付款",
+  "type" : "功能",
+  "descript" : "允许企业向外部供应商或合作伙伴进行批量或单笔付款。",
+  "link" : "https://example.com/app/919955",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 39
+}, {
+  "id" : "func_075",
+  "name" : "购汇",
+  "type" : "功能",
+  "descript" : "将人民币兑换成外币，满足您因境外消费、投资等目的而产生的资金需求。",
+  "link" : "https://demo.net/page/842236",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 30
+}, {
+  "id" : "func_076",
+  "name" : "结汇",
+  "type" : "功能",
+  "descript" : "将外币兑换成人民币，方便您管理和使用境外收入。",
+  "link" : "https://app.com.cn/app/852187",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 56
+}, {
+  "id" : "func_077",
+  "name" : "结售汇交易查询",
+  "type" : "功能",
+  "descript" : "查询您的外汇买卖交易记录，便于了解汇率和资金变动。",
+  "link" : "https://demo.net/app/234593",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 92
+}, {
+  "id" : "func_078",
+  "name" : "企业管理工作台",
+  "type" : "功能",
+  "descript" : "备企业操作员和管理员使用的综合管理平台，可进行操作员管理、限额设置等。",
+  "link" : "https://demo.net/service/125754",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 89
+}, {
+  "id" : "func_079",
+  "name" : "限额设置",
+  "type" : "功能",
+  "descript" : "您可以根据需要自行设置各类交易的单笔、每日或每月限额。",
+  "link" : "https://example.com/function/302387",
+  "category" : "系统设置",
+  "permission" : "SETTING",
+  "frequency" : 65
+}, {
+  "id" : "func_080",
+  "name" : "操作员日志查询",
+  "type" : "功能",
+  "descript" : "专为企业管理员设计，可查询所有操作员的交易和登录日志。",
+  "link" : "https://test.cn/function/934136",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_081",
+  "name" : "企业操作员管理",
+  "type" : "功能",
+  "descript" : "管理企业账户的操作员权限，包括添加、删除和修改操作员。",
+  "link" : "https://app.com.cn/service/468509",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 25
+}, {
+  "id" : "func_082",
+  "name" : "用途管理",
+  "type" : "功能",
+  "descript" : "设置和管理资金转账的用途，方便您记录和追踪资金流向。",
+  "link" : "https://test.cn/page/982044",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 37
+}, {
+  "id" : "func_083",
+  "name" : "用途分类设置",
+  "type" : "功能",
+  "descript" : "将资金用途进行分类管理，有助于进行财务分析和报表制作。",
+  "link" : "https://test.cn/web/087962",
+  "category" : "系统设置",
+  "permission" : "SETTING",
+  "frequency" : 69
+}, {
+  "id" : "func_084",
+  "name" : "企业信息查询",
+  "type" : "功能",
+  "descript" : "查询企业的工商信息、账户状态、业务授权等，方便企业管理。",
+  "link" : "https://app.com.cn/web/672308",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 88
+}, {
+  "id" : "func_085",
+  "name" : "贷款还款",
+  "type" : "功能",
+  "descript" : "方便您查询贷款还款计划，并进行线上还款操作。",
+  "link" : "https://test.cn/function/517406",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 33
+}, {
+  "id" : "func_086",
+  "name" : "贷款产品推荐",
+  "type" : "功能",
+  "descript" : "根据您的个人情况和需求，智能推荐合适的贷款产品。",
+  "link" : "https://test.cn/service/780476",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 93
+}, {
+  "id" : "func_087",
+  "name" : "贷款信息查询",
+  "type" : "功能",
+  "descript" : "查询您的贷款余额、利率、还款计划等详细信息。",
+  "link" : "https://demo.net/app/921908",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 86
+}, {
+  "id" : "func_088",
+  "name" : "贷款支取",
+  "type" : "功能",
+  "descript" : "方便您线上提取已获批的贷款资金。",
+  "link" : "https://app.com.cn/app/546155",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 50
+}, {
+  "id" : "func_089",
+  "name" : "贷款明细查询",
+  "type" : "功能",
+  "descript" : "查看您所有贷款交易的详细记录，包括支取、还款和利息。",
+  "link" : "https://example.com/web/917615",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 80
+}, {
+  "id" : "func_090",
+  "name" : "待我审批",
+  "type" : "功能",
+  "descript" : "显示所有等待您审批的交易或申请，方便您及时处理。",
+  "link" : "https://test.cn/service/300587",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 24
+}, {
+  "id" : "func_091",
+  "name" : "交易查询",
+  "type" : "功能",
+  "descript" : "查询您所有交易的详细记录，支持按时间、金额等多种方式筛选。",
+  "link" : "https://app.com.cn/function/022338",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 80
+}, {
+  "id" : "func_092",
+  "name" : "待他人审批",
+  "type" : "功能",
+  "descript" : "显示已提交并等待其他审批人处理的交易或申请。",
+  "link" : "https://app.com.cn/app/589674",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 85
+}, {
+  "id" : "func_093",
+  "name" : "余额对账单",
+  "type" : "功能",
+  "descript" : "提供账户余额的对账单，方便您核对资金变动。",
+  "link" : "https://demo.net/function/298261",
+  "category" : "资金管理",
+  "permission" : "INQUIRY",
+  "frequency" : 96
+}, {
+  "id" : "func_094",
+  "name" : "持有定期存款",
+  "type" : "功能",
+  "descript" : "查看您已存入的定期存款，包括存款金额、利率、到期日等信息。",
+  "link" : "https://app.com.cn/app/029121",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 81
+}, {
+  "id" : "func_095",
+  "name" : "持有通知存款",
+  "type" : "功能",
+  "descript" : "查看您已存入的通知存款，方便您管理短期闲置资金。",
+  "link" : "https://app.com.cn/web/346713",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 27
+}, {
+  "id" : "func_096",
+  "name" : "存款交易查询",
+  "type" : "功能",
+  "descript" : "查询所有存款账户的交易明细，包括存入、支取和利息。",
+  "link" : "https://app.com.cn/mobile/983473",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_097",
+  "name" : "在售存款产品",
+  "type" : "功能",
+  "descript" : "查看银行目前正在销售的各类存款产品，方便您进行选择。",
+  "link" : "https://example.com/service/298584",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 46
+}, {
+  "id" : "func_098",
+  "name" : "持有大额存单",
+  "type" : "功能",
+  "descript" : "查看您已购买的大额存单，包括到期日、利率等详细信息。",
+  "link" : "https://test.cn/mobile/727093",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 89
+}, {
+  "id" : "func_099",
+  "name" : "大额存单产品",
+  "type" : "功能",
+  "descript" : "提供了各类大额存单的信息，通常具有更高的利率，适合大额资金投资。",
+  "link" : "https://example.com/service/532387",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 55
+}, {
+  "id" : "func_100",
+  "name" : "预约代发查询",
+  "type" : "功能",
+  "descript" : "查询已预约的工资或其他款项代发信息。",
+  "link" : "https://demo.net/service/684848",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_101",
+  "name" : "智能代发",
+  "type" : "功能",
+  "descript" : "批量代发工资、报销、奖金等，支持多种代发模式，高效便捷。",
+  "link" : "https://demo.net/service/110370",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 37
+}, {
+  "id" : "func_102",
+  "name" : "代发交易查询",
+  "type" : "功能",
+  "descript" : "查询代发交易的详细记录，便于企业进行财务核算。",
+  "link" : "https://example.com/web/991715",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 78
+}, {
+  "id" : "func_103",
+  "name" : "工资单上传",
+  "type" : "功能",
+  "descript" : "方便企业批量上传员工工资单，实现电子化管理。",
+  "link" : "https://demo.net/function/545761",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 48
+}, {
+  "id" : "func_104",
+  "name" : "工资单管理",
+  "type" : "功能",
+  "descript" : "管理已上传的工资单，支持修改、删除和查询。",
+  "link" : "https://test.cn/app/592298",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 95
+}, {
+  "id" : "func_105",
+  "name" : "账单维护",
+  "type" : "功能",
+  "descript" : "维护和管理各类账单，包括添加、修改和删除。",
+  "link" : "https://example.com/app/572939",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 99
+}, {
+  "id" : "func_106",
+  "name" : "账单查询",
+  "type" : "功能",
+  "descript" : "查询您已缴纳或待缴纳的各类账单。",
+  "link" : "https://test.cn/page/030265",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_107",
+  "name" : "云账单缴费",
+  "type" : "功能",
+  "descript" : "基于云平台的账单缴费服务，操作简单，支持多种缴费方式。",
+  "link" : "https://example.com/page/003662",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 63
+}, {
+  "id" : "func_108",
+  "name" : "活期账户交易明细查询",
+  "type" : "功能",
+  "descript" : "专为活期账户设计的明细查询功能，让您随时掌握资金动态。",
+  "link" : "https://app.com.cn/mobile/337249",
+  "category" : "账户服务",
+  "permission" : "INQUIRY",
+  "frequency" : 77
+}, {
+  "id" : "func_109",
+  "name" : "定期账户明细查询",
+  "type" : "功能",
+  "descript" : "查询定期存款账户的交易明细，包括利息收入和本金到期情况。",
+  "link" : "https://example.com/app/601937",
+  "category" : "账户服务",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_110",
+  "name" : "撤回申请",
+  "type" : "功能",
+  "descript" : "撤回您已提交但尚未处理的交易或业务申请。",
+  "link" : "https://app.com.cn/web/221718",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 66
+}, {
+  "id" : "func_111",
+  "name" : "电票工作台",
+  "type" : "功能",
+  "descript" : "专为企业客户设计的电子票据管理平台，支持出票、承兑等多种操作。",
+  "link" : "https://test.cn/mobile/679680",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 46
+}, {
+  "id" : "func_112",
+  "name" : "未用退回",
+  "type" : "功能",
+  "descript" : "将未使用的电子票据退回给开票人。",
+  "link" : "https://demo.net/service/744561",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 64
+}, {
+  "id" : "func_113",
+  "name" : "出票申请",
+  "type" : "功能",
+  "descript" : "在线上申请开具电子商业汇票。",
+  "link" : "https://test.cn/web/675995",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 70
+}, {
+  "id" : "func_114",
+  "name" : "提示承兑",
+  "type" : "功能",
+  "descript" : "提示承兑人对电子票据进行承兑，确认付款责任。",
+  "link" : "https://app.com.cn/function/116283",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 48
+}, {
+  "id" : "func_115",
+  "name" : "提示收票",
+  "type" : "功能",
+  "descript" : "提示收票人接收电子票据。",
+  "link" : "https://example.com/service/782105",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 96
+}, {
+  "id" : "func_116",
+  "name" : "支付信用查询",
+  "type" : "功能",
+  "descript" : "查询交易对手的支付信用状况，降低交易风险。",
+  "link" : "https://test.cn/app/893258",
+  "category" : "资金管理",
+  "permission" : "PAYMENT",
+  "frequency" : 85
+}, {
+  "id" : "func_117",
+  "name" : "票据信息查询",
+  "type" : "功能",
+  "descript" : "查询电子票据的详细信息，包括票面金额、到期日、承兑人等。",
+  "link" : "https://example.com/service/265743",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_118",
+  "name" : "票据操作结果查询",
+  "type" : "功能",
+  "descript" : "查询所有票据操作（如背书、贴现）的办理结果。",
+  "link" : "https://example.com/web/856020",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 95
+}, {
+  "id" : "func_119",
+  "name" : "收到验票信息",
+  "type" : "功能",
+  "descript" : "查看收到的验票通知，确认票据的真实性和有效性。",
+  "link" : "https://demo.net/page/149584",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 48
+}, {
+  "id" : "func_120",
+  "name" : "票据查验申请",
+  "type" : "功能",
+  "descript" : "线上申请对电子票据进行查验，核实其真伪。",
+  "link" : "https://app.com.cn/mobile/707064",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 99
+}, {
+  "id" : "func_121",
+  "name" : "提示付款申请",
+  "type" : "功能",
+  "descript" : "在票据到期时，向承兑人发出付款申请。",
+  "link" : "https://test.cn/page/317951",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 56
+}, {
+  "id" : "func_122",
+  "name" : "解质押申请",
+  "type" : "功能",
+  "descript" : "申请解除已质押的电子票据，恢复其流通性。",
+  "link" : "https://example.com/function/340653",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 73
+}, {
+  "id" : "func_123",
+  "name" : "背书申请",
+  "type" : "功能",
+  "descript" : "在线上对电子票据进行背书转让。",
+  "link" : "https://demo.net/web/347951",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 66
+}, {
+  "id" : "func_124",
+  "name" : "质押申请",
+  "type" : "功能",
+  "descript" : "申请将电子票据作为质押物，以获得融资。",
+  "link" : "https://example.com/app/162454",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 76
+}, {
+  "id" : "func_125",
+  "name" : "不可转让撤销",
+  "type" : "功能",
+  "descript" : "撤销对票据“不可转让”的限制。",
+  "link" : "https://test.cn/service/910479",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 47
+}, {
+  "id" : "func_126",
+  "name" : "追索通知申请",
+  "type" : "功能",
+  "descript" : "当票据到期无法获得付款时，向背书人发出追索通知。",
+  "link" : "https://app.com.cn/web/573984",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 96
+}, {
+  "id" : "func_127",
+  "name" : "同意清偿申请",
+  "type" : "功能",
+  "descript" : "对收到的追索通知进行清偿处理。",
+  "link" : "https://test.cn/web/732865",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 35
+}, {
+  "id" : "func_128",
+  "name" : "贴现申请",
+  "type" : "功能",
+  "descript" : "申请将未到期的电子票据向银行贴现，提前获取资金。",
+  "link" : "https://app.com.cn/function/583854",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 68
+}, {
+  "id" : "func_129",
+  "name" : "快速贴现申请",
+  "type" : "功能",
+  "descript" : "提供快速、便捷的电子票据贴现服务，提高资金周转效率。",
+  "link" : "https://demo.net/web/321454",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 64
+}, {
+  "id" : "func_130",
+  "name" : "在池票据查询",
+  "type" : "功能",
+  "descript" : "查询已入池的票据信息，便于您掌握票据资产状况。",
+  "link" : "https://demo.net/function/178542",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_131",
+  "name" : "票据入池申请",
+  "type" : "功能",
+  "descript" : "申请将电子票据存入票据池进行统一管理和融资。",
+  "link" : "https://test.cn/service/872463",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 79
+}, {
+  "id" : "func_132",
+  "name" : "手机号转账",
+  "type" : "功能",
+  "descript" : "通过输入对方手机号进行转账，无需知道对方银行卡号。",
+  "link" : "https://example.com/mobile/331069",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_133",
+  "name" : "信贷产品查询",
+  "type" : "功能",
+  "descript" : "查询银行提供的各类信贷产品信息，包括利率、额度等。",
+  "link" : "https://test.cn/service/384164",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_134",
+  "name" : "票据池交易明细",
+  "type" : "功能",
+  "descript" : "查询票据池中的所有交易记录，包括入池、出池、融资等。",
+  "link" : "https://test.cn/service/599903",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_135",
+  "name" : "多人转账",
+  "type" : "功能",
+  "descript" : "支持同时向多位收款人转账，适用于批量付款场景。",
+  "link" : "https://test.cn/function/060608",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 94
+}, {
+  "id" : "func_136",
+  "name" : "签约票据池查询",
+  "type" : "功能",
+  "descript" : "查询您已签约的票据池信息，方便进行管理。",
+  "link" : "https://demo.net/service/332233",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 85
+}, {
+  "id" : "func_137",
+  "name" : "票据出入池撤回申请",
+  "type" : "功能",
+  "descript" : "撤回已提交的票据出池或入池申请。",
+  "link" : "https://demo.net/mobile/419775",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 23
+}, {
+  "id" : "func_138",
+  "name" : "保证金转结算申请",
+  "type" : "功能",
+  "descript" : "申请将票据池中的保证金转为结算资金。",
+  "link" : "https://demo.net/mobile/600215",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 91
+}, {
+  "id" : "func_139",
+  "name" : "票据出池申请",
+  "type" : "功能",
+  "descript" : "申请将已入池的票据取出。",
+  "link" : "https://test.cn/web/195394",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 20
+}, {
+  "id" : "func_140",
+  "name" : "票据出池签收",
+  "type" : "功能",
+  "descript" : "签收已出池的票据，确认收到并完成交易。",
+  "link" : "https://demo.net/web/295666",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 80
+}, {
+  "id" : "func_141",
+  "name" : "信贷产品额度测算",
+  "type" : "功能",
+  "descript" : "根据您的财务状况，为您测算可获得的信贷额度。",
+  "link" : "https://example.com/service/951189",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 73
+}, {
+  "id" : "func_142",
+  "name" : "在池额度查询",
+  "type" : "功能",
+  "descript" : "查询您在票据池中可用的融资额度。",
+  "link" : "https://demo.net/app/277046",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_143",
+  "name" : "签收申请",
+  "type" : "功能",
+  "descript" : "签收收到的电子票据。",
+  "link" : "https://test.cn/web/390892",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 48
+}, {
+  "id" : "func_144",
+  "name" : "保证申请",
+  "type" : "功能",
+  "descript" : "申请为电子票据提供保证，提高其信用等级。",
+  "link" : "https://example.com/app/352000",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 76
+}, {
+  "id" : "func_146",
+  "name" : "信用证开证",
+  "type" : "功能",
+  "descript" : "线上申请开立信用证，用于国际贸易结算，保障交易安全。",
+  "link" : "https://demo.net/page/445806",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 25
+}, {
+  "id" : "func_147",
+  "name" : "来单通知查询及处理",
+  "type" : "功能",
+  "descript" : "查询收到的来单通知，并进行相应的处理。",
+  "link" : "https://app.com.cn/function/643196",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_148",
+  "name" : "信用证改证",
+  "type" : "功能",
+  "descript" : "线上申请修改已开立的信用证条款。",
+  "link" : "https://demo.net/function/237765",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 82
+}, {
+  "id" : "func_149",
+  "name" : "保证金缴纳",
+  "type" : "功能",
+  "descript" : "线上缴纳信用证或保函所需的保证金。",
+  "link" : "https://app.com.cn/service/363925",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 40
+}, {
+  "id" : "func_150",
+  "name" : "转账汇款工作台",
+  "type" : "功能",
+  "descript" : "集中展示所有转账汇款相关功能，方便您一站式操作。",
+  "link" : "https://test.cn/app/008544",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_151",
+  "name" : "批量转账",
+  "type" : "功能",
+  "descript" : "支持一次性向多个账户进行转账，适合公司批量代发工资等业务。",
+  "link" : "https://test.cn/app/656845",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_152",
+  "name" : "单笔转账",
+  "type" : "功能",
+  "descript" : "向单个账户进行资金转账，操作简单快捷。",
+  "link" : "https://test.cn/function/648148",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_153",
+  "name" : "银行行号查询",
+  "type" : "功能",
+  "descript" : "查询国内所有银行的行号，确保转账信息准确无误。",
+  "link" : "https://example.com/web/954622",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_154",
+  "name" : "常用收款人管理",
+  "type" : "功能",
+  "descript" : "添加、修改和删除常用收款人，提高转账效率。",
+  "link" : "https://demo.net/function/596062",
+  "category" : "资金管理",
+  "permission" : "",
+  "frequency" : 29
+}, {
+  "id" : "func_155",
+  "name" : "常用收款人组别管理",
+  "type" : "功能",
+  "descript" : "对常用收款人进行分组管理，便于不同场景下的快速转账。",
+  "link" : "https://demo.net/page/747402",
+  "category" : "资金管理",
+  "permission" : "",
+  "frequency" : 50
+}, {
+  "id" : "func_156",
+  "name" : "预约转账查询",
+  "type" : "功能",
+  "descript" : "查询您已设置的预约转账信息，支持修改和撤销。",
+  "link" : "https://example.com/mobile/342411",
+  "category" : "信息查询",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_157",
+  "name" : "转账交易查询",
+  "type" : "功能",
+  "descript" : "查询您所有的转账交易记录，包括已完成和正在处理的。",
+  "link" : "https://app.com.cn/page/032659",
+  "category" : "信息查询",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_158",
+  "name" : "保函业务申请",
+  "type" : "功能",
+  "descript" : "线上申请各类银行保函业务，如履约保函、付款保函等。",
+  "link" : "https://app.com.cn/web/490609",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 41
+}, {
+  "id" : "func_159",
+  "name" : "保函业务查询",
+  "type" : "功能",
+  "descript" : "查询您已申请的保函业务状态和详细信息。",
+  "link" : "https://test.cn/service/802526",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_160",
+  "name" : "申请进度查询",
+  "type" : "功能",
+  "descript" : "查询您提交的各类业务申请的审批进度。",
+  "link" : "https://example.com/web/317116",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_161",
+  "name" : "财富总览",
+  "type" : "功能",
+  "descript" : "集中展示您名下所有资产，包括理财、存款、黄金等，便于您全面掌握财富状况。",
+  "link" : "https://test.cn/mobile/322478",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 27
+}, {
+  "id" : "func_162",
+  "name" : "账户余额查询",
+  "type" : "功能",
+  "descript" : "实时查询您的账户余额，让您随时掌握资金情况。",
+  "link" : "https://test.cn/page/388242",
+  "category" : "账户服务",
+  "permission" : "INQUIRY",
+  "frequency" : 85
+}, {
+  "id" : "func_163",
+  "name" : "头寸预报",
+  "type" : "功能",
+  "descript" : "专为企业客户设计，用于预测未来的资金流入和流出，以便进行资金规划。",
+  "link" : "https://example.com/page/919484",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 57
+}, {
+  "id" : "func_164",
+  "name" : "单位支付标记线上签约/解约",
+  "type" : "功能",
+  "descript" : "线上签约或解约单位支付标记，方便企业进行资金管理。",
+  "link" : "https://test.cn/page/011507",
+  "category" : "资金管理",
+  "permission" : "PAYMENT",
+  "frequency" : 85
+}, {
+  "id" : "func_165",
+  "name" : "小额定期借记线上签约/解约",
+  "type" : "功能",
+  "descript" : "线上签约或解约小额定期借记服务，便于定期自动扣款。",
+  "link" : "https://test.cn/page/211056",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 79
+}, {
+  "id" : "func_166",
+  "name" : "电子函证授权",
+  "type" : "功能",
+  "descript" : "线上授权第三方机构（如会计师事务所）对您的账户进行函证。",
+  "link" : "https://demo.net/app/439801",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 62
+}, {
+  "id" : "func_167",
+  "name" : "函证授权记录",
+  "type" : "功能",
+  "descript" : "查询您的电子函证授权记录，确保授权透明可控。",
+  "link" : "https://example.com/web/053829",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 32
+}, {
+  "id" : "func_168",
+  "name" : "汇出汇款",
+  "type" : "功能",
+  "descript" : "办理向境外账户的汇款业务，支持多种外币。",
+  "link" : "https://test.cn/app/219333",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 78
+}, {
+  "id" : "func_169",
+  "name" : "汇出汇款查询",
+  "type" : "功能",
+  "descript" : "查询您已办理的境外汇款记录，了解汇款进度。",
+  "link" : "https://demo.net/page/943195",
+  "category" : "信息查询",
+  "permission" : "TRANSFER",
+  "frequency" : 91
+}, {
+  "id" : "func_170",
+  "name" : "汇入汇款确认",
+  "type" : "功能",
+  "descript" : "确认并处理收到的境外汇入款项。",
+  "link" : "https://example.com/app/344472",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 63
+}, {
+  "id" : "func_171",
+  "name" : "外币牌价查询",
+  "type" : "功能",
+  "descript" : "实时查询各种外币的汇率牌价，方便您进行外汇交易。",
+  "link" : "https://example.com/web/273764",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_172",
+  "name" : "牌价提醒",
+  "type" : "功能",
+  "descript" : "设置外币汇率提醒，当汇率达到您的目标值时，系统会自动通知。",
+  "link" : "https://test.cn/page/588119",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 33
+}, {
+  "id" : "func_173",
+  "name" : "清算报文上传下载",
+  "type" : "功能",
+  "descript" : "专为企业客户设计，用于上传和下载清算报文。",
+  "link" : "https://example.com/function/307688",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 72
+}, {
+  "id" : "func_174",
+  "name" : "附件上传",
+  "type" : "功能",
+  "descript" : "支持上传各类业务办理所需的附件，如证件、合同等。",
+  "link" : "https://example.com/page/361221",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 76
+}, {
+  "id" : "func_175",
+  "name" : "贷款申请",
+  "type" : "功能",
+  "descript" : "线上申请贷款，根据您的需求选择合适的贷款产品。",
+  "link" : "https://test.cn/function/505671",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 79
+}, {
+  "id" : "func_176",
+  "name" : "限额查询",
+  "type" : "功能",
+  "descript" : "查询您在不同交易或业务上的限额。",
+  "link" : "https://example.com/service/267794",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_177",
+  "name" : "证书管理",
+  "type" : "功能",
+  "descript" : "管理您的数字证书，用于保障交易安全。",
+  "link" : "https://demo.net/function/101386",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 78
+}, {
+  "id" : "func_178",
+  "name" : "短信通知签约",
+  "type" : "功能",
+  "descript" : "订阅各类账户变动短信通知服务，确保您及时掌握资金动态。",
+  "link" : "https://test.cn/mobile/608801",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 75
+}, {
+  "id" : "func_179",
+  "name" : "签约管理",
+  "type" : "功能",
+  "descript" : "管理您已签约的各类服务，如短信通知、代扣等。",
+  "link" : "https://test.cn/mobile/870975",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 97
+}, {
+  "id" : "func_180",
+  "name" : "B2B订单查询",
+  "type" : "功能",
+  "descript" : "专为企业客户设计，查询企业之间的B2B订单信息。",
+  "link" : "https://example.com/function/718584",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_181",
+  "name" : "兵团非税",
+  "type" : "功能",
+  "descript" : "专为新疆生产建设兵团提供的非税收入缴费服务。",
+  "link" : "https://app.com.cn/service/299550",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 81
+}, {
+  "id" : "func_182",
+  "name" : "缴费记录查询",
+  "type" : "功能",
+  "descript" : "查询您的所有生活缴费和非税缴费记录。",
+  "link" : "https://demo.net/page/314829",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_183",
+  "name" : "收益利息计算器",
+  "type" : "功能",
+  "descript" : "帮助您计算存款、理财等产品的预期收益和利息。",
+  "link" : "https://app.com.cn/web/899644",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 28
+}, {
+  "id" : "func_184",
+  "name" : "常用关系人维护",
+  "type" : "功能",
+  "descript" : "管理您的常用收款人、常用联系人等信息。",
+  "link" : "https://example.com/mobile/596195",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 50
+}, {
+  "id" : "func_185",
+  "name" : "我的网点",
+  "type" : "功能",
+  "descript" : "查询您附近或常用的银行网点信息，包括地址、电话、营业时间等。",
+  "link" : "https://demo.net/service/156656",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 95
+}, {
+  "id" : "func_186",
+  "name" : "已结清证明",
+  "type" : "功能",
+  "descript" : "申请已结清的贷款或信用卡证明。",
+  "link" : "https://app.com.cn/web/066176",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 85
+}, {
+  "id" : "func_187",
+  "name" : "设置",
+  "type" : "功能",
+  "descript" : "包含了多种个性化设置，如账户别名、主题等，提升您的使用体验。",
+  "link" : "https://demo.net/mobile/019657",
+  "category" : "系统设置",
+  "permission" : "SETTING",
+  "frequency" : 36
+}, {
+  "id" : "func_188",
+  "name" : "消息",
+  "type" : "功能",
+  "descript" : "查看银行系统消息、活动通知、账户提醒等信息。",
+  "link" : "https://example.com/function/257750",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 27
+}, {
+  "id" : "func_189",
+  "name" : "资产负债总览",
+  "type" : "功能",
+  "descript" : "集中展示您的所有资产和负债情况，便于您进行全面的财务分析。",
+  "link" : "https://demo.net/mobile/054430",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 25
+}, {
+  "id" : "func_190",
+  "name" : "电子账户开户",
+  "type" : "功能",
+  "descript" : "无需前往网点，通过线上渠道开立银行电子账户。",
+  "link" : "https://app.com.cn/web/123755",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 71
+}, {
+  "id" : "func_191",
+  "name" : "短信服务",
+  "type" : "功能",
+  "descript" : "提供账户变动、业务办理等短信通知服务。",
+  "link" : "https://test.cn/function/760251",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 44
+}, {
+  "id" : "func_192",
+  "name" : "账户解绑",
+  "type" : "功能",
+  "descript" : "解除您在手机银行或第三方支付平台绑定的银行账户。",
+  "link" : "https://test.cn/function/767882",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 51
+}, {
+  "id" : "func_193",
+  "name" : "账户挂失",
+  "type" : "功能",
+  "descript" : "紧急挂失您的银行账户，防止资金被盗用。",
+  "link" : "https://example.com/mobile/504021",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 36
+}, {
+  "id" : "func_194",
+  "name" : "账户降级",
+  "type" : "功能",
+  "descript" : "将您的账户权限降级，通常用于降低风险。",
+  "link" : "https://example.com/app/916497",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 47
+}, {
+  "id" : "func_195",
+  "name" : "头寸申请",
+  "type" : "功能",
+  "descript" : "专为企业客户设计，用于申请额外的资金额度。",
+  "link" : "https://example.com/page/621240",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 44
+}, {
+  "id" : "func_196",
+  "name" : "预约转账",
+  "type" : "功能",
+  "descript" : "提前设置未来日期的转账，系统会在指定时间自动执行。",
+  "link" : "https://app.com.cn/page/944555",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 96
+}, {
+  "id" : "func_197",
+  "name" : "金石榴",
+  "type" : "功能",
+  "descript" : "推测是银行推出的一个理财产品或服务品牌。",
+  "link" : "https://demo.net/service/408265",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 86
+}, {
+  "id" : "func_198",
+  "name" : "黄金",
+  "type" : "功能",
+  "descript" : "提供了黄金投资服务，包括黄金积存、实物黄金买卖等。",
+  "link" : "https://example.com/function/789612",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 33
+}, {
+  "id" : "func_199",
+  "name" : "我的贷款",
+  "type" : "功能",
+  "descript" : "集中展示您的所有贷款信息，包括贷款余额、还款计划等。",
+  "link" : "https://example.com/web/043463",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 30
+}, {
+  "id" : "func_200",
+  "name" : "房贷利率重新定价调整",
+  "type" : "功能",
+  "descript" : "线上申请重新调整房贷利率，通常在利率基准变化时使用。",
+  "link" : "https://example.com/page/239398",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 43
+}, {
+  "id" : "func_201",
+  "name" : "房贷提前还款预约",
+  "type" : "功能",
+  "descript" : "提前预约房贷部分或全部还款，节省利息支出。",
+  "link" : "https://app.com.cn/app/122205",
+  "category" : "信用卡服务",
+  "permission" : "",
+  "frequency" : 65
+}, {
+  "id" : "func_202",
+  "name" : "还款账户变更",
+  "type" : "功能",
+  "descript" : "线上修改贷款的还款账户。",
+  "link" : "https://demo.net/mobile/356005",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 97
+}, {
+  "id" : "func_203",
+  "name" : "付款码",
+  "type" : "功能",
+  "descript" : "生成支付二维码，供商家扫码收款，方便快捷。",
+  "link" : "https://demo.net/app/596119",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 79
+}, {
+  "id" : "func_204",
+  "name" : "收款码",
+  "type" : "功能",
+  "descript" : "生成个人收款二维码，供他人扫码付款。",
+  "link" : "https://test.cn/web/542117",
+  "category" : "资金管理",
+  "permission" : "",
+  "frequency" : 45
+}, {
+  "id" : "func_205",
+  "name" : "快捷绑卡",
+  "type" : "功能",
+  "descript" : "快速绑定银行卡到第三方支付平台，如支付宝、微信支付。",
+  "link" : "https://test.cn/web/555702",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 48
+}, {
+  "id" : "func_206",
+  "name" : "刷脸付",
+  "type" : "功能",
+  "descript" : "通过人脸识别技术完成支付，无需输入密码，安全便捷。",
+  "link" : "https://example.com/function/912112",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 91
+}, {
+  "id" : "func_207",
+  "name" : "支付设置",
+  "type" : "功能",
+  "descript" : "管理您的支付方式、限额、免密支付等。",
+  "link" : "https://demo.net/mobile/204094",
+  "category" : "资金管理",
+  "permission" : "PAYMENT",
+  "frequency" : 93
+}, {
+  "id" : "func_208",
+  "name" : "数字人民币",
+  "type" : "功能",
+  "descript" : "提供了数字人民币的钱包服务，支持充值、转账和消费。",
+  "link" : "https://test.cn/page/216367",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 81
+}, {
+  "id" : "func_209",
+  "name" : "外汇购汇",
+  "type" : "功能",
+  "descript" : "将人民币兑换成外币，满足您的境外资金需求。",
+  "link" : "https://app.com.cn/web/485424",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 95
+}, {
+  "id" : "func_210",
+  "name" : "外汇结汇",
+  "type" : "功能",
+  "descript" : "将外币兑换成人民币，方便您使用。",
+  "link" : "https://app.com.cn/service/421522",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 41
+}, {
+  "id" : "func_211",
+  "name" : "外汇牌价",
+  "type" : "功能",
+  "descript" : "查询实时外汇汇率，便于您进行外汇交易。",
+  "link" : "https://demo.net/page/546360",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 80
+}, {
+  "id" : "func_212",
+  "name" : "电子医保",
+  "type" : "功能",
+  "descript" : "提供了线上医保支付服务，方便快捷。",
+  "link" : "https://example.com/service/007458",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 33
+}, {
+  "id" : "func_213",
+  "name" : "流水打印",
+  "type" : "功能",
+  "descript" : "线上申请打印账户流水，作为收入或资产证明。",
+  "link" : "https://test.cn/function/984927",
+  "category" : "信息查询",
+  "permission" : "",
+  "frequency" : 20
+}, {
+  "id" : "func_214",
+  "name" : "存款证明",
+  "type" : "功能",
+  "descript" : "线上申请办理存款证明，用于留学、签证等。",
+  "link" : "https://example.com/page/314954",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 71
+}, {
+  "id" : "func_215",
+  "name" : "贷款结清证明",
+  "type" : "功能",
+  "descript" : "线上申请已结清贷款的证明文件。",
+  "link" : "https://app.com.cn/service/857361",
+  "category" : "存贷业务",
+  "permission" : "LOAN",
+  "frequency" : 58
+}, {
+  "id" : "func_216",
+  "name" : "充值中心",
+  "type" : "功能",
+  "descript" : "为手机、游戏、视频会员等进行充值。",
+  "link" : "https://test.cn/app/892855",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 33
+}, {
+  "id" : "func_217",
+  "name" : "智慧校园",
+  "type" : "功能",
+  "descript" : "专为校园场景设计的支付服务，如食堂消费、学费缴纳。",
+  "link" : "https://test.cn/page/678039",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 29
+}, {
+  "id" : "func_218",
+  "name" : "非税缴费",
+  "type" : "功能",
+  "descript" : "缴纳非税收入，如罚款、行政事业性收费等。",
+  "link" : "https://test.cn/function/106982",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 73
+}, {
+  "id" : "func_219",
+  "name" : "代发专区",
+  "type" : "功能",
+  "descript" : "集中展示代发工资、报销等相关功能。",
+  "link" : "https://test.cn/page/692689",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 25
+}, {
+  "id" : "func_220",
+  "name" : "专属权益",
+  "type" : "功能",
+  "descript" : "提供针对您的专属金融产品或增值服务。",
+  "link" : "https://test.cn/web/869191",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 38
+}, {
+  "id" : "func_221",
+  "name" : "我的账户",
+  "type" : "功能",
+  "descript" : "集中展示您的银行账户信息，包括活期、定期、贷款等。",
+  "link" : "https://app.com.cn/web/348316",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 72
+}, {
+  "id" : "func_222",
+  "name" : "我的理财",
+  "type" : "功能",
+  "descript" : "集中展示您的理财产品持仓、收益和历史交易记录。",
+  "link" : "https://app.com.cn/app/946233",
+  "category" : "投资理财",
+  "permission" : "INVESTMENT",
+  "frequency" : 67
+}, {
+  "id" : "func_223",
+  "name" : "精彩生活",
+  "type" : "功能",
+  "descript" : "整合了各类生活服务，如购物、美食、出行等。",
+  "link" : "https://test.cn/web/299274",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 75
+}, {
+  "id" : "func_224",
+  "name" : "理财超市",
+  "type" : "功能",
+  "descript" : "提供了全面的理财产品供您选择，像超市一样方便。",
+  "link" : "https://app.com.cn/mobile/480345",
+  "category" : "投资理财",
+  "permission" : "INVESTMENT",
+  "frequency" : 77
+}, {
+  "id" : "func_225",
+  "name" : "风险评估",
+  "type" : "功能",
+  "descript" : "通过问卷评估您的风险承受能力，为您推荐合适的理财产品。",
+  "link" : "https://example.com/service/253419",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 75
+}, {
+  "id" : "func_226",
+  "name" : "历史查询",
+  "type" : "功能",
+  "descript" : "查询您的历史交易记录和理财持仓信息。",
+  "link" : "https://example.com/page/474791",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_227",
+  "name" : "短信动帐通知",
+  "type" : "功能",
+  "descript" : "订阅账户资金变动短信通知。",
+  "link" : "https://demo.net/page/703157",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 59
+}, {
+  "id" : "func_228",
+  "name" : "短信动账通知补缴",
+  "type" : "功能",
+  "descript" : "补缴因欠费而暂停的短信通知服务费用。",
+  "link" : "https://test.cn/service/832749",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 80
+}, {
+  "id" : "func_229",
+  "name" : "快速贴现",
+  "type" : "功能",
+  "descript" : "办理电子票据的快速贴现业务。",
+  "link" : "https://example.com/mobile/797006",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 84
+}, {
+  "id" : "func_230",
+  "name" : "票据服务",
+  "type" : "功能",
+  "descript" : "提供了电子票据相关的综合服务。",
+  "link" : "https://app.com.cn/web/346462",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 78
+}, {
+  "id" : "func_231",
+  "name" : "票据工作台",
+  "type" : "功能",
+  "descript" : "专为票据业务设计的操作平台，方便企业进行票据管理。",
+  "link" : "https://test.cn/service/867995",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 97
+}, {
+  "id" : "func_232",
+  "name" : "票据出池",
+  "type" : "功能",
+  "descript" : "申请将已入池的票据取出。",
+  "link" : "https://example.com/function/725211",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 64
+}, {
+  "id" : "func_233",
+  "name" : "出入池撤销",
+  "type" : "功能",
+  "descript" : "撤销已提交的票据入池或出池申请。",
+  "link" : "https://app.com.cn/web/210298",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 35
+}, {
+  "id" : "func_235",
+  "name" : "池额度查询",
+  "type" : "功能",
+  "descript" : "查询您在票据池中可用的融资额度。",
+  "link" : "https://demo.net/app/711490",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_237",
+  "name" : "收款人分组",
+  "type" : "功能",
+  "descript" : "对常用收款人进行分组管理。",
+  "link" : "https://demo.net/mobile/194501",
+  "category" : "资金管理",
+  "permission" : "",
+  "frequency" : 68
+}, {
+  "id" : "func_238",
+  "name" : "预填单",
+  "type" : "功能",
+  "descript" : "提前填写业务办理所需的表格，节省在网点等待的时间。",
+  "link" : "https://example.com/function/942175",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 82
+}, {
+  "id" : "func_239",
+  "name" : "工资卡申请",
+  "type" : "功能",
+  "descript" : "在线申请办理工资卡。",
+  "link" : "https://example.com/web/391443",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 90
+}, {
+  "id" : "func_240",
+  "name" : "网点预约",
+  "type" : "功能",
+  "descript" : "线上预约前往银行网点办理业务。",
+  "link" : "https://test.cn/web/351931",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 46
+}, {
+  "id" : "func_241",
+  "name" : "我的合同",
+  "type" : "功能",
+  "descript" : "查看您已签订的各类银行服务合同。",
+  "link" : "https://app.com.cn/service/475094",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 43
+}, {
+  "id" : "func_242",
+  "name" : "企业手机银行开通信息",
+  "type" : "功能",
+  "descript" : "查看企业手机银行的开通信息。",
+  "link" : "https://test.cn/mobile/793984",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 78
+}, {
+  "id" : "func_243",
+  "name" : "企业手机银行操作员",
+  "type" : "功能",
+  "descript" : "管理企业手机银行的操作员。",
+  "link" : "https://demo.net/app/423244",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 47
+}, {
+  "id" : "func_244",
+  "name" : "申请记录",
+  "type" : "功能",
+  "descript" : "查看您已提交的所有业务申请记录。",
+  "link" : "https://example.com/app/390955",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 29
+}, {
+  "id" : "func_245",
+  "name" : "他行账户管理",
+  "type" : "功能",
+  "descript" : "管理您在其他银行的账户。",
+  "link" : "https://example.com/mobile/335625",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 80
+}, {
+  "id" : "func_246",
+  "name" : "银企对账签约",
+  "type" : "功能",
+  "descript" : "线上签约银企对账服务。",
+  "link" : "https://test.cn/service/607866",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 20
+}, {
+  "id" : "func_247",
+  "name" : "他行账户明细查询",
+  "type" : "功能",
+  "descript" : "查询您在其他银行的账户交易明细。",
+  "link" : "https://app.com.cn/function/645288",
+  "category" : "账户服务",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_248",
+  "name" : "他行余额查询",
+  "type" : "功能",
+  "descript" : "查询您在其他银行的账户余额。",
+  "link" : "https://demo.net/page/536810",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 91
+}, {
+  "id" : "func_249",
+  "name" : "结售汇",
+  "type" : "功能",
+  "descript" : "办理外币和人民币之间的兑换。",
+  "link" : "https://test.cn/app/863111",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 32
+}, {
+  "id" : "func_250",
+  "name" : "跨境汇款",
+  "type" : "功能",
+  "descript" : "办理向境外账户的汇款。",
+  "link" : "https://test.cn/page/141956",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 70
+}, {
+  "id" : "func_251",
+  "name" : "证件更新",
+  "type" : "功能",
+  "descript" : "线上更新您的身份证件信息。",
+  "link" : "https://app.com.cn/web/764361",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 69
+}, {
+  "id" : "func_252",
+  "name" : "指纹",
+  "type" : "功能",
+  "descript" : "设置指纹登录或支付功能。",
+  "link" : "https://test.cn/mobile/032065",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 22
+}, {
+  "id" : "func_253",
+  "name" : "一站式转账",
+  "type" : "功能",
+  "descript" : "将所有转账功能集中在一起，简化操作流程。",
+  "link" : "https://app.com.cn/function/232667",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_254",
+  "name" : "银企对账",
+  "type" : "功能",
+  "descript" : "提供企业与银行之间的对账服务。",
+  "link" : "https://example.com/function/394328",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 28
+}, {
+  "id" : "func_255",
+  "name" : "预约转账管理",
+  "type" : "功能",
+  "descript" : "管理您设置的预约转账。",
+  "link" : "https://test.cn/page/472721",
+  "category" : "资金管理",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_256",
+  "name" : "待办业务",
+  "type" : "功能",
+  "descript" : "显示需要您处理的业务或审批事项。",
+  "link" : "https://demo.net/page/954824",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 20
+}, {
+  "id" : "func_258",
+  "name" : "大额取现预约",
+  "type" : "功能",
+  "descript" : "提前预约大额现金取款。",
+  "link" : "https://demo.net/page/748660",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 50
+}, {
+  "id" : "func_259",
+  "name" : "一户通",
+  "type" : "功能",
+  "descript" : "统一管理您在银行的所有账户和资产。",
+  "link" : "https://app.com.cn/web/353288",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 71
+}, {
+  "id" : "func_260",
+  "name" : "代收/支付宝汇总",
+  "type" : "功能",
+  "descript" : "查询通过代收或支付宝渠道汇总的资金。",
+  "link" : "https://test.cn/mobile/646733",
+  "category" : "资金管理",
+  "permission" : "PAYMENT",
+  "frequency" : 85
+}, {
+  "id" : "func_261",
+  "name" : "代收/支付宝明细",
+  "type" : "功能",
+  "descript" : "查询通过代收或支付宝渠道的资金明细。",
+  "link" : "https://app.com.cn/function/372681",
+  "category" : "资金管理",
+  "permission" : "PAYMENT",
+  "frequency" : 85
+}, {
+  "id" : "func_262",
+  "name" : "POS汇总查询",
+  "type" : "功能",
+  "descript" : "查询所有通过POS机交易的汇总信息。",
+  "link" : "https://test.cn/service/643840",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_263",
+  "name" : "POS明细查询",
+  "type" : "功能",
+  "descript" : "查询每笔POS机交易的详细记录。",
+  "link" : "https://demo.net/mobile/684382",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 77
+}, {
+  "id" : "func_265",
+  "name" : "账户查询",
+  "type" : "功能",
+  "descript" : "查询您的账户余额、交易明细等。",
+  "link" : "https://test.cn/page/724051",
+  "category" : "账户服务",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_266",
+  "name" : "账户服务",
+  "type" : "功能",
+  "descript" : "提供了账户挂失、冻结、解绑等服务。",
+  "link" : "https://demo.net/service/748101",
+  "category" : "账户服务",
+  "permission" : "ACCOUNT",
+  "frequency" : 41
+}, {
+  "id" : "func_267",
+  "name" : "限额维护",
+  "type" : "功能",
+  "descript" : "修改和维护您的交易限额。",
+  "link" : "https://demo.net/web/254210",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 81
+}, {
+  "id" : "func_268",
+  "name" : "网银交易查询",
+  "type" : "功能",
+  "descript" : "查询您在网上银行办理的所有交易记录。",
+  "link" : "https://demo.net/page/830526",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 99
+}, {
+  "id" : "func_269",
+  "name" : "电子回单验证",
+  "type" : "功能",
+  "descript" : "验证电子回单的真实性和有效性。",
+  "link" : "https://demo.net/function/803746",
+  "category" : "安全中心",
+  "permission" : "",
+  "frequency" : 43
+}, {
+  "id" : "func_270",
+  "name" : "转账查询",
+  "type" : "功能",
+  "descript" : "查询所有转账交易记录。",
+  "link" : "https://app.com.cn/service/282290",
+  "category" : "信息查询",
+  "permission" : "TRANSFER",
+  "frequency" : 85
+}, {
+  "id" : "func_272",
+  "name" : "票据入池",
+  "type" : "功能",
+  "descript" : "申请将票据存入票据池。",
+  "link" : "https://test.cn/mobile/854576",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 85
+}, {
+  "id" : "func_273",
+  "name" : "代发工资查询",
+  "type" : "功能",
+  "descript" : "查询您已代发的工资记录。",
+  "link" : "https://app.com.cn/function/013944",
+  "category" : "信息查询",
+  "permission" : "INQUIRY",
+  "frequency" : 75
+}, {
+  "id" : "func_274",
+  "name" : "法院案款缴费",
+  "type" : "功能",
+  "descript" : "线上缴纳法院案款。",
+  "link" : "https://test.cn/page/181814",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 92
+}, {
+  "id" : "func_275",
+  "name" : "法院案款缴费记录",
+  "type" : "功能",
+  "descript" : "查询您已缴纳的法院案款记录。",
+  "link" : "https://test.cn/web/065964",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 55
+}, {
+  "id" : "func_276",
+  "name" : "大额预约记录",
+  "type" : "功能",
+  "descript" : "查询您已提交的大额预约记录。",
+  "link" : "https://example.com/app/523913",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 23
+}, {
+  "id" : "func_277",
+  "name" : "附近网点",
+  "type" : "功能",
+  "descript" : "定位并显示您附近的银行网点。方便客户前往银行网点办理业务。",
+  "link" : "https://app.com.cn/app/681978",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 25
+}, {
+  "id" : "func_278",
+  "name" : "定活两便",
+  "type" : "功能",
+  "descript" : "一种兼具活期和定期存款特点的储蓄方式。",
+  "link" : "https://test.cn/web/892302",
+  "category" : "其他服务",
+  "permission" : "",
+  "frequency" : 32
+}, {
+  "id" : "func_279",
+  "name" : "通知存款",
+  "type" : "功能",
+  "descript" : "一种需要提前通知银行才能支取的存款，通常利率高于活期存款。",
+  "link" : "https://demo.net/web/868332",
+  "category" : "存贷业务",
+  "permission" : "",
+  "frequency" : 21
+}, {
+  "id" : "news_009",
+  "name" : "证监会同意公募基金行业机构投资者直销服务平台正式启动运行",
+  "type" : "资讯",
+  "descript" : "①证监会同意FISP平台正式启动运行，该平台由证监会授权中国结算建设并运营，旨在提升服务投资者水平。\n②FISP平台通过制定统一业务标准、对接多元主体、汇集行业直销力量，为各类机构投资者提供集中式、标准化、自动化的“一站式”全流程数据信息交互服务。",
+  "link" : "https://www.cls.cn/detail/2137175",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 38530
+}, {
+  "id" : "news_010",
+  "name" : "A股“市场水温”从0度到50度，对冲基金经理：不要在快沸腾的时候再来",
+  "type" : "资讯",
+  "descript" : "①对冲基金经理热议A股牛市成因与投资机会，多个维度聚焦科技、制造、消费主线；\n②多位嘉宾强调香港在全球配置中的中枢地位，内地高净值人群全球配置需求渐显；\n③排排网数据显示，9月信心指数延续上扬，私募整体仓位稳定，慢牛共识增强。",
+  "link" : "https://www.cls.cn/detail/2133798",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 25617
+}, {
+  "id" : "news_011",
+  "name" : "行业热议公募销售费率新规，“炒基金”成本骤增，将如何改变行业生态",
+  "type" : "资讯",
+  "descript" : "①新规大幅提高短期赎回费率，持有不足7天费率高达1.5%，债基、LOF套利受直接冲击；\n②销售费率全面下调，混合型基金降幅最大，银行代销收入受严重影响，渠道格局生变；\n③新规引导行业从“重首发”转向“重保有”，遏制短期炒作，投顾业务面临收入与调仓双重挑战。",
+  "link" : "https://www.cls.cn/detail/2138729",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39221
+}, {
+  "id" : "news_012",
+  "name" : "公募顶流调研忙，机器人概念股受追捧，胡昕炜、劳杰男、闫思倩等名将密集调研",
+  "type" : "资讯",
+  "descript" : "①头部公募优势显著，博时双榜夺冠，54家公募暑期调研超百次；\n②北交所成调研新焦点，中信建投调研最多，其主题产品年内收益近120%；\n③机器人概念受追捧，闫思倩、胡昕炜、劳杰男等知名基金经理密集调研相关个股。",
+  "link" : "https://www.cls.cn/detail/2133824",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 34225
+}, {
+  "id" : "news_013",
+  "name" : "跑赢87%个股！黄金股ETF年内平均涨76%，这些“人气基”也获资金涌入",
+  "type" : "资讯",
+  "descript" : "①今日，黄金股ETF集体大涨，其年内涨幅扩大至75.5%，跑赢同期87.7%的个股。\n②6只黄金股ETF中共有3只年内份额录得翻倍，其中2只目前份额已创历史新高。\n③本月以来，锂电池、黄金、新能源车、光伏等概念的ETF表现亮眼。",
+  "link" : "https://www.cls.cn/detail/2139972",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 48386
+}, {
+  "id" : "news_014",
+  "name" : "私募暑期调研忙，医药最受追捧，冯柳、董承非、林鹏等名将现身",
+  "type" : "资讯",
+  "descript" : "①1336家私募暑期合计调研7816次，覆盖了29个行业中的897只个股；\n②医药生物是私募暑期调研最多的行业，迈瑞医疗是获超百次调研的唯一个股；\n③冯柳、董承非、林鹏等私募名将出现在A股暑期调研名单。",
+  "link" : "https://www.cls.cn/detail/2137542",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27689
+}, {
+  "id" : "news_015",
+  "name" : "罕见！又见主动权益基金一日结募，单日卖73亿能否助燃市场热情？",
+  "type" : "资讯",
+  "descript" : "①招商均衡优选混合一日售罄，募资73亿提前结募，启动比例配售；\n②业内称，市场回暖带动权益基金发行热，但投资者信心仍未完全修复。",
+  "link" : "https://www.cls.cn/detail/2133973",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 16554
+}, {
+  "id" : "news_016",
+  "name" : "今年来私募备案狂飙八成，连续仨月超1100只，百亿量化最踊跃",
+  "type" : "资讯",
+  "descript" : "①前8月私募备案量同比激增82%，股票策略占主导，量化产品占比持续攀升；\n②市场回暖与监管完善助推私募热情，连续三个月单月备案量破1100只；\n③百亿量化私募成备案主力，宽德、黑翼、明汯等头部机构备案均超百只。",
+  "link" : "https://www.cls.cn/detail/2136772",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47594
+}, {
+  "id" : "news_017",
+  "name" : "公募基金销售费用新规落地，近万亿货基或将面临整改，交易层面超万亿短债基金首先受冲击",
+  "type" : "资讯",
+  "descript" : "①新规降费，为投资者节省多少成本？\n②共3621只债基的申购费率上限超0.3%，规模8.28万亿；1387只债基销服费超0.2%，规模3565.88亿元；1131只债基的最高赎回费率低于1.5%，规模1.14万亿。\n③债券交易层面，业内人士称，超万亿短债基金首先受冲击。",
+  "link" : "https://www.cls.cn/detail/2138703",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27110
+}, {
+  "id" : "news_018",
+  "name" : "公募销售费用新规来了！降费“三步走”落地，累计每年向投资者让利500亿",
+  "type" : "资讯",
+  "descript" : "①公募销售费率改革正式收官，股票、混合型基金申购费率大幅调降，每年为投资者省下约300亿元；\n②新规优化赎回费安排，费用全额归入基金财产，引导销售机构从“流量”转向“保有”；\n③费率改革三阶段每年累计让利超500亿元，FISP平台同步上线，推动行业降本增效、回归投资者利益核心。",
+  "link" : "https://www.cls.cn/detail/2137230",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 2167
+}, {
+  "id" : "news_019",
+  "name" : "财通资管王浩冰：寻求各阶段“最优解”，积小胜为大胜",
+  "type" : "资讯",
+  "descript" : "从TMT研究员成长为全市场选手，财通资管权益公募投资二部负责人王浩冰在过去几年的震荡市中“崭露头角”。随着“风险收益比”投资框架日渐成熟，他对投资有了更为深刻的理解。",
+  "link" : "https://www.cls.cn/detail/2140497",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 35754
+}, {
+  "id" : "news_020",
+  "name" : "股债市场双双震荡，“固收+”基金又遇净值波动，近两周有产品下跌超6%",
+  "type" : "资讯",
+  "descript" : "①近两周，过半固收+基金净值回调，最多的下跌超6%。\n②固收+基金属于广义上的权益产品，依然符合监管吸引资金入市的政策导向。",
+  "link" : "https://www.cls.cn/detail/2140038",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32721
+}, {
+  "id" : "news_021",
+  "name" : "债基惩罚性赎回费引行业争议，理财配置行为或面临冲击，业内提出三大建议",
+  "type" : "资讯",
+  "descript" : "①基金销售新规的核心影响为赎回费收取，业内人士认为债基惩罚性费率过高，可能抑制投资需求；\n②新规要求赎回费全额计入基金财产，倒逼销售机构从“重首发”向“重保有”转型，优化客户陪伴和服务；\n③理财公司现有资产配置行为或将面临冲击。",
+  "link" : "https://www.cls.cn/detail/2139965",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21472
+}, {
+  "id" : "news_022",
+  "name" : "全市场首只！农牧渔ETF今日正式开售！",
+  "type" : "资讯",
+  "descript" : "在宏观经济温和修复，A股行情总体回暖的大背景下，农牧渔ETF（159275）发售及后续上市之后的表现值得期待。",
+  "link" : "https://www.cls.cn/detail/2138125",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 31247
+}, {
+  "id" : "news_023",
+  "name" : "又一位基金老将选择离场，牛市催生离职高峰",
+  "type" : "资讯",
+  "descript" : "①融通老将邹曦卸任全部产品，内部调整疑为离职前兆；\n②中生代梯队接棒，医药、科技团队接管产品；\n③薪酬改革与牛市共振，基金经理离职潮再现。",
+  "link" : "https://www.cls.cn/detail/2137653",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17444
+}, {
+  "id" : "news_024",
+  "name" : "让ETF投资更简单，兴证全球盈丰多元配置三个月持有ETF-FOF正在发行",
+  "type" : "资讯",
+  "descript" : "随着上证指数站上3700点，结构性行情显著，单一资产投资策略面临挑战。在此背景下，多元资产配置成为投资者分散风险、追求长期稳定收益的重要方式。",
+  "link" : "https://www.cls.cn/detail/2134312",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6452
+}, {
+  "id" : "news_025",
+  "name" : "冠军基限购1万元，年内涨177%，“黑马”为何主动降温？",
+  "type" : "资讯",
+  "descript" : "①永赢科技智选单日限购1万元，年内涨幅177.8%；\n②管理人连续提示波动风险，呼吁理性配置；\n③多只基金限购金额低至千元甚至百元，牛市中学会克制成机构共识。",
+  "link" : "https://www.cls.cn/detail/2135526",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 33283
+}, {
+  "id" : "news_026",
+  "name" : "重仓股多年不变，如何看这些基金经理的“执念”？",
+  "type" : "资讯",
+  "descript" : "①共139只基金的最新第一重仓股，自建仓以来持续持有；\n②业内人士认为，基金经理长期持有背后源于对赛道前景、企业价值以及自身能力圈的深度信任；\n③长期持股存在风险，一旦企业基本面恶化或行业逻辑生变，基金可能面临净值回撤。",
+  "link" : "https://www.cls.cn/detail/2135965",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6199
+}, {
+  "id" : "news_027",
+  "name" : "股市新弹药！9月迎基金发行热浪，全部124只新基，权益类占近68%",
+  "type" : "资讯",
+  "descript" : "①9月85只权益基金开启发售，成长风格基金是主力；\n②多只高端制造、人工智能、医药主题的基金于9月发售；\n③多只第二批获批的新型浮动费率基金也于9月发售。",
+  "link" : "https://www.cls.cn/detail/2135977",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 43062
+}, {
+  "id" : "news_028",
+  "name" : "部分基金投顾降低权益仓位，释放哪些信号？",
+  "type" : "资讯",
+  "descript" : "①近期部分基金投顾组合进行调仓，小幅降低权益仓位，且对前期涨幅过高板块止盈；\n②调仓的主要原因是风险再平衡，为避免风格漂移、契合产品定位而调仓；\n③业内人士认为A股短期或高位震荡，但震荡并非回调信号，反而为踏空资金提供入场机会，为后市的长期上涨提供更多动力。",
+  "link" : "https://www.cls.cn/detail/2133796",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32157
+}, {
+  "id" : "news_029",
+  "name" : "这些风格漂移基金业绩垫底，让基民在牛市中亏钱，买基金不是买盲盒",
+  "type" : "资讯",
+  "descript" : "①据济安金信最新统计，13只基金存在风格漂移问题；\n②部分风格漂移基金业绩垫底，比如交银创新领航混合的年内收益仅为9.07%，北信瑞丰外延增长年内甚至亏损0.8%；\n③也有风格漂移基金业绩很好，但业内人士提示投资这类产品需要关注“买盲盒”风险，避免盲目投资。",
+  "link" : "https://www.cls.cn/detail/2134561",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21154
+}, {
+  "id" : "news_030",
+  "name" : "今年私募定增平均浮盈35%，有的“轻装连中”，有的“重注失手”",
+  "type" : "资讯",
+  "descript" : "①年内41家私募共计投入39.6亿元参与定增，整体浮盈13.9亿元，平均浮盈比例为35.11%；\n②0-5亿规模私募为参与主力，占比超四成，平均浮盈率达44.41%，显著领先于大体量私募；\n③机构间定增策略分化明显，多票布局与重仓押注并存，浮盈水平从超100%至不足3%不等。",
+  "link" : "https://www.cls.cn/detail/2137085",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 34773
+}, {
+  "id" : "news_031",
+  "name" : "千亿规模再扩容，第二批14家债券ETF获批，多只产品或“仅售1天”",
+  "type" : "资讯",
+  "descript" : "①第二批科创债ETF获批，14家基金公司入场角逐，发行大战一触即发；\n②首批科创债ETF规模突破1200亿元，二批追赶势必争分夺秒；\n③债券ETF年内吸金超3400亿元，万亿级市场空间打开。",
+  "link" : "https://www.cls.cn/detail/2139023",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 26507
+}, {
+  "id" : "news_032",
+  "name" : "机构投资者买了哪些基金？权益TOP10全是ETF，增持港股主题产品",
+  "type" : "资讯",
+  "descript" : "①机构投资者今年上半年整体增持公募基金产品超2000亿份；\n②股票型基金被增持最多，债基中的指数型债基也得到较多增持，货基减持力度最大。",
+  "link" : "https://www.cls.cn/detail/2134921",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39110
+}, {
+  "id" : "news_033",
+  "name" : "多只基金单日跌幅超10%，高集中持仓赛道基金遭重创，后市怎么看？",
+  "type" : "资讯",
+  "descript" : "①市场单日重挫，16只基金净值跌幅超10%，抱团科技基遭重创；\n②诺德、永赢等多只产品跌超11%，高集中持仓成双刃剑，急跌行情压力剧增。\n③机构称调整主因获利资金止盈，无实质性利空，中长期仍看好AI算力等科技赛道价值。",
+  "link" : "https://www.cls.cn/detail/2136451",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 43618
+}, {
+  "id" : "news_034",
+  "name" : "证监会征求意见：拟合理调降公募基金认购费、申购费、销售服务费率水平 鼓励长期持有",
+  "type" : "资讯",
+  "descript" : "①《规定》主要内容包括：调降公募基金认购费、申购费、销售服务费率水平，优化赎回安排，鼓励长期持有。\n②具体修订内容包括降低认申购费率、优化赎回费安排、规范销售服务费、聚焦个人客户服务、明确平台法律定位及其他修改内容。",
+  "link" : "https://www.cls.cn/detail/2137194",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 4715
+}, {
+  "id" : "news_035",
+  "name" : "百亿基金经理为何踏空？结构性行情下的考验",
+  "type" : "资讯",
+  "descript" : "①百亿基金经理曲扬旗下多只产品今年业绩落后，两只产品的年内收益甚至不足5%；\n②曲扬旗下基金抓住了医药、黄金的投资机会，但由于对食品饮料板块的配置较多，今年整体业绩依然落后；\n③建信智远先锋混合A、信澳优势价值混合A、嘉实优化红利混合A等产品的年内收益也不足5%。",
+  "link" : "https://www.cls.cn/detail/2135529",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21753
+}, {
+  "id" : "news_036",
+  "name" : "高盛：美联储独立性受损或助力黄金走势 最高看涨至5000美元！",
+  "type" : "资讯",
+  "descript" : "①高盛预测，若美联储信誉受损，黄金价格可能涨至每盎司近5000美元；\n②高盛分析师认为，美联储独立性受损可能导致通胀加剧、股市和债市下跌、美元超然地位丧失；\n③高盛建议长期投资黄金，因其是保值手段且不受机构信任影响。",
+  "link" : "https://www.cls.cn/detail/2135584",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 34539
+}, {
+  "id" : "news_037",
+  "name" : "黄金大涨，“含金”理财或受追捧，目前存续46只，理财公司待发力",
+  "type" : "资讯",
+  "descript" : "①黄金理财产品主要分为两类：“固收+黄金”类和挂钩黄金标的的结构化理财产品；\n②截至发稿日，市面上共存续46只黄金理财产品，其中仅9月以来就发行了2只。",
+  "link" : "https://www.cls.cn/detail/2134717",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 3439
+}, {
+  "id" : "news_038",
+  "name" : "沙特据称正推动欧佩克+提前放油：抢市占与稳油价矛盾升级",
+  "type" : "资讯",
+  "descript" : "①知情人士透露，沙特阿拉伯希望欧佩克+提前恢复更多石油产量，以夺回更多市场份额，而不是等到明年年底；\n②增产提案可能会遭到其他成员国的反对，因为全球市场今年已经出现过剩迹象，国际能源署预测若欧佩克+进一步增产，可能导致第四季度供应过剩。",
+  "link" : "https://www.cls.cn/detail/2137408",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 28865
+}, {
+  "id" : "news_039",
+  "name" : "0908东吴期货研究所策略早参｜美国非农数据远低于预期，特朗普公布美联储主席最终候选人名单",
+  "type" : "资讯",
+  "descript" : "股指：市场再度上行，创业板指反弹上涨6.55%；黑色系板块：关注需求；能源化工：美国就业数据再爆冷、OPEC+增产，油价下跌；有色金属：非农大幅低于预期，施压有色板块；农产品：短期内以震荡为主。",
+  "link" : "https://www.cls.cn/detail/2138045",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17666
+}, {
+  "id" : "news_040",
+  "name" : "顶住美国压力！印度国有炼油商寻求恢复从俄罗斯进口石油",
+  "type" : "资讯",
+  "descript" : "①印度国有炼油企业计划全面恢复购买打折的俄罗斯原油；\n②印度财政部长表示，尽管面临美国压力，印度将继续购买俄罗斯石油，因其具有经济优势；\n③船运追踪数据显示，印度接收的俄罗斯海运原油日均进口量降至130万桶，较今年3月的197万桶有所减少。",
+  "link" : "https://www.cls.cn/detail/2138787",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 41031
+}, {
+  "id" : "news_041",
+  "name" : "欧盟能源专员：欢迎特朗普支持欧洲淘汰俄罗斯化石燃料",
+  "type" : "资讯",
+  "descript" : "①欧盟能源事务专员丹·约根森表示，欧盟欢迎美国总统特朗普支持其停止购买俄罗斯化石燃料的计划；\n②据一位白宫官员称，特朗普周四在一次与欧洲领导人的通话中说，欧洲必须停止购买俄罗斯石油。",
+  "link" : "https://www.cls.cn/detail/2137201",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 46394
+}, {
+  "id" : "news_042",
+  "name" : "超欧元、压美债！黄金“再货币化”进程正势不可挡",
+  "type" : "资讯",
+  "descript" : "①马克思的《资本论》曾揭示了货币与黄金的本质关系——“黄金天然不是货币，但货币天然是黄金”；\n②随着今年以来黄金在央行储备中的价值先后超越欧元和美债，黄金“再货币化”的进程显然正在加速……",
+  "link" : "https://www.cls.cn/detail/2136425",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 24861
+}, {
+  "id" : "news_043",
+  "name" : "2040年核电产量将翻倍！世界核协会：未来十年铀资源将供不应求",
+  "type" : "资讯",
+  "descript" : "①据世界核协会今日报告，因全球核电规模大幅扩张，未来十年有可能迎来铀资源短缺；\n②一座铀矿从发现到运营，间隔时间可达10~20年，初级铀还需经过复杂的提炼工作才能成为核燃料。",
+  "link" : "https://www.cls.cn/detail/2136854",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20794
+}, {
+  "id" : "news_044",
+  "name" : "0910东吴宏观股指每日观点 |指数震荡整理 成交量能回落",
+  "type" : "资讯",
+  "descript" : "指数震荡整理，三大指数收跌，成交量能回落。当前经济基本面弱复苏与结构优化，流动性宽松与政策托底效应持续对冲下行风险，股指上行趋势不改，受到美股风险偏好承压、情绪修正等因素影响，近期或有回调。",
+  "link" : "https://www.cls.cn/detail/2140509",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 24431
+}, {
+  "id" : "news_045",
+  "name" : "现货黄金突破3600美元大关再创历史新高 疲软非农数据强化降息预期",
+  "type" : "资讯",
+  "descript" : "①受美国非农就业数据疲软影响，市场对美联储降息预期升温，黄金价格突破3600美元/盎司，创历史新高；\n②分析人士同时指出，美联储的独立性问题也是决定黄金走势的关键因素。",
+  "link" : "https://www.cls.cn/detail/2137412",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 48895
+}, {
+  "id" : "news_046",
+  "name" : "跑赢45年通胀！黄金“真历史新高”出现了……",
+  "type" : "资讯",
+  "descript" : "①对于许多市场人士而言，金价这一轮的上涨，显然实现了一个特殊的里程碑——国际现货黄金在本周已一举突破了1980年1月通胀调整后的历史高点。\n②换言之，常被誉为具有“抗通胀”属性的黄金，这一次真的彻彻底底跑赢了长达45年的通胀，缔造了一个“真历史新高”……",
+  "link" : "https://www.cls.cn/detail/2139591",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 26652
+}, {
+  "id" : "news_047",
+  "name" : "0905东吴宏观股指每日观点 |市场震荡调整 三大指数收跌",
+  "type" : "资讯",
+  "descript" : "市场震荡调整，三大指数收跌，科创50指数跌超6%。当前经济仍处于“弱复苏+结构优化”通道，流动性宽松与政策托底效应持续对冲下行风险，股指中长期上行趋势不改，受到美股风险偏好承压、情绪修正等因素影响，指数短期或有回调。",
+  "link" : "https://www.cls.cn/detail/2136310",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 23364
+}, {
+  "id" : "news_048",
+  "name" : "美国煤炭巨头皮博迪豪言：特朗普时代下煤炭需求将飙升五成",
+  "type" : "资讯",
+  "descript" : "①美国煤炭巨头皮博迪能源公司预测，美国电力需求增长或使煤炭消费量增加57%；\n②若燃煤电厂运转率恢复至历史最高，未来几年美国煤炭年需求量可能增加超2.5亿吨。",
+  "link" : "https://www.cls.cn/detail/2135070",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 3998
+}, {
+  "id" : "news_049",
+  "name" : "0908东吴宏观股指每日观点 |指数震荡上涨 新能源板块领涨",
+  "type" : "资讯",
+  "descript" : "指数震荡上涨，新能源板块领涨。当前经济仍处于“弱复苏+结构优化”通道，流动性宽松与政策托底效应持续对冲下行风险，股指中长期上行趋势不改，受到美股风险偏好承压、情绪修正等因素影响，指数短期或有回调。",
+  "link" : "https://www.cls.cn/detail/2138053",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17740
+}, {
+  "id" : "news_050",
+  "name" : "0904东吴宏观股指每日观点 |市场震荡调整 成交量能回落",
+  "type" : "资讯",
+  "descript" : "市场震荡调整，成交量能回落。当前经济仍处于“弱复苏+结构优化”通道，流动性宽松与政策托底效应持续对冲下行风险，股指中长期上行趋势不改，受到美股风险偏好承压、情绪修正等因素影响，指数短期或有回调。",
+  "link" : "https://www.cls.cn/detail/2135251",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13207
+}, {
+  "id" : "news_051",
+  "name" : "油价低迷成行业心魔！全球石油巨头纷纷降本裁员",
+  "type" : "资讯",
+  "descript" : "①全球最大石油和天然气公司因原油价格长期低迷，正快速裁员、削减成本并缩减投资；\n②雪佛龙、英国石油、马来西亚国家石油、康菲石油等已裁员数千人，凸显出整个行业的消极投资心态；\n③业内预测，今年全球油气生产资本支出将下降4.3%，是2020年以来首次出现年度下降。",
+  "link" : "https://www.cls.cn/detail/2139724",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6181
+}, {
+  "id" : "news_052",
+  "name" : "8月外储规模上涨 黄金储备连续10个月增持 业内判断未来央行增持黄金仍是大方向",
+  "type" : "资讯",
+  "descript" : "①由于外储以美元计价，非美货币升值增加了经汇率折算后的外汇储备规模。\n②美国新政府上台后，全球政治、经济形势出现新变化，国际金价有可能在相当长一段时间内易涨难跌。",
+  "link" : "https://www.cls.cn/detail/2137686",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 48082
+}, {
+  "id" : "news_053",
+  "name" : "以军袭击在卡塔尔的哈马斯高层 原油、黄金短线冲高",
+  "type" : "资讯",
+  "descript" : "①当地时间9月9日，卡塔尔首都多哈北部卡塔拉地区发生爆炸，以色列国防军与以色列国家安全总局证实其对哈马斯高级领导层实施了精确打击；\n②联合国秘书长古特雷斯强烈谴责以色列对卡塔尔首都多哈的袭击，国际油价和现货黄金价格受此影响上涨。",
+  "link" : "https://www.cls.cn/detail/2140322",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 24439
+}, {
+  "id" : "news_054",
+  "name" : "金价续创新高之际华尔街齐唱多 小摩：明年有望站上4250美元",
+  "type" : "资讯",
+  "descript" : "①过去几日，国际金价接连创下历史新高，目前正处于创纪录水平附近；\n②摩根大通分析师表示，随着降息预期升温以及美联储独立性受质疑，黄金价格可能还会进一步走高；\n③该行预测，金价可能会在明年第二季度达到4000美元，到2026年底有望飙升至4250美元。",
+  "link" : "https://www.cls.cn/detail/2135292",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 30956
+}, {
+  "id" : "news_055",
+  "name" : "0909东吴期货研究所策略早参｜现货黄金升破3630美元，再创历史新高",
+  "type" : "资讯",
+  "descript" : "股指：三大指数涨跌不一，机器人概念股活跃；黑色系板块：供给减量预期下，玻璃价格上涨；能源化工：LPG现货端企稳，价格近强远弱；有色金属：铜价震荡运行；农产品：短期内以震荡为主。",
+  "link" : "https://www.cls.cn/detail/2139280",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 8981
+}, {
+  "id" : "news_056",
+  "name" : "抛美债、买黄金！早在特朗普加征关税前 印度央行便已有所行动",
+  "type" : "资讯",
+  "descript" : "①美国财政部公布的数据显示，印度持有的美国国债规模已从5月的2353亿美元降至6月的2274亿美元，较上年同期的约2420亿美元明显下降；\n②在减持美债的同时，印度央行则在持续增持黄金。印度央行的数据显示，截至7月其黄金储备增至约880吨，较上年同期的841.5吨显著上升。",
+  "link" : "https://www.cls.cn/detail/2139429",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 16533
+}, {
+  "id" : "news_057",
+  "name" : "20250905东吴期货研究所策略早参｜上证指数放量调整，科技股领跌",
+  "type" : "资讯",
+  "descript" : "股指：市场震荡整理，资金高切低；黑色系板块：基本面权重加大；能源化工：OPEC+考虑再度增产；有色金属：碳酸锂持续承压；农产品：短期内以震荡为主",
+  "link" : "https://www.cls.cn/detail/2136312",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 18093
+}, {
+  "id" : "news_058",
+  "name" : "白银租赁利率狂飙！美拟议“关键矿产清单”中有银吓坏市场？",
+  "type" : "资讯",
+  "descript" : "①在本月初时隔14年强势重返40美元上方后，国际现货白银价格近来的升势可以说正一发不可收；\n②而在银价大涨的表象背后，白银市场还有一个特殊的现象也正引发了市场人士的高度关注：白银租赁利率再度飙升……",
+  "link" : "https://www.cls.cn/detail/2139322",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 8422
+}, {
+  "id" : "news_059",
+  "name" : "0909东吴宏观股指每日观点 |市场震荡分化 三大指数涨跌互现",
+  "type" : "资讯",
+  "descript" : "市场震荡分化，三大指数涨跌互现。当前经济基本面弱复苏与结构优化，流动性宽松与政策托底效应持续对冲下行风险，股指上行趋势不改，受到美股风险偏好承压、情绪修正等因素影响，短期或有回调。",
+  "link" : "https://www.cls.cn/detail/2139284",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32782
+}, {
+  "id" : "news_060",
+  "name" : "20250904东吴期货研究所策略早参｜贵金属领涨，工业品偏弱",
+  "type" : "资讯",
+  "descript" : "股指：三大指数走势分化；黑色系板块：继续调整；能源化工：橡胶系仓单注册量延续分化；有色金属：碳酸锂持续承压；农产品：机构预测美豆产量低于USDA月度报告",
+  "link" : "https://www.cls.cn/detail/2135249",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 31294
+}, {
+  "id" : "news_061",
+  "name" : "欧佩克同意自10月起进一步增产 连续“加量”之后油价路在何方？",
+  "type" : "资讯",
+  "descript" : "①欧佩克+组织周日宣布，自10月起每日增产13.7万桶，远低于前两月的55.5万桶/日；\n②分析师指出，欧佩克+增产规模虽然不大，但信号强烈，意味着即使油价走软这些产油国也要先收回市场份额；\n③欧佩克+实际增幅远低于承诺，且仅沙特和阿联酋有能力增投原油，油价因此未剧烈波动。",
+  "link" : "https://www.cls.cn/detail/2138113",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 786
+}, {
+  "id" : "news_062",
+  "name" : "欧佩克进一步增产 高盛：2026年原油过剩规模将略有增加",
+  "type" : "资讯",
+  "descript" : "①高盛预测2026年原油过剩规模将略有增加，预测上调至每日190万桶；\n②高盛还维持对2025年布伦特/WTI原油的价格的预测；\n③周日，欧佩克+组织决定从10月起提高石油产量，意味着提前解除第二批约165万桶/日的减产协议。",
+  "link" : "https://www.cls.cn/detail/2138552",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 5997
+}, {
+  "id" : "news_063",
+  "name" : "0910东吴期货研究所策略早参｜美国就业数据大幅下修，黄金创新高后大幅跳水",
+  "type" : "资讯",
+  "descript" : "股指：指数震荡整理，成交量能回落；黑色系板块：铁矿一枝独秀；能源化工：卡塔尔首都遭以色列袭击，油价小幅走高；有色金属：碳酸锂承压；农产品：关注MPOB月报。",
+  "link" : "https://www.cls.cn/detail/2140500",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 14707
+}, {
+  "id" : "news_064",
+  "name" : "COMEX黄金大涨逼近3700美元，中国央行已连续10个月增持黄金",
+  "type" : "资讯",
+  "descript" : "①当前关税政策下美国劳动力市场就业和消费疲软更难以缓和，这意味着美国去通胀形势更为复杂。\n②非农数据公布后，市场逻辑已从\"降息交易\"切换至\"衰退交易\"，而黄金抗通胀的属性得到螺旋性加强。",
+  "link" : "https://www.cls.cn/detail/2138477",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11423
+}, {
+  "id" : "news_065",
+  "name" : "市场重回缩量整理格局，固态电池、黄金持续活跃，苹果 eSIM 概念待发酵",
+  "type" : "资讯",
+  "descript" : "跟踪主线板块的整段生命周期",
+  "link" : "https://www.cls.cn/detail/2140530",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 3884
+}, {
+  "id" : "news_066",
+  "name" : "美国近百万就业岗位一夜“消失” 白宫、美财长轮番施压美联储降息",
+  "type" : "资讯",
+  "descript" : "①当地时间周二，在美国劳工部发布大幅下修的年度非农就业数据后，白宫不出所料再次炮轰，并施压美联储降息；\n②在就业数据大幅下修后，美国财政部长贝森特也再次呼吁美联储改变政策立场。",
+  "link" : "https://www.cls.cn/detail/2140527",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 42073
+}, {
+  "id" : "news_067",
+  "name" : "小K播早报|工信部：将研究出台人工智能+制造专项行动实施方案 苹果推出iPhone 17系列手机",
+  "type" : "资讯",
+  "descript" : "今日科创板早报主要内容有：①市场监管总局已约谈主要外卖平台，抵制恶性补贴；②杭州到2027年，全市人工智能终端产业规模力争达到3000亿；③中国移动正向工信部申请卫星移动通信业务牌照；④寒武纪定增申请获证监会同意注册批复。",
+  "link" : "https://www.cls.cn/detail/2140465",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 5676
+}, {
+  "id" : "news_068",
+  "name" : "脑机接口中文解码实现临床突破 失语患者有望“借机”重获“新声”",
+  "type" : "资讯",
+  "descript" : "①自主研发的植入式脑电大模型，实现脑机接口中文解码临床突破，有望为因渐冻症、卒中等疾病导致失语的患者提供更好治疗方案；\n②这一突破，相当于为脑机接口装上了“中文操作系统”，足以支撑患者进行日常完整的语义表达。",
+  "link" : "https://www.cls.cn/detail/2140451",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 10534
+}, {
+  "id" : "news_069",
+  "name" : "债市公告精选 | 融侨集团子公司与东方资产协商债务展期；龙光控股累计逾期债务312.12亿元",
+  "type" : "资讯",
+  "descript" : "尽享债市重要公告，把握机会，有效避雷。",
+  "link" : "https://www.cls.cn/detail/2140593",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32902
+}, {
+  "id" : "news_070",
+  "name" : "特朗普称已指示尽快敲定与卡塔尔防务合作协议",
+  "type" : "资讯",
+  "descript" : "①美国总统特朗普发文称，以色列对卡塔尔首都多哈的哈马斯目标实施袭击，这是以色列总理内塔尼亚胡的决定；\n②特朗普指示特使威特科夫向卡塔尔通报即将发生的袭击，但未能阻止袭击发生；\n③特朗普与卡塔尔埃米尔和首相进行了交谈，向他们保证这样的事情不会在其领土重演。",
+  "link" : "https://www.cls.cn/detail/2140428",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 19119
+}, {
+  "id" : "news_071",
+  "name" : "阿里本地生活战略升级提振港股SaaS概念股 微盟集团和汇量科技均涨超4%",
+  "type" : "资讯",
+  "descript" : "①汇量科技近日业绩表现如何？\n②阿里巴巴在本地生活领域开始哪些动作？",
+  "link" : "https://www.cls.cn/detail/2140617",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27490
+}, {
+  "id" : "news_072",
+  "name" : "加密公司已成美国IPO市场焦点！Figure和Gemini双双上调发行价",
+  "type" : "资讯",
+  "descript" : "①多家加密金融公司今年在美国市场上市，有利监管环境和资产价格大涨导致投资者对这些公司的股票十分热衷；\n②Gemini和Figure Technologies均在8月提交IPO申请，周二这两家公司均表示将上调发行价；\n③投资者对通过公开市场投资加密货币的兴趣正在不断增长。",
+  "link" : "https://www.cls.cn/detail/2140594",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 28652
+}, {
+  "id" : "news_073",
+  "name" : "事关9月降息！美参议员：“特朗普亲信”大概率赶不上议息会议",
+  "type" : "资讯",
+  "descript" : "①美联储9月16-17日将举行议息会议，白宫经济顾问委员会主席斯蒂芬·米兰能否及时通关到位是外界关注焦点；\n②据悉，米兰的美联储理事一职在国会确认最早可能在下周一，但从参议院确认到美联储宣誓就职最快需四个工作日。",
+  "link" : "https://www.cls.cn/detail/2140448",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 46232
+}, {
+  "id" : "news_074",
+  "name" : "彻底翻身了！全球债市正式踏入牛市 国债依然“拖后腿”……",
+  "type" : "资讯",
+  "descript" : "①随着固收市场全面回暖，追踪发达市场和新兴市场主权及公司债回报率的彭博全球综合债券指数已从2022年低点飙升了逾20%；\n②这不仅刷新了2022年3月以来的最高水平，也正式宣告重返了技术性牛市区域。",
+  "link" : "https://www.cls.cn/detail/2140462",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 18223
+}, {
+  "id" : "news_075",
+  "name" : "我国成功研制首批基孔肯雅热病毒标准物质",
+  "type" : "资讯",
+  "descript" : "①我国多个地区发现基孔肯雅热病例，市场监管总局组织成功研制4项病毒标准物质以提升疫情早期监测与识别能力；\n②标准物质包括体外转录标准物质和假病毒标准物质各2项，采用同位素稀释质谱法和数字PCR方法进行定值。",
+  "link" : "https://www.cls.cn/detail/2140680",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 19361
+}, {
+  "id" : "news_076",
+  "name" : "美国高院同意快速审理关税案 币圈IPO再现火爆场面 | 环球市场",
+  "type" : "资讯",
+  "descript" : "1、特朗普称已指示尽快敲定与卡塔尔防务合作协议；2、苹果发布“史上最薄iPhone”，基础款iPhone 17迎来高刷屏还“加量不加价”；3、甲骨文预期未来5年云业务营收将狂暴增长；4、币圈新股Figure、Gemini均提高IPO募资规模。",
+  "link" : "https://www.cls.cn/detail/2140446",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 30221
+}, {
+  "id" : "news_077",
+  "name" : "财联社债市早参9月10日 | 财政部今日续发50年超长期特别国债；利空引发债市持续调整",
+  "type" : "资讯",
+  "descript" : "把握债市政策脉搏，综览每日市场动向，尽在财联社《债市早参》。",
+  "link" : "https://www.cls.cn/detail/2140459",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11576
+}, {
+  "id" : "news_078",
+  "name" : "国家网信办：假冒仿冒新闻单位，1200余个账号被依法依约关闭或禁言",
+  "type" : "资讯",
+  "descript" : "①国家网信办近期加强互联网新闻信息服务管理，规范网上新闻传播秩序，处置一批违法违规账号；\n②典型案例包括假冒仿冒新闻单位、违规开展新闻采编、冒用新闻栏目照片、发布虚假不实信息等。",
+  "link" : "https://www.cls.cn/detail/2140657",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6342
+}, {
+  "id" : "news_079",
+  "name" : "5万亿赛道杀出“新物种”，下半年ETF-FOF迎来密集上报",
+  "type" : "资讯",
+  "descript" : "①ETF规模突破5.1万亿，ETF-FOF迎来发展良机；\n②17只ETF-FOF产品密集上报或发行；\n③非ETF大厂积极布局，以ETF为底层资产提供配置服务成为新的产品方向。",
+  "link" : "https://www.cls.cn/detail/2140637",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1793
+}, {
+  "id" : "news_080",
+  "name" : "两年内第五任法国总理！马克龙选中了39岁的他……",
+  "type" : "资讯",
+  "descript" : "①当地时间9月9日晚，法国总统马克龙任命现年39岁的国防部长塞巴斯蒂安·勒科尔尼接替贝鲁，担任政府总理一职；\n②此时距离前贝鲁政府因不信任案垮台仅过去了一天，这也将是法国在短短两年之内迎来的第五任总理。",
+  "link" : "https://www.cls.cn/detail/2140545",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 34581
+}, {
+  "id" : "news_081",
+  "name" : "券商晨会精华：强新品周期+金九银十，整车和机器人进入布局阶段",
+  "type" : "资讯",
+  "descript" : "在今天的券商晨会上，华泰证券指出，下半年传媒行业景气度有望持续向上；中金公司表示，看好光伏行业“反内卷”持续推进以及板块弹性；中信建投认为，强新品周期+金九银十，整车和机器人进入布局阶段。",
+  "link" : "https://www.cls.cn/detail/2140433",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1555
+}, {
+  "id" : "news_082",
+  "name" : "英伟达发布超长上下文推理芯片Rubin CPX 算力效率拉爆当前旗舰",
+  "type" : "资讯",
+  "descript" : "①通过发布Rubin CPX，英伟达将推理计算过程拆分为上下文与生成两个阶段，分别由两块GPU运算，效率最高可达现有旗舰机架的6.5倍；\n②英伟达预计，客户部署1亿美元的新设备可带来高达50亿美元收入。",
+  "link" : "https://www.cls.cn/detail/2140330",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 7521
+}, {
+  "id" : "news_083",
+  "name" : "OpenAI首席财务官：企业必须“拥抱”AI，否则就会落后！",
+  "type" : "资讯",
+  "descript" : "①OpenAI首席财务官萨拉·弗里尔警告企业和专业人士，若不采用人工智能，将失去优势；\n②她认为，深入使用人工智能的个人将颠覆企业。",
+  "link" : "https://www.cls.cn/detail/2140647",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 26796
+}, {
+  "id" : "news_084",
+  "name" : "从“一颗咖啡豆”到“买全球”：虹桥品汇迈向千亿级国际贸易集聚平台｜活力中国调研行",
+  "type" : "资讯",
+  "descript" : "①9月9日上午，财联社记者跟随“活力中国调研行”走进虹桥进口商品展示交易中心；\n②进口展品得以高效、便捷地进入中国市场，既离不开促“展品变商品”的直播基地，也离不开保税物流中心在背后的运转。",
+  "link" : "https://www.cls.cn/detail/2140436",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 2308
+}, {
+  "id" : "news_085",
+  "name" : "非法收受他人财物数额特别巨大 陆克华被提起公诉",
+  "type" : "资讯",
+  "descript" : "①重庆市委原常委、政法委原书记陆克华涉嫌受贿一案，由国家监察委员会调查终结，四川省泸州市人民检察院已向泸州市中级人民法院提起公诉；\n②检察机关指控陆克华利用职务便利，为他人谋取利益，非法收受他人财物，数额特别巨大，依法应当以受贿罪追究其刑事责任。",
+  "link" : "https://www.cls.cn/detail/2140608",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21948
+}, {
+  "id" : "news_086",
+  "name" : "降息无济于事？华尔街一哥：美经济前景暗淡，关税等影响尚未完全显现！",
+  "type" : "资讯",
+  "descript" : "①摩根大通首席执行官杰米·戴蒙警告称，关税、移民、地缘政治等因素对美国经济的全面影响尚未显现；\n②戴蒙认为，经济正在走弱，美联储降息预期无关紧要。",
+  "link" : "https://www.cls.cn/detail/2140564",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27143
+}, {
+  "id" : "news_087",
+  "name" : "9月10日投资避雷针：3连板人气股提示风险 控股股东目前无资产注入计划",
+  "type" : "资讯",
+  "descript" : "①宁德时代召开枧下窝锂矿复产会议，预计很快复产；\n②3连板必得科技公告，控股股东、实际控制人以及鼎龙启顺目前均无涉及公司资产注入计划；\n③以色列袭击卡塔尔的哈马斯高层。",
+  "link" : "https://www.cls.cn/detail/2140449",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 25693
+}, {
+  "id" : "news_088",
+  "name" : "攸关全球贸易命运！美最高法院同意加快审理关税案 11月初口头辩论",
+  "type" : "资讯",
+  "descript" : "①据媒体报道，美国最高法院周二已同意就特朗普全面征收全球关税的合法性作出裁决，最高法院将加速审理此案；\n②此前，美国联邦巡回上诉法院已支持了美国国际贸易法院的裁定，即认定特朗普所征收的大部分关税属越权行为。",
+  "link" : "https://www.cls.cn/detail/2140651",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 37300
+}, {
+  "id" : "news_089",
+  "name" : "自然资源部：我国油气与铀矿实现重大找矿突破",
+  "type" : "资讯",
+  "descript" : "①我国在油气与铀矿领域取得重大突破，大盆地深层和海域深水成为油气增储上产主阵地，新探获多个大型铀矿床，有效提升铀资源安全保障程度；\n②“十四五”期间，我国在海洋经济发展方面取得显著成就，包括建成全球首座10万吨级生产储油平台“深海一号”等大国重器。",
+  "link" : "https://www.cls.cn/detail/2140661",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13863
+}, {
+  "id" : "news_090",
+  "name" : "科创板AI公司共话商业化落地 竞争加剧下企业如何布局？|直击业绩会",
+  "type" : "资讯",
+  "descript" : "①上半年，AI产业在技术突破与商业化落地进程明显加快，AI相关业务市场需求及订单情况是投资者关注的重点；\n②AI行业正从单一工具升级向多场景生态建设，竞争维度已从技术突破延伸至场景落地的较量，不少企业已制定清晰的AI发展路径。",
+  "link" : "https://www.cls.cn/detail/2140533",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 33366
+}, {
+  "id" : "news_091",
+  "name" : "从大地转型到太空？业绩承压下 东珠生态拟跨界收购卫星科技公司|速读公告",
+  "type" : "资讯",
+  "descript" : "①东珠生态拟发行股份收购凯睿星通89.49%股份，发行价格为5.47元/股，已较市场现价折价约35%；\n②凯睿星通主要从事卫星通信技术与系统业务，先后参与多项国家重大航天和卫星通信工程项目。以凯睿星通现有盈利能力而言，尚难以覆盖东珠生态的亏损缺口。",
+  "link" : "https://www.cls.cn/detail/2140529",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 10559
+}, {
+  "id" : "news_092",
+  "name" : "50%高额关税或有转机？特朗普：印美正继续谈判以解决贸易壁垒",
+  "type" : "资讯",
+  "descript" : "①美国总统特朗普周二表示，印度和美国正在继续谈判，以解决两国之间的贸易壁垒；\n②他还称，他确信对于美国和印度来说，达成成功的协议绝不会有任何困难。",
+  "link" : "https://www.cls.cn/detail/2140434",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20084
+}, {
+  "id" : "news_093",
+  "name" : "开拓半导体材料新领域 聚和材料拟3.5亿收购韩国SKE空白掩模业务",
+  "type" : "资讯",
+  "descript" : "①聚和材料表示，通过本次收购，有望依托该业务稀缺性拓展半导体客户资源，与现有业务形成协同；\n②公司目前已形成“浆、粉、胶”三大业务，但2024年光伏导电浆料营业收入占总营收比例达99.44%，主营收入过度依赖单一光伏领域，亟需拓展泛半导体、半导体等应用领域。",
+  "link" : "https://www.cls.cn/detail/2140486",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13695
+}, {
+  "id" : "news_094",
+  "name" : "三生国健2025年上半年：从“蓄力”到“突破”",
+  "type" : "资讯",
+  "descript" : "2025年上半年，三生国健实现营业收入人民币6.42亿元，同比增长7.61%，净利润为人民币1.90亿元，同比增长高达46.96%，扣除非经常性损益后净利润为1.57亿元，同比增长24.64%。",
+  "link" : "https://www.cls.cn/detail/2138820",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21990
+}, {
+  "id" : "news_095",
+  "name" : "*ST股“月度涨幅冠军”幕后：公安调取证据 信披疑点丛生",
+  "type" : "资讯",
+  "descript" : "①公安机关已向*ST金泰发出《调取证据通知书》，公司董秘称未立案无需公告；\n②半年报关于“关联方非经营性资金占用”的认定存在矛盾点，会计科目“反常现象”频出；\n③*ST金泰本周五召开股东大会，各方博弈将迎来高潮。",
+  "link" : "https://www.cls.cn/detail/2139968",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1158
+}, {
+  "id" : "news_096",
+  "name" : "宝丰能源：近期部分煤种价格回调 新产能建设按计划有序推进|直击业绩会",
+  "type" : "资讯",
+  "descript" : "①宝丰能源仍在积极推进新产能建设，公司表示，预计宁东四期2026年底投产；\n②对于煤炭价格，公司表示，近期部分煤种价格出现回调，公司一直在积极寻找经济的原料来源。",
+  "link" : "https://www.cls.cn/detail/2140043",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 48465
+}, {
+  "id" : "news_097",
+  "name" : "“坚持理性投资，远离非法证券期货” 河北省证券期货业协会携手保定投教基地开展2025防非健步走活动",
+  "type" : "资讯",
+  "descript" : "①9月6日，河北省证券期货业协会与中金财富保定投教基地在保定植物园举办“坚持理性投资，远离非法证券期货”2025防非健步走活动，约150人参加；\n②活动结合体育锻炼与投资者教育，设有主题拍照打卡点和盲盒墙，参与者通过戳破代表非法活动的盲盒，增强识别和防范非法证券期货活动的能力。",
+  "link" : "https://www.cls.cn/detail/2139654",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 35376
+}, {
+  "id" : "news_098",
+  "name" : "寒武纪最新公告！定增申请获证监会批准",
+  "type" : "资讯",
+  "descript" : "①寒武纪定增申请获证监会同意注册批复，有效期为12个月。\n②公司拟向特定对象发行股票募集资金总额不超过39.85亿元，用于面向大模型的芯片平台项目、软件平台项目和补充流动资金。",
+  "link" : "https://www.cls.cn/detail/2140203",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21743
+}, {
+  "id" : "news_099",
+  "name" : "278个项目、1437亿元投资！上海与外资如何“双向奔赴”？|活力中国调研行",
+  "type" : "资讯",
+  "descript" : "①9月8日，财联社记者从2025年“活力中国调研行”上海主题采访情况介绍会上获悉，今年1-8月上海市招商落地外资项目278个，总投资1437亿元；\n②同日，在记者采访的四家外资企业中，无一例外都提到了在与上海“双向奔赴”背后的“上海优势”。",
+  "link" : "https://www.cls.cn/detail/2139193",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13286
+}, {
+  "id" : "news_100",
+  "name" : "尚未形成产业化和销售收入！二连板固态电池概念股发布异动公告|盘后公告集锦",
+  "type" : "资讯",
+  "descript" : "中芯国际：拟发行股份购买中芯北方49%股权 股票复牌",
+  "link" : "https://www.cls.cn/detail/2138898",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 42114
+}, {
+  "id" : "news_101",
+  "name" : "春雪食品：预计下半年经营环境继续改善 调理品产能将进一步提升|直击业绩会",
+  "type" : "资讯",
+  "descript" : "①今年上半年白羽鸡行业景气度较低，春雪食品董事长郑维新认为，2025年下半年经营环境预计比上半年改善； \n②春雪食品相关负责人表示，公司将进一步增加产能，调整产品结构，开拓市场，保障公司业绩。",
+  "link" : "https://www.cls.cn/detail/2138933",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 5613
+}, {
+  "id" : "news_102",
+  "name" : "已上市33款1类新药！科创板创新药企“秀肌肉” 多项重要研究入选WCLC口头报告",
+  "type" : "资讯",
+  "descript" : "①百利天恒等科创板药企在近日举行的世界肺癌大会（WCLC）上均有重要研究入选本年度大会口头报告。\n②从近期披露的半年报业绩看，随着新药产品商业化加速，多家科创板药企正整体步入增收缩亏的良性增长阶段。",
+  "link" : "https://www.cls.cn/detail/2140241",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47888
+}, {
+  "id" : "news_103",
+  "name" : "突发！150亿芯片概念股遭国家集成电路基金拟减持不超3%股份|盘后公告集锦",
+  "type" : "资讯",
+  "descript" : "寒武纪：定增申请获证监会同意注册批复",
+  "link" : "https://www.cls.cn/detail/2140209",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47819
+}, {
+  "id" : "news_104",
+  "name" : "龙佰集团：子公司硫酸生产线发生安全事故，致5人死亡",
+  "type" : "资讯",
+  "descript" : "①龙佰集团全资子公司龙佰襄阳于9月2日晚发生安全事故，造成5人死亡，1人重伤。\n②当地应急管理部门责令龙佰襄阳暂时停业整顿，公司已按照要求进行有序停产，全面排查安全隐患。",
+  "link" : "https://www.cls.cn/detail/2138871",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 33312
+}, {
+  "id" : "news_105",
+  "name" : "“出货量”“渗透率”现积极信号 “AI+”效应推升沪市产业链公司景气度",
+  "type" : "资讯",
+  "descript" : "①上半年，围绕“人工智能+”行动，各行业纷纷加大采购，在研发、生产、营销、内控等各个环节深度融合，AI的端侧应用迎来大繁荣；\n②随着国务院《关于深入实施“人工智能+”行动的意见》的印发，AI正从“概念”加速走向“必需”，“AI+”的效应沿着供应链不断外溢。",
+  "link" : "https://www.cls.cn/detail/2138917",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 5085
+}, {
+  "id" : "news_106",
+  "name" : "减持计划数量同比倍增！本月来已近130家公司公告 今晚就达29家 谁在大涨后套现？",
+  "type" : "资讯",
+  "descript" : "①9月以来六个交易日，有近130家上市公司新披露股东、董监高减持计划，数量较上年同期增长超一倍；\n②披露减持计划的案例中，不乏市场明星公司，短期出现股价暴涨；\n③从行业分布看，减持计划案例中，先进制造、TMT板块公司出现频率较高。",
+  "link" : "https://www.cls.cn/detail/2139111",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 12895
+}, {
+  "id" : "news_107",
+  "name" : "城投宽庭REIT启动扩募 揭秘上海城投租赁住房深度运营密码",
+  "type" : "资讯",
+  "descript" : "公募REITs市场，正迎来快速发展时期。",
+  "link" : "https://www.cls.cn/detail/2139294",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 43783
+}, {
+  "id" : "news_108",
+  "name" : "以研领造”新标杆：聚焦研发提升份额，泰凯英业绩持续增长",
+  "type" : "资讯",
+  "descript" : "借助于国内轮胎行业的充沛产能，泰凯英通过聚焦矿山建筑细分场景，精准实现工况洞察，专注研发设计、并将生产环节外包，满足用户的差异化需求，走出一条技术创新驱动的发展之路。",
+  "link" : "https://www.cls.cn/detail/2139298",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 45427
+}, {
+  "id" : "news_109",
+  "name" : "华大智造发布超高通量测序仪T7+ 因美纳缺位下行业竞争进入“新一轮技术迭代”",
+  "type" : "资讯",
+  "descript" : "①T7+可在24小时内完成超14Tb的数据产出，是全球日交付能力最强的超高通量基因测序仪之一；\n②国内基因测序行业正在经历技术升级，新品迭出的时期；\n③因美纳被列入我国不可靠实体清单后，国内基因测序行业也正在经历份额重新分配。",
+  "link" : "https://www.cls.cn/detail/2140269",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 25165
+}, {
+  "id" : "news_110",
+  "name" : "实控人所持1.7亿股启动二次拍卖 春兴精工或将易主|速读公告",
+  "type" : "资讯",
+  "descript" : "①本次拍卖，起拍价均相当于市场价的80%，但截至目前，这两笔股权拍卖均无人报名；\n②查询中国执行信息公开网，孙洁晓被北京金融法院列为被执行人，执行标的8.87亿元；\n③自2020年以来，公司已连续5年亏损，报告期末，公司资产负债率为101.36%。",
+  "link" : "https://www.cls.cn/detail/2139067",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 42175
+}, {
+  "id" : "news_111",
+  "name" : "运营商竞逐卫星通信！中国移动称正向工信部申请业务牌照",
+  "type" : "资讯",
+  "descript" : "①记者最新获悉，中国移动正积极向工信部申请卫星移动通信业务牌照；\n②中国联通近日获卫星移动通信业务经营许可，2023年中国电信手机直连卫星业务已率先启动；\n③工信部将进一步优化卫星通信市场准入，卫星通信在消费电子领域普及将带动产业链厂商业务加速落地。",
+  "link" : "https://www.cls.cn/detail/2140251",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39183
+}, {
+  "id" : "news_112",
+  "name" : "同花顺深夜公告：董事长易峥提前终止减持计划",
+  "type" : "资讯",
+  "descript" : "①同花顺控股股东、实际控制人、董事长易峥决定提前终止减持计划，该计划于2025年9月6日发布，拟减持不超过68.4万股，占总股本的0.13%；\n②股东杭州凯士顺科技有限公司的减持计划不变。易峥尚未实施减持计划，其持股情况未发生变化。",
+  "link" : "https://www.cls.cn/detail/2139198",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 8093
+}, {
+  "id" : "news_113",
+  "name" : "从亏损到单鸡盈利3-4元 黄羽鸡行情“热”起来了！业内预测或仍有上升空间|行业动态",
+  "type" : "资讯",
+  "descript" : "①上市黄羽鸡养殖企业8月销售收入最高环比增长近50%；\n②黄鸡持续升温，下游养殖重回盈利模式，有上市企业人士表示，“现在单鸡可以赚3-4块钱，有望弥补上半年的亏损。”",
+  "link" : "https://www.cls.cn/detail/2138976",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 3544
+}, {
+  "id" : "news_114",
+  "name" : "天普股份“降火式”复牌：收购资金还未就绪 易主尚存不确定性|速读公告",
+  "type" : "资讯",
+  "descript" : "①天普股份将于9日开市起复牌；\n②公司表示，收购方之一海南芯繁及上海芯繁的股东尚未完成实缴出资；\n③停牌前，天普股份股票已连续9个交易日涨停。",
+  "link" : "https://www.cls.cn/detail/2139114",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 9814
+}, {
+  "id" : "news_115",
+  "name" : "昂立教育拟投500万设新公司 开拓自习室业务|速读公告",
+  "type" : "资讯",
+  "descript" : "①昂立教育表示，本次新设全资子公司开展自习室服务业务，是为了满足公司业务多元化发展需要。不过，未来收益存在不确定性。\n②自“双减”政策落地以来，各教育培训企业纷纷调整战略方向。",
+  "link" : "https://www.cls.cn/detail/2139063",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 14775
+}, {
+  "id" : "news_116",
+  "name" : "中芯国际：拟发行股份购买中芯北方49%股权 股票复牌",
+  "type" : "资讯",
+  "descript" : "①公司拟向国家集成电路产业投资基金股份有限公司等发行股份购买中芯北方49%的股权，交易完成后持股比例将升至100%。\n②本次交易预计不构成重大资产重组，不会导致上市公司控制权变更，且构成关联交易。",
+  "link" : "https://www.cls.cn/detail/2138893",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 4407
+}, {
+  "id" : "news_117",
+  "name" : "重整投资人星箭长空亮相 *ST亚太股价提前涨停|速读公告",
+  "type" : "资讯",
+  "descript" : "①*ST亚太昨晚首次披露北京星箭长空测控技术股份有限公司为公司重整投资人；\n②在上述公告正式披露前，*ST亚太股价昨日止跌反弹涨停报收。",
+  "link" : "https://www.cls.cn/detail/2139177",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 33863
+}, {
+  "id" : "news_118",
+  "name" : "天普股份遭上交所七连问 杠杆收购停摆 缺口资金“在途”",
+  "type" : "资讯",
+  "descript" : "①全部收购资金都靠自筹，后续也不能质押所收购股权；\n②若中昊芯英此次交易失败，融资对赌条款将重启，涉及或有负债达16.42亿元；\n③中昊芯英变更B轮融资款用途，以弥补收购资金缺口；\n④另一收购主体海南芯繁尚在增资，钱还在路上。",
+  "link" : "https://www.cls.cn/detail/2139934",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 7515
+}, {
+  "id" : "news_119",
+  "name" : "钱不够用？舒泰神拟定增募资不超过12.53亿元 曾终止多条研发管线|速读公告",
+  "type" : "资讯",
+  "descript" : "①舒泰神官宣拟发行股份募集资金总额不超过（含）人民币12.53亿元。\n②其中拟将募集资金8.83亿元（含本数）用于创新药物研发项目；补充流动资金项目拟投入募集资金3.7亿元。",
+  "link" : "https://www.cls.cn/detail/2140302",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39484
+}, {
+  "id" : "news_120",
+  "name" : "大厂化身“金主”！京东具身智能领域“六连投” 阿里、美团也入局",
+  "type" : "资讯",
+  "descript" : "①京东完成对RoboScience、千寻智能入股 ，此前还宣布对帕西尼、智元机器人、逐际动力、众擎机器人等企业的投资，实现了在具身智能领域“六连投”。\n②在完成融资后，多家机器人企业正筹备在港股、A股上市，行业资本化进程明显提速。",
+  "link" : "https://www.cls.cn/detail/2139233",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 29101
+}, {
+  "id" : "news_121",
+  "name" : "又和特朗普“唱反调”？高盛CEO：美联储不必急于降息！",
+  "type" : "资讯",
+  "descript" : "①高盛集团首席执行官所罗门表示，美联储没必要迅速降息，这番表态与特朗普政府立场相反；\n②他表示，“从风险偏好来看，我觉得政策利率并不是特别具有限制性。”",
+  "link" : "https://www.cls.cn/detail/2139210",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 42778
+}, {
+  "id" : "news_122",
+  "name" : "南向资金追踪｜净买入约167亿港元创近3周新高 大举加仓阿里及地平线机器人",
+  "type" : "资讯",
+  "descript" : "①南向资金当日成交约1550亿港元，资金持续流入哪些个股？ \n②阿里巴巴获资金流入超51亿港元，短线增持幅度有多大？",
+  "link" : "https://www.cls.cn/detail/2138772",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 28934
+}, {
+  "id" : "news_123",
+  "name" : "南向资金追踪｜净买入超102亿港元 连续加仓阿里流出小米及康方生物",
+  "type" : "资讯",
+  "descript" : "①南向资金当日成交约1492亿港元，资金持续流入哪些个股？ \n②阿里巴巴获资金流入超42亿港元，短线增持幅度有多大？",
+  "link" : "https://www.cls.cn/detail/2140045",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11259
+}, {
+  "id" : "news_124",
+  "name" : "“全球对冲基金一哥”喊话特朗普：别干扰美联储独立性，历史已表明危险！",
+  "type" : "资讯",
+  "descript" : "①全球最大对冲基金城堡投资创始人肯·格里芬与人合写文章，抨击特朗普对美联储独立性的攻击，强调美联储应不受行政部门不当干预；\n②文章指出特朗普破坏美联储独立性的行为可能加剧通胀和长期利率上升，并引用20世纪70年代历史教训警告危险。",
+  "link" : "https://www.cls.cn/detail/2139436",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39189
+}, {
+  "id" : "news_125",
+  "name" : "摩根大通警告：美联储降息之日 或是美股“利好出尽”之时",
+  "type" : "资讯",
+  "descript" : "①摩根大通分析师警告，尽管市场预期美联储9月17日将降息25个基点，但可能引发“卖事实”型的美股回调；\n②分析师指出，美联储降息后，投资者可能重新关注宏观经济数据、美联储反应变量、企业回购意愿减弱等因素。",
+  "link" : "https://www.cls.cn/detail/2139422",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 41905
+}, {
+  "id" : "news_126",
+  "name" : "港股IPO早播报：健康160开始招股 9月17日上市",
+  "type" : "资讯",
+  "descript" : "①健康160今起招股，入场费是多少？保荐人和承销商是什么机构？\n②哪些公司近期通过了港交所上市聆讯？",
+  "link" : "https://www.cls.cn/detail/2138307",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 12879
+}, {
+  "id" : "news_127",
+  "name" : "8月车市产销两旺汽车港股短线走强 多地重启补贴重燃市场预期",
+  "type" : "资讯",
+  "descript" : "①8月国内汽车市场产销两旺，具体增速有多快？\n②多地重启补贴重燃市场预期，短线行情还有哪些看点？",
+  "link" : "https://www.cls.cn/detail/2139637",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21532
+}, {
+  "id" : "news_128",
+  "name" : "王腾被小米辞退后再发声明：没有窃取公司机密出售，没有收人钱财",
+  "type" : "资讯",
+  "descript" : "①小米集团职业道德委员会9月8日内部邮件显示，中国区市场部员工王腾因泄露公司机密信息及利益冲突等严重违规违纪行为被辞退；\n②王腾9月9日在微博回应称，关于其离职的网上传言都是假消息，自己没有窃取公司机密出售，没有收人钱财，有失职行为但未违法。",
+  "link" : "https://www.cls.cn/detail/2139381",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 22102
+}, {
+  "id" : "news_129",
+  "name" : "港股收盘 | 三大指数集体收涨逾1% 地产与黄金股强势领跑",
+  "type" : "资讯",
+  "descript" : "①中创智领大涨的原因是什么？\n②互联网医疗股为何走强？",
+  "link" : "https://www.cls.cn/detail/2139829",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 9027
+}, {
+  "id" : "news_130",
+  "name" : "港股公告精选｜雅居乐集团年内销售额同比下滑约4成 山高新能源附属订立超3亿元融租协议",
+  "type" : "资讯",
+  "descript" : "①雅居乐集团年内销售额同比下滑约4成，其他房企表现如何？\n②山高新能源附属订立超3亿元融租协议，细节如何？",
+  "link" : "https://www.cls.cn/detail/2140137",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 38133
+}, {
+  "id" : "news_131",
+  "name" : "阿根廷股指突发“10cm+”暴跌 黄金再创历史新高 | 环球市场",
+  "type" : "资讯",
+  "descript" : "1、隔夜美股三大指数集体收涨，纳指再创收盘新高，中概股表现亮眼；2、黄金再创历史新高，近一年上涨超1000美元/盎司；3、默多克家族“继承之战”迎来大结局；4、高通、谷歌携手将AI代理引入汽车行业。",
+  "link" : "https://www.cls.cn/detail/2139202",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32126
+}, {
+  "id" : "news_132",
+  "name" : "港股公告精选｜舜宇光学8月车载镜头出货量增约两成 江南布衣上一财年营收达55亿元",
+  "type" : "资讯",
+  "descript" : "①舜宇光学8月车载镜头出货量增约两成，手机业务有何亮点？\n②江南布衣上一财年营收达55亿元，盈利情况如何？",
+  "link" : "https://www.cls.cn/detail/2138884",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 43887
+}, {
+  "id" : "news_133",
+  "name" : "美股收盘：纳斯达克中国金龙指数创近半年新高",
+  "type" : "资讯",
+  "descript" : "1、美股三大指数温和上涨，卫星互联网、固态电池、激光雷达、加密货币财库、黄金等概念遭到热炒；2、纳斯达克中国金龙指数再创3月以来新高；3、华尔街科技股鼓吹手当上董事长，纳斯达克仙股暴涨3000%；4、Nebius与微软达成百亿美元AI基建协议。",
+  "link" : "https://www.cls.cn/detail/2139165",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17584
+}, {
+  "id" : "news_134",
+  "name" : "阿里云首度落子具身智能 领投自变量机器人10亿规模融资",
+  "type" : "资讯",
+  "descript" : "① 自变量机器人创始人兼CEO王潜对《科创板日报》记者表示，中国市场的融资支持力度与美国相差一个数量级，国内仍需加大资本投入以支撑行业发展；\n② 截至目前，自变量已累计完成8轮融资，累计融资约20亿元。",
+  "link" : "https://www.cls.cn/detail/2139526",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 10541
+}, {
+  "id" : "news_135",
+  "name" : "港股风向标｜权重股发力恒指刷新近四年高点 短线空头加码追涨资金克制",
+  "type" : "资讯",
+  "descript" : "①权重股发力恒指刷新近四年高点，哪些热点正持续走强？\n② 短线空头加码追涨资金克制，什么信号？",
+  "link" : "https://www.cls.cn/detail/2140190",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 4800
+}, {
+  "id" : "news_136",
+  "name" : "港股为何落后A股？ 中金点出三大关键因素",
+  "type" : "资讯",
+  "descript" : "①港股盈利预期持续下调而A股保持正增长，这一反差是否主要源于行业结构差异？\n②AH溢价触底回升后，港股估值吸引力是否已恢复？",
+  "link" : "https://www.cls.cn/detail/2139586",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 19400
+}, {
+  "id" : "news_137",
+  "name" : "折叠自行车龙头大行科工首日大涨超19% 融资认购倍数刷新历史新高",
+  "type" : "资讯",
+  "descript" : "①大行科工在中国折叠自行车市场中的地位如何？\n②港股历史上的“超购王”通常有哪些后续表现？",
+  "link" : "https://www.cls.cn/detail/2139397",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27945
+}, {
+  "id" : "news_138",
+  "name" : "多重利好持续刺激港股黄金股走强 赤峰黄金大涨近13%",
+  "type" : "资讯",
+  "descript" : "①港股黄金股大幅上涨的主要驱动因素有哪些？\n②机构对黄金价格未来走势怎么看？",
+  "link" : "https://www.cls.cn/detail/2139479",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 31628
+}, {
+  "id" : "news_139",
+  "name" : "南向资金净买入创新高，港股却显落寞？五大新特征可寻",
+  "type" : "资讯",
+  "descript" : "①南向资金本年度净买入额达1.03万亿，相当于2024年全年总额的127%，占总净买入额比例高达21.77%；\n②近期A股与港股表现呈现分化，交替领跑趋势明显，港股更呈现出几大新特点。",
+  "link" : "https://www.cls.cn/detail/2139022",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 31369
+}, {
+  "id" : "news_140",
+  "name" : "港股风向标｜资金面连续缩量空头活跃 中报扰动后机构看好AI方向",
+  "type" : "资讯",
+  "descript" : "①反弹领涨热点展开局部行情，市场逻辑出现哪些新变化？\n②中报扰动后机构看好AI方向，本周还有哪些重磅事件值得关注？",
+  "link" : "https://www.cls.cn/detail/2138952",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 41464
+}, {
+  "id" : "news_141",
+  "name" : "美股收盘：三大指数齐创收盘新高 中概金龙指数冲击三年半高位",
+  "type" : "资讯",
+  "descript" : "1、科技巨头推动美股三大指数齐创新高，多只AI产业链热门股暴涨，锂矿板块跳水；2、苹果发布iPhone Air等多款新品；3、甲骨文预期未来5年云业务营收将狂暴增长；4、英伟达发布超长上下文推理芯片Rubin CPX。",
+  "link" : "https://www.cls.cn/detail/2140393",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 8098
+}, {
+  "id" : "news_142",
+  "name" : "港股早报：人民银行与欧央行等续签双边本币互换协议 热门中概股普涨",
+  "type" : "资讯",
+  "descript" : "①中国人民银行与欧央行、瑞士央行、匈牙利央行续签双边本币互换协议。\n②法国总理贝鲁领导的政府未通过国民议会信任投票。\n③美国三大股指小幅收涨，纳斯达克中国金龙指数收涨2.12%创近半年新高。\n④欧佩克温和增产释放谨慎信号，国际油价持稳。",
+  "link" : "https://www.cls.cn/detail/2138306",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 7702
+}, {
+  "id" : "news_143",
+  "name" : "大众汽车将投资10亿欧元布局人工智能 重点聚焦三大领域",
+  "type" : "资讯",
+  "descript" : "①大众汽车计划在2030年前投入10亿欧元用于人工智能，以期在2035年实现40亿欧元的成本节约；\n②在慕尼黑国际车展上，大众汽车展示了其对电动车型和技术升级的重视，以及通过人工智能提升竞争力的决心。",
+  "link" : "https://www.cls.cn/detail/2140167",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 19675
+}, {
+  "id" : "news_144",
+  "name" : "新消费日报 | 比亚迪方程豹钛7上市；京东七鲜小厨将进驻锦江酒店旗下酒店",
+  "type" : "资讯",
+  "descript" : "新消费日报 9月9日讯，今日新消费日报的主要内容有：到2030年，我国体育产业总规模目标超过7万亿元；两部门拟进一步加强跨境电商零售进口食品召回监管；比亚迪方程豹钛7上市。",
+  "link" : "https://www.cls.cn/detail/2140304",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 30993
+}, {
+  "id" : "news_145",
+  "name" : "没有涨价、更多创新！iPhone17系列告别“挤牙膏” 果链迎来新行情？",
+  "type" : "资讯",
+  "descript" : "①苹果秋季发布会来袭，iPhone 17系列告别“挤牙膏”；\n②分析人士认为，iPhone今年Q4在国内市场或将存在个位数下跌，而整体数据则有望迎来个位数上涨；\n③果链满负荷备战iPhone17系列。",
+  "link" : "https://www.cls.cn/detail/2140505",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 30062
+}, {
+  "id" : "news_146",
+  "name" : "行业里程碑！美FDA批准eGenesis进行人体移植基因编辑猪肾临床试验",
+  "type" : "资讯",
+  "descript" : "①美国生物技术企业eGenesis获FDA批准，进行人体移植基因编辑猪肾脏的临床试验，计划今年内开展首例；\n②麻省总医院已完成三例实验性猪肾移植手术，其中一例患者已出院并重返工作岗位，成为全球接受猪肾脏移植后存活时间最长的患者。",
+  "link" : "https://www.cls.cn/detail/2139960",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 45330
+}, {
+  "id" : "news_147",
+  "name" : "郑州富士康iPhone 17港区产线已接近满产，近20万人两班倒赶工",
+  "type" : "资讯",
+  "descript" : "目前，富士康郑州港区正处于 iPhone 17 系列产品量产爬坡期，随着投产规模逐步扩大，厂区对人力的需求持续上升。",
+  "link" : "https://www.cls.cn/detail/2140682",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39152
+}, {
+  "id" : "news_148",
+  "name" : "阿联酋推出低成本AI推理模型 宣称“性价比”超同行20倍",
+  "type" : "资讯",
+  "descript" : "①阿联酋穆罕默德·本·扎耶德人工智能大学与G42共同推出低成本推理模型“K2 Think”，宣称仅需320亿参数，性能超越规模大20倍的模型；\n②该模型基于阿里巴巴开源Qwen 2.5构建，采用长链式思维监督微调和推理阶段扩展等方法提升性能，为数学、科学等特定应用领域而设计。",
+  "link" : "https://www.cls.cn/detail/2140281",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 30466
+}, {
+  "id" : "news_149",
+  "name" : "手机eSIM虽迟但到！苹果国行最薄iPhone“实锤”与联通合作 A股厂商称如何受益“要看招标”",
+  "type" : "资讯",
+  "descript" : "①iPhone Air最新发布，“实锤”国行版与中国联通合作；\n②此前在国内，智能手表、智能眼镜、平板电脑等系主要支持eSIM的终端；\n③多家A股厂商已入局eSIM，且该业务已为相关公司带来利润。",
+  "link" : "https://www.cls.cn/detail/2140461",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20387
+}, {
+  "id" : "news_150",
+  "name" : "柬埔寨拟采购20架C909",
+  "type" : "资讯",
+  "descript" : "①柬埔寨国家航空与中国商飞在郑州签署合作谅解备忘录，拟采购20架C909飞机，其中10架为确认订单，10架为意向订单。\n②双方将围绕飞机引进、运营保障、产业培育等开展密切协作。",
+  "link" : "https://www.cls.cn/detail/2140076",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47482
+}, {
+  "id" : "news_151",
+  "name" : "招标采购也存泄密风险 国安部门重要提示",
+  "type" : "资讯",
+  "descript" : "①招标采购信息虽普通，但用途敏感，易被境外间谍情报机关和反华敌对势力关注，可能泄露国家战略部署、政策走向等信息；\n②部分机关、企事业单位保密意识薄弱，管理措施不严，导致招标采购信息被不当公开，存在失泄密风险。",
+  "link" : "https://www.cls.cn/detail/2140425",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 14961
+}, {
+  "id" : "news_152",
+  "name" : "OpenAI否认因重组遇阻而考虑将总部迁出加州",
+  "type" : "资讯",
+  "descript" : "①据消息人士称，由于OpenAI转型为营利公司的计划面临政治阻力，该公司高管已讨论过将总部迁出加州的可能性；\n②不过，OpenAI方面表示，公司没有离开加州的计划。",
+  "link" : "https://www.cls.cn/detail/2139986",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 18047
+}, {
+  "id" : "news_153",
+  "name" : "苹果秋季发布会直击：最薄iPhone问世，eSIM成焦点",
+  "type" : "资讯",
+  "descript" : "①苹果举办秋季新品发布会，发布了AirPods Pro、三款Apple Watch及全新的iPhone 17系列。\n②主打纤薄的iPhone Air机身薄至5.6毫米，是迄今最薄的iPhone，官网称该机型仅可通过eSIM激活。",
+  "link" : "https://www.cls.cn/detail/2140334",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47813
+}, {
+  "id" : "news_154",
+  "name" : "科创板晚报|寒武纪定增申请获证监会同意注册批复 聚和材料拟3.5亿元收购SKE旗下Blank Mask事业部",
+  "type" : "资讯",
+  "descript" : "①工信部：正在研究人工智能+制造专项行动实施方案；\n②杭州：到2027年全市人工智能终端产业规模力争达到3000亿元；\n③多家科创板创新药企重要研究入选WCLC口头报告。",
+  "link" : "https://www.cls.cn/detail/2140211",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 44555
+}, {
+  "id" : "news_155",
+  "name" : "瑞典音乐版权组织与AI企业签署“全球首例”授权协议",
+  "type" : "资讯",
+  "descript" : "①瑞典表演权协会(STIM)与AI初创公司Songfox签署全球首例版权许可框架协议，覆盖10万名词曲作者及音乐出版商；\n②协议要求Songfox采用第三方溯源技术Sureel，将AI生成作品与原始人类创作实时比对，向权利人拆分许可费与收入分成。",
+  "link" : "https://www.cls.cn/detail/2140258",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 44767
+}, {
+  "id" : "news_156",
+  "name" : "云业务狂暴增长预期点燃市场激情 甲骨文股价盘后暴涨超20%",
+  "type" : "资讯",
+  "descript" : "①甲骨文2026财年Q1营收149.3亿美元、每股收益1.47美元，均略低于市场预期，但云基础设施收入同比大增55%，并预计未来5年将从103亿美元扩张至1440亿美元。\n②公司披露未履约义务高达4550亿美元，同比激增359%。",
+  "link" : "https://www.cls.cn/detail/2140375",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6866
+}, {
+  "id" : "news_157",
+  "name" : "比肩华为、比亚迪？奔驰首秀闪充技术  “兆瓦充电”时代或已至",
+  "type" : "资讯",
+  "descript" : "①AMG GT XX概念车在兆瓦级充电测试中实现了1041千瓦的最大充电功率，约2.5分钟的时间内可持续达成1兆瓦充电功率；\n②华为在兆瓦超充方面取得最新进展——“四川元启星光重卡兆瓦超充站”在四川省绵阳市北川羌族自治县投运。",
+  "link" : "https://www.cls.cn/detail/2139983",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21871
+}, {
+  "id" : "news_158",
+  "name" : "陆家嘴金融沙龙第26期圆桌对话，共探“孵投融合”之道",
+  "type" : "资讯",
+  "descript" : "9月6日，陆家嘴金融沙龙第26期在上海浦东成功举办，行业对话主题为《从‘孵’到‘投’的融合之道》。",
+  "link" : "https://www.cls.cn/detail/2140174",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32029
+}, {
+  "id" : "news_159",
+  "name" : "京东“拉来”锦江酒店破局外卖 七鲜小厨进驻酒店",
+  "type" : "资讯",
+  "descript" : "①双方首批七鲜小厨合作试点，将于10月起在北京部分锦江之星、白玉兰、7天等品牌酒店陆续与消费者见面。\n②未来三年，七鲜小厨将在全国范围内开出1万家门店。",
+  "link" : "https://www.cls.cn/detail/2140243",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 12254
+}, {
+  "id" : "news_160",
+  "name" : "京东养车诉途虎不正当竞争 汽车后市场迎大厂搅局",
+  "type" : "资讯",
+  "descript" : "①京东养车已向法院提起诉讼，起诉途虎养车不正当竞争，目前法院已经受理。此前，途虎曾对京东养车发起诉讼，认为京东养车推出的震虎价活动影响商誉，要求赔偿500万元，起诉案由为不正当竞争。\n②这场你来我往的诉讼纠纷背后，是万亿级汽车后市场的厮杀。字节、滴滴等也纷纷切入这一市场。",
+  "link" : "https://www.cls.cn/detail/2140195",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47904
+}, {
+  "id" : "news_161",
+  "name" : "新世纪评级被罚66.5万，以承诺低收费手段招揽业务",
+  "type" : "资讯",
+  "descript" : "①上海新世纪资信评估投资服务有限公司因违反不得以承诺低收费手段招揽业务管理规定被罚；\n②罚款金额66.5万。",
+  "link" : "https://www.cls.cn/detail/2139327",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47324
+}, {
+  "id" : "news_162",
+  "name" : "公募销售新规对银行理财影响几何？理财配置基金意愿或下降",
+  "type" : "资讯",
+  "descript" : "《征求意见稿》赎回费率设置可能对银行理财申赎便利性产生约束，进而导致理财配置意愿下降，同时，预估也会产生由传统纯债基金、二级债基等产品向ETF、同业存单基金等品种迁移的结构性变化。",
+  "link" : "https://www.cls.cn/detail/2139693",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39640
+}, {
+  "id" : "news_163",
+  "name" : "中国银行：全力配合对林景臻的纪律审查和监察调查",
+  "type" : "资讯",
+  "descript" : "①9月9日，中国银行党委召开会议，传达中央纪委国家监委对林景臻涉嫌严重违纪违法进行纪律审查和监察调查的决定。 \n②会议强调，要坚决拥护党中央决定，全力配合对林景臻的纪律审查和监察调查，从中深刻汲取教训，坚定不移把中国银行全面从严治党向纵深推进。",
+  "link" : "https://www.cls.cn/detail/2140124",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 7332
+}, {
+  "id" : "news_164",
+  "name" : "国家统计局：8月CPI同比下降0.4% PPI同比降幅收窄",
+  "type" : "资讯",
+  "descript" : "①8月份，全国居民消费价格同比下降0.4%，环比持平；\n②8月份，全国工业生产者出厂价格同比下降2.9%，环比由下降0.2%转为持平；\n③官方解读：2025年8月份核心CPI继续回升，PPI同比降幅收窄。",
+  "link" : "https://www.cls.cn/detail/2140435",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11839
+}, {
+  "id" : "news_165",
+  "name" : "8月城投债取消发行规模超300亿，环比激增187%，净融资连续6个月承压",
+  "type" : "资讯",
+  "descript" : "①8月合计49家城投平台因债市波动较大取消或推迟发行，总规模达到348.19亿元。\n②3-5年中高等级城投债仍存在凸点具备骑乘价值，对权益上涨敏感度较低，更易走出独立行情。",
+  "link" : "https://www.cls.cn/detail/2139819",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13000
+}, {
+  "id" : "news_166",
+  "name" : "三大AMC全面迈入“中央汇金时代”，聚焦三大核心领域化解风险",
+  "type" : "资讯",
+  "descript" : "①在核心的不良资产经营领域，中国信达的“国家队”作用仍较为凸显，其上半年新增收购不良债权资产265.81亿元，同比激增47.56%。\n②AMC将聚焦房地产企业信用风险、地方政府融资平台债务风险、中小商业银行不良资产三大风险。\n③三大AMC的中期业绩，呈现显著分化态势。",
+  "link" : "https://www.cls.cn/detail/2138840",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1690
+}, {
+  "id" : "news_167",
+  "name" : "债市波动加剧，但同业存单呈现“低波”，本周又迎1.2万亿到期高峰",
+  "type" : "资讯",
+  "descript" : "①在上周到期压力不大的情况下，存单净融资环比上升，或指向季末存单发行意愿依旧较为积极。\n②近三个月外资持续减持同业存单，或与人民币升值，套利需求减少有关。",
+  "link" : "https://www.cls.cn/detail/2139597",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27885
+}, {
+  "id" : "news_168",
+  "name" : "“我与浦东共成长”系列报道 | 浦发银行助力科技企业发展",
+  "type" : "资讯",
+  "descript" : "浦发银行的实践正是书写中央金融工作会议提出的“五篇金融大文章”的生动注脚。以科技金融突破融资瓶颈，让金融“活水”真正滋养实体经济，银行正在以前所未有的深度和温度，助力科技创新跨越“发展之阶”，见证更多硬科技企业绽放光芒。",
+  "link" : "https://www.cls.cn/detail/2139354",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20811
+}, {
+  "id" : "news_169",
+  "name" : "信托预登记新规前“抢跑”，上月非标政信项目发行数量857款，环比增长近两成",
+  "type" : "资讯",
+  "descript" : "①9月1日起，中信登执行新的信托预登记审查标准，不再接受底层为单一融资方的信托预登记，导致8月份信托公司提前发行产品。\n②标品信托发行平稳，混合类标品环比大幅增长九成。",
+  "link" : "https://www.cls.cn/detail/2139620",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39731
+}, {
+  "id" : "news_170",
+  "name" : "摇身一变成“衰退指标”？华尔街惶惶：美债收益率是不是跌太快了",
+  "type" : "资讯",
+  "descript" : "①犹记得上周初，全球市场还在为30年期美债收益率可能升破5%而惶惶不安。\n②然而，才过去了短短一周，债市的焦点却似乎迅速从一个极端转向了另一个极端：美债收益率是不是跌太快了？",
+  "link" : "https://www.cls.cn/detail/2139244",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 22978
+}, {
+  "id" : "news_171",
+  "name" : "债市收盘|公募费率新规引发债市波动，10年期国债收益率一度上行至1.8%",
+  "type" : "资讯",
+  "descript" : "业内人士表示，新规下短债基金、中长期利率债基金等均会受到冲击，而场内的ETF等指数化投资或将成为最大受益者。",
+  "link" : "https://www.cls.cn/detail/2139877",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 39664
+}, {
+  "id" : "news_172",
+  "name" : "“孵投联动”如何赋能新质生产力？陆家嘴金融沙龙第26期热议孵化器价值",
+  "type" : "资讯",
+  "descript" : "9月6日，陆家嘴金融沙龙第26期在上海浦东圆满举办，本次活动以“孵化希望・投资未来：孕育新质生产力的资本摇篮”为主题。",
+  "link" : "https://www.cls.cn/detail/2139057",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 31818
+}, {
+  "id" : "news_173",
+  "name" : "基金费用征求意见稿引债市调整，后市聚焦股债效应 |机构要评",
+  "type" : "资讯",
+  "descript" : "基金费用新规扰动，股债跷跷板主导，多机构研判短期需谨慎。",
+  "link" : "https://www.cls.cn/detail/2139490",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 25000
+}, {
+  "id" : "news_174",
+  "name" : "债市公告精选 | 遵义投资集团涉违规行为遭上交所通报批评；方圆地产披露3起重大诉讼进展",
+  "type" : "资讯",
+  "descript" : "尽享债市重要公告，把握机会，有效避雷。",
+  "link" : "https://www.cls.cn/detail/2139384",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 41586
+}, {
+  "id" : "news_175",
+  "name" : "民生金租荣获全国融资租赁创新案例大赛“杰出业务创新案例奖”",
+  "type" : "资讯",
+  "descript" : "近日，2025年（第五届）全国融资租赁创新案例大赛暨 “金锤杯” 融资租赁创新职业技能大赛决赛在天津圆满落幕。民生金租凭借 “跨境通产品助力中国设备出海” 项目，成功斩获 “杰出业务创新案例奖”。",
+  "link" : "https://www.cls.cn/detail/2139308",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 3748
+}, {
+  "id" : "news_176",
+  "name" : "融资转向！澳门MOX债券规模突破万亿澳门元，中资离岸城投债占比超8成",
+  "type" : "资讯",
+  "descript" : "①截至2025年8月末，中华（澳门）金融资产交易股份有限公司（MOX）发行上市的债券总规模达10,049.20亿澳门元.\n②2025年1-8月，MOX共承接245只债券上市业务，中资离岸城投债在MOX挂牌上市的占比已升至82%。\n③澳门债券市场正逐渐成为城投企业融资的重要渠道。",
+  "link" : "https://www.cls.cn/detail/2139600",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 46088
+}, {
+  "id" : "news_177",
+  "name" : "中国人民银行与欧央行、瑞士央行、匈牙利央行续签双边本币互换协议",
+  "type" : "资讯",
+  "descript" : "①中欧双边本币互换规模为3500亿元人民币/450亿欧元，协议有效期三年。 \n②这些协议的续签有助于深化双边货币金融合作，促进中国与相关经济体的双边贸易和投资便利化，维护金融市场稳定。",
+  "link" : "https://www.cls.cn/detail/2139011",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17523
+}, {
+  "id" : "news_178",
+  "name" : "财联社债市早参9月9日 | 公募销售费用新规后首个交易日，债市受冲击，30年国债收益率上行逾2BP",
+  "type" : "资讯",
+  "descript" : "把握债市政策脉搏，综览每日市场动向，尽在财联社《债市早参》。",
+  "link" : "https://www.cls.cn/detail/2139236",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 23942
+}, {
+  "id" : "news_179",
+  "name" : "券商半年报“AI”高频出现188次，AI不再是优化工具，是驱动创新核心变量",
+  "type" : "资讯",
+  "descript" : "①单“AI”一词在50家上市券商2025上半年报中共出现188次；\n②根据券商半年报AI相关内容，当前行业AI布局呈现五大特点。",
+  "link" : "https://www.cls.cn/detail/2135347",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 19885
+}, {
+  "id" : "news_180",
+  "name" : "2025年公募基金半年报出炉 国泰海通排名取得历史性突破",
+  "type" : "资讯",
+  "descript" : "①2025年，国泰海通在证券交易总额、债券和回购交易方面排名第一，是唯一一家证券交易金额突破10万亿元的券商。\n②租用交易单元模式佣金第一，国泰海通上半年公募席位佣金收入2.51亿，占比6.41%，排名第一。",
+  "link" : "https://www.cls.cn/detail/2137331",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 25158
+}, {
+  "id" : "news_181",
+  "name" : "中信证券：AI对计算机板块的增长贡献将进一步提升 看好新一轮行情机遇",
+  "type" : "资讯",
+  "descript" : "2025年将会是新一轮信创招标加速落地的一年，上半年相关公司收入保持高增长。",
+  "link" : "https://www.cls.cn/detail/2138055",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 10102
+}, {
+  "id" : "news_182",
+  "name" : "券商资管半年考（上）：规模与净收入小幅下滑，16家券商逆势增长",
+  "type" : "资讯",
+  "descript" : "①150家证券公司今年上半年资管业务净收入同比下滑5.57亿元；\n②42家上市券商上半年实现资管业务净收入211.95亿元，同比下滑2.72%；\n③16家券商资管业务净收入逆势上涨，排名前十的券商收入合计166.5亿元，占比78.56%。",
+  "link" : "https://www.cls.cn/detail/2138170",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 15617
+}, {
+  "id" : "news_183",
+  "name" : "哪些券商自营一骑绝尘？40家增速超50%，14家收入翻倍",
+  "type" : "资讯",
+  "descript" : "①中信证券以190.52亿元的自营收入遥遥领先，超过第2、3名收入之和，也是第10名的4.6倍；\n②14家券商上半年自营净收入接近或超过一倍以上，包括中航、长江、国联民生、恒泰、长城国瑞、华福、华西等。",
+  "link" : "https://www.cls.cn/detail/2135603",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 48440
+}, {
+  "id" : "news_184",
+  "name" : "瑞银证券A股策略会：慢牛行情延续，成长风格引领布局方向",
+  "type" : "资讯",
+  "descript" : "①孟磊指出，个人投资者，目前并未出现大规模入市的迹象，市场情绪远未达到“过热”水平；\n②预计全年A股利润增速大约在6%左右，相比去年的低单位数增长会有所改善。",
+  "link" : "https://www.cls.cn/detail/2135671",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 2717
+}, {
+  "id" : "news_185",
+  "name" : "多家券商保证金产品短暂下调管理费率，高费率模式仍待考验",
+  "type" : "资讯",
+  "descript" : "①9月以来宣布调整管理费率的保证金产品明显增加，但多数下调时间较短；\n②公告显示，收益率下行或成为管理费率调整的主因；\n③上半年券商保证金产品规模持续增长，单只产品最大规模达到959亿元。",
+  "link" : "https://www.cls.cn/detail/2136423",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1588
+}, {
+  "id" : "news_186",
+  "name" : "新“国九条”后首家受理IPO过会，高比例关联交易被重点关注",
+  "type" : "资讯",
+  "descript" : "①新“国九条”发布后首家被受理IPO企业成功过会，由中信建投保荐；\n②未来主营业务收入构成、毛利率的变动趋势及上述因素对期后业绩稳定性为上会重点关注问题。",
+  "link" : "https://www.cls.cn/detail/2138236",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 49021
+}, {
+  "id" : "news_187",
+  "name" : "易会满被调查，涉嫌严重违法违纪，任证监会主席5年多",
+  "type" : "资讯",
+  "descript" : "①易会满将近40年的金融领域工作生涯，主要分为工行、证监会两个阶段，曾主导推进了资本市场多项重大改革；\n②证监会多次提到，坚决打好证监会系统反腐败斗争攻坚战、持久战、总体战；\n③资本市场持续强化监管执法，证监系统的反腐力度正持续加大。",
+  "link" : "https://www.cls.cn/detail/2137500",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11040
+}, {
+  "id" : "news_188",
+  "name" : "证券业做好金融“五篇大文章”评价25条出炉，哪些券商有望得分靠前？",
+  "type" : "资讯",
+  "descript" : "①券商在科技金融领域资源投入相对较大、评价指标相对丰富，因此赋分相对较高；\n②考虑到券商业务集中度较高的现状，本次指标设计鼓励行业机构差异化发展、特色化经营；\n③中证协后续将总结经验，不断完善指标体系和评价工作。",
+  "link" : "https://www.cls.cn/detail/2137229",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1446
+}, {
+  "id" : "news_189",
+  "name" : "券商晨会精华：第三季度有望迎来医疗器械板块阶段性拐点",
+  "type" : "资讯",
+  "descript" : "在今天的券商晨会上，广发证券指出，半导体板块利润环比提升明显，中长期趋势向好；华泰证券表示，低估值叠加利润走扩预期，看好下半年电解铝板块表现；中泰证券认为，第三季度有望迎来医疗器械板块阶段性拐点。",
+  "link" : "https://www.cls.cn/detail/2136239",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 35334
+}, {
+  "id" : "news_190",
+  "name" : "券商晨会精华：第二季度长线资金对低位内需品种关注度开始回升",
+  "type" : "资讯",
+  "descript" : "在今天的券商晨会上，华泰证券指出，第二季度长线资金对低位内需品种关注度开始回升；国金证券表示，展望后市，弱美元环境仍支撑人民币升值；天风证券认为，黄金冲上3600美元，年内还有上行空间。",
+  "link" : "https://www.cls.cn/detail/2135125",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13025
+}, {
+  "id" : "news_191",
+  "name" : "投顾业务正成券商收入增长点，上半年全盘点，哪些券商高增长？",
+  "type" : "资讯",
+  "descript" : "①上半年，150家券商投资咨询业务净收入达到32.41亿元，同比增长25%；\n②有可比数据的32家券商的收入同比正增长，太平洋、南京、方正增速领先；\n③头部券商的领先优势持续凸显，中小券商该如何找到差异化路径实现突破？",
+  "link" : "https://www.cls.cn/detail/2137573",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47192
+}, {
+  "id" : "news_192",
+  "name" : "精彩观点分享 | 国泰海通证券第15届消费品年会",
+  "type" : "资讯",
+  "descript" : "9月2日至3日，国泰海通证券第15届消费品年会在上海成功举行，本次会议以“新消费时代”为主题，汇聚产业专家、上市公司高管、投资机构等，共同探讨新消费时代的热门议题。",
+  "link" : "https://www.cls.cn/detail/2139474",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 22992
+}, {
+  "id" : "news_193",
+  "name" : "券商晨会精华：未来中期看，全球流动性对金价有一定支撑",
+  "type" : "资讯",
+  "descript" : "在今天的券商晨会上，中信建投指出，未来中期看，全球流动性对金价有一定支撑；中金公司表示，运动相机增长势头持续，国产品牌厂商或引领行业发展；华泰证券提出，看好火电三季度发电量同比增速环比修复带来盈利能力提升。",
+  "link" : "https://www.cls.cn/detail/2139208",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 27493
+}, {
+  "id" : "news_194",
+  "name" : "从券商到公募，超级老将到龄退休，朱永强卸任信达澳亚总经理",
+  "type" : "资讯",
+  "descript" : "①信达澳亚基金总经理朱永强到龄退休，副总经理方敬代任其职；\n②公募行业高管退休潮持续，年内已有十余名元老级高管到龄离任。",
+  "link" : "https://www.cls.cn/detail/2137501",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 38682
+}, {
+  "id" : "news_195",
+  "name" : "中资券商领跑港股IPO，年内募资是上年同期5.7倍， A+H占七成，递表A股还有51家",
+  "type" : "资讯",
+  "descript" : "①上半年共有31家券商参与港股IPO项目，中资券商主导；\n②前8个月，58家企业完成港股IPO，募资1341.25亿港元，为去年同期5.7倍；\n③上市的新股中超2/3新股首日收涨，医药保健板块表现最佳；\n④截至8月29日还有250家企业正在排队上市。",
+  "link" : "https://www.cls.cn/detail/2137572",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11605
+}, {
+  "id" : "news_196",
+  "name" : "退休的券商分公司老总被罚，代客交易亏近300万，还有两券商违规揽客",
+  "type" : "资讯",
+  "descript" : "①财达证券海南分公司前从业人员敖义被处15万元罚款，敖义私下接受客户委托买卖证券，亏损271.66万元；\n②中山证券合肥分公司及负责人黄莉被责令改正、监管谈话，分公司违规委托第三方投资者招揽等；\n③西南证券大连分公司被采取出具警示函监管措施，分公司违规委托银行工作人员客户招揽等。",
+  "link" : "https://www.cls.cn/detail/2137490",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 22233
+}, {
+  "id" : "news_197",
+  "name" : "A股调整接近尾声？投资主线有哪些？十大券商策略来了",
+  "type" : "资讯",
+  "descript" : "十大券商最新策略观点精要+看好板块汇总梳理。",
+  "link" : "https://www.cls.cn/detail/2137824",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 43816
+}, {
+  "id" : "news_198",
+  "name" : "券商北交所差异化布局竞速！多元布局，四类业务齐发力",
+  "type" : "资讯",
+  "descript" : "①券商在北交所差异化竞争上并不局限于投行业务，正延伸至做市、研究、另类投资等多个业务领域；\n②从投行业务来看，券商积极加码北交所业务规模与项目储备，部分中小型券商“特色化”打法形成亮点，财务顾问业务延伸至新三板、深耕区域市场、改革投行架构等。",
+  "link" : "https://www.cls.cn/detail/2137809",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 7137
+}, {
+  "id" : "news_199",
+  "name" : "深市公司半年业绩亮眼：总营收超10万亿，净利近6000亿，总分红同比大增50%",
+  "type" : "资讯",
+  "descript" : "①深市2873家公司上半年营收超10万亿元，净利润5955亿元，同比增长3.64%、8.88%；\n②战略新兴产业营收增14.73%，研发投入同比增长22.36%；\n③386家公司中期分红886亿元，回购计划230单提振市场信心。",
+  "link" : "https://www.cls.cn/detail/2134868",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47813
+}, {
+  "id" : "news_200",
+  "name" : "上半年哪些券商两融业务超车？头部稳健，中小快跑，47家两融利息收入正增长",
+  "type" : "资讯",
+  "descript" : "①2025上半年，49家券商两融利息收入共432亿元同比增超10%，47家正增长；\n②业务呈分化格局，头部券商稳健增长，部分中小券商借精准策略 “弯道超车”；\n③行业风控良好，维持担保比例高，下半年券商拟以差异化、科技赋能应对挑战。",
+  "link" : "https://www.cls.cn/detail/2137718",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11651
+}, {
+  "id" : "news_201",
+  "name" : "民生证券：牛市或处中继再吸筹阶段",
+  "type" : "资讯",
+  "descript" : "站在当下市场未来走势该如何判断？寒武纪大幅上涨后其估值反映了什么样的预期？",
+  "link" : "https://www.cls.cn/detail/2137669",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 44950
+}, {
+  "id" : "news_202",
+  "name" : "券商资管半年考（下）：受托管理规模格局分化，头部稳固、中小有升有降",
+  "type" : "资讯",
+  "descript" : "①上半年32家上市券商受托资产管理规模7.31万亿，同比增长4.65%；\n②整体上看，强者恒强，中信、国泰海通、华泰受托规模位居行业前三；\n③多家券商已明确未来资管业务打法，为转型突围布局。",
+  "link" : "https://www.cls.cn/detail/2138161",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 16587
+}, {
+  "id" : "news_203",
+  "name" : "太安堂重大资产出售旧案牵出两罚单，中介机构多项失职",
+  "type" : "资讯",
+  "descript" : "①粤开证券及杨灿熙、张钦洽，中威正信及刘小军、吴彩格，均被采取出具警示函措施；\n②粤开证券对标的公司收入与利润异常关注不足，也未审慎核查引用的审计、评估意见；\n③中威正信存在四大违规：财务数据核查缺位、存货盘点随意、未审慎核查审计报告、工作底稿出现多处低级错误。",
+  "link" : "https://www.cls.cn/detail/2139031",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32517
+}, {
+  "id" : "news_204",
+  "name" : "券商晨会精华：巨头引领、发布会催化临近，全面看好端侧AI",
+  "type" : "资讯",
+  "descript" : "在今天的券商晨会上，华泰证券指出，行业短周期继续分化，TMT、先进制造主动补库有望延续；中信建投表示，持续看多锂电、储能；天风证券认为，政策加持、巨头引领、发布会催化临近，全面看好端侧AI。",
+  "link" : "https://www.cls.cn/detail/2137927",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 11566
+}, {
+  "id" : "news_205",
+  "name" : "国新办发布会“吹风”体育消费 户外运动产业增长“最强劲”",
+  "type" : "资讯",
+  "descript" : "①据相关研究机构预测，到“十四五”末，我国户外运动产业总规模有望突破3万亿元，是体育产业中增长最强劲的领域之一；\n②户外运动兼具社交属性，户外服饰成为多家机构的首选关注点。",
+  "link" : "https://www.cls.cn/detail/2139827",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 38367
+}, {
+  "id" : "news_206",
+  "name" : "【明日主题前瞻】苹果据悉今年将量产1亿部iPhone17系列手机",
+  "type" : "资讯",
+  "descript" : "①苹果据悉今年将量产1亿部iPhone17系列手机；②小鹏汇天“陆地航母”飞行汽车计划于2026下半年正式交付；③回声星通信将以约170亿美元的价格向SpaceX出售频谱许可。",
+  "link" : "https://www.cls.cn/detail/2139973",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 9899
+}, {
+  "id" : "news_207",
+  "name" : "【数据看盘】机构活跃度大幅降低 多家一线游资抢筹晓程科技",
+  "type" : "资讯",
+  "descript" : "①龙虎榜机构活跃度明显下降，买入个股数量和净买入规模大幅减少。\n②晓程科技获三家一线游资席位合计买入超1.4亿。",
+  "link" : "https://www.cls.cn/detail/2139993",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 26259
+}, {
+  "id" : "news_208",
+  "name" : "私募也加大配置ETF，高频重仓ETF浮出水面",
+  "type" : "资讯",
+  "descript" : "①私募持有年内上市ETF达24.48亿份；\n②中型私募与主观策略配置ETF更积极；\n③科创板ETF出现在私募持仓名单中43次，自由现金流21次。",
+  "link" : "https://www.cls.cn/detail/2139387",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 5013
+}, {
+  "id" : "news_209",
+  "name" : "固态电池又一重磅会议即将召开 板块有望迎来持续催化",
+  "type" : "资讯",
+  "descript" : "①据媒体报道，2025年9月23-24日，第七届高比能固态电池关键材料技术大会将于苏州举办。\n②据中金公司研报测算，2030年全球固态电池出货量将达到808GWh，预计全固态电池有望于2027年实现技术定型和小规模量产，2030年实现商业化量产。",
+  "link" : "https://www.cls.cn/detail/2139192",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 42485
+}, {
+  "id" : "news_210",
+  "name" : "【早报】iPhone17来了；卡塔尔首都遭以色列袭击",
+  "type" : "资讯",
+  "descript" : "①苹果公司召开秋季发布会，推出iPhone 17系列手机②市场监管总局已约谈主要外卖平台，抵制恶性补贴③宁德时代召开枧下窝锂矿复产会议，预计很快复产④柬埔寨拟采购20架C909⑤卡塔尔首都多哈遭以色列袭击。",
+  "link" : "https://www.cls.cn/detail/2140402",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 7405
+}, {
+  "id" : "news_211",
+  "name" : "国产创新药迈入收获期 荣昌生物全球首创药获CDE受理 股价创历史新高",
+  "type" : "资讯",
+  "descript" : "①荣昌生物宣布，泰它西普成为干燥综合征领域全球首个申请上市的生物药。\n②今年6月，荣昌生物与美国Vor Bio公司就泰它西普签署合作协议，金额高达41亿美元。\n③招银国际认为，受益于创新药出海交易、国内集采政策优化等积极因素推动，医药行业有望持续上涨。",
+  "link" : "https://www.cls.cn/detail/2139920",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17055
+}, {
+  "id" : "news_212",
+  "name" : "董事长向明星女友透露内幕消息，双双被刑拘！被带走画面曝光",
+  "type" : "资讯",
+  "descript" : "①证监会将一起内幕交易案件移交北京市公安局，涉案公司董事长及其明星女友因涉嫌内幕交易被刑事拘留；\n②董事长在知晓公司重大资产重组内幕消息后，向女友透露信息试图获利，但重组失败导致亏损500万元。",
+  "link" : "https://www.cls.cn/detail/2139562",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6096
+}, {
+  "id" : "news_213",
+  "name" : "【每日收评】单日缩量超3000亿！三大指数全线下挫，全市场超4000股收绿",
+  "type" : "资讯",
+  "descript" : "①市场全天震荡调整，三大指数集体收跌，全市场超4000股飘绿，单日缩量超3000亿；\n②盘面上，黄金板块逆势走强，固态电池概念股持续活跃，地产、影视院线等同样表现活跃；\n③高位科技方向的补跌仍在延续，中芯国际今日复牌跌超10%，胜宏科技、工业富联等算力硬件股再度跌超5%。",
+  "link" : "https://www.cls.cn/detail/2139854",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 41692
+}, {
+  "id" : "news_214",
+  "name" : "欧盟发布54亿欧元核聚变投资计划 上游装备、材料等环节有望需求放量",
+  "type" : "资讯",
+  "descript" : "机构研报指出，近日，欧盟通过2028-2034年长期预算战略提案，54亿欧元直接用于聚变能源开发，重点支持ITER国际热核聚变实验堆（40亿欧元）和聚变研究（14亿欧元）等关键项目。",
+  "link" : "https://www.cls.cn/detail/2139197",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 13513
+}, {
+  "id" : "news_215",
+  "name" : "光通信技术重大突破！微软团队顶刊发文：新型空芯光纤打破物理极限",
+  "type" : "资讯",
+  "descript" : "①微软团队研发的新型空芯光纤实现了有史以来最低的信号衰减水平；\n②光信号的传输介质从实心玻璃变成了空气、惰性气体或真空；\n③空芯光纤在时延敏感场景、大容量长距离传输场景、高功率特殊场景中应用广阔。",
+  "link" : "https://www.cls.cn/detail/2139351",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 5761
+}, {
+  "id" : "news_216",
+  "name" : "【VIP机会日报】黄金板块逆势拉升 栏目解读国际市场 提及焦点公司收获涨停",
+  "type" : "资讯",
+  "descript" : "①现货黄金价格创历史新高，栏目解读国际市场 提及焦点公司收获涨停；\n②电池板块持续活跃，栏目前瞻解读行业大会，相关公司2日最高涨超18%；\n③Optimus V3量产渐行渐近，产业人气公司逆势涨8.4%。",
+  "link" : "https://www.cls.cn/detail/2139895",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6850
+}, {
+  "id" : "news_217",
+  "name" : "市场热点百花齐放，固态电池概念强者恒强，机器人、卫星互联网获持续关注",
+  "type" : "资讯",
+  "descript" : "跟踪主线板块的整段生命周期",
+  "link" : "https://www.cls.cn/detail/2139302",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 28485
+}, {
+  "id" : "news_218",
+  "name" : "【焦点复盘】创业板指、科创50双双跌逾2%，TMT赛道持续承压，黄金、地产股逆势爆发",
+  "type" : "资讯",
+  "descript" : "①连板股晋级率跌破3成，但机器人概念人气股首开股份晋级5连板，10厘米个股抱团回暖，西部黄金、中国瑞林等高位人气股走出反包涨停； ②目前各大指数调整仍属周线级别上涨过快后的修正，但沪指短线能否转强仍取决于能否放量有效站稳10日均线上方。",
+  "link" : "https://www.cls.cn/detail/2139962",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17452
+}, {
+  "id" : "news_219",
+  "name" : "第26届中国光博会今日开幕 光模块行业景气度有望持续向上",
+  "type" : "资讯",
+  "descript" : "①第二十六届中国国际光电博览会(CIOE中国光博会)将于2025年9月10-12日在深圳国际会展中心举办。\n②甬兴证券看好由国内智算中心建设带来AIDC运营商、AI服务器、交换机、光模块、高速铜缆以及温控等环节的放量机会。",
+  "link" : "https://www.cls.cn/detail/2140420",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 44327
+}, {
+  "id" : "news_220",
+  "name" : "政策支持+牌照发放 卫星互联网产业商业化进程提速",
+  "type" : "资讯",
+  "descript" : "①中国移动正在申请卫星移动通信业务经营许可，为依法合规开展手机直连卫星业务奠定政策基础，目前该申请已进入审核流程。\n②国信证券李聪认为，政策支持与牌照发放带来商业化进程加速与产业生态重构，为中国卫星互联网产业的长期发展奠定了坚实基础。",
+  "link" : "https://www.cls.cn/detail/2140412",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 45202
+}, {
+  "id" : "news_221",
+  "name" : "【午报】三大指数缩量调整全线飘绿，黄金概念股逆势爆发，中芯国际复牌跌超8%",
+  "type" : "资讯",
+  "descript" : "①今日市场震荡调整，三大指数全线下跌，全市场超4000股飘绿，量能较之昨日大幅萎缩。其中黄金、固态电池板块逆势活跃，而半导体陷入调整，核心标的中芯国际复牌跌超8%；\n②个股层面，早盘涨停数量为40家，封板率为69%，连板股数量为7家，首开股份5连板。",
+  "link" : "https://www.cls.cn/detail/2139516",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 18449
+}, {
+  "id" : "news_222",
+  "name" : "资源紧张！萤石价格上涨 机构称产业链已进入长景气周期",
+  "type" : "资讯",
+  "descript" : "行业媒体报道，9月9日内蒙地区萤石市场行情价格上涨，目前97%萤石粉湿粉出厂含税价格主流报3100-3200元/吨，原料萤石矿资源仍显紧张，下游按需采购为主，后期萤石价格震荡上涨为主。",
+  "link" : "https://www.cls.cn/detail/2140424",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1870
+}, {
+  "id" : "news_223",
+  "name" : "农业科技创新大会将至，板块目前估值扫描，这些股频获机构调研",
+  "type" : "资讯",
+  "descript" : "2025世界农业科技创新大会（WAFI）将于10月12日至15日在北京举办。",
+  "link" : "https://www.cls.cn/detail/2140000",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 42442
+}, {
+  "id" : "news_224",
+  "name" : "沙特王子出任易达资本荣誉董事会成员 携手推动当地数字化转型",
+  "type" : "资讯",
+  "descript" : "①沙特哈立德王子将出任易达资本荣誉董事会成员，为双方合作奠定坚实基础；\n②易达资本与哈立德王子担任董事会主席的两家沙特创新公司——Walking Challenge和Tawkeel——正式签署战略合作，共同致力于推动沙特健康生活、数字金融等方面的革新。",
+  "link" : "https://www.cls.cn/detail/2139967",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 23372
+}, {
+  "id" : "news_225",
+  "name" : "空客全年交付目标面临挑战 能否达标取决于发动机供应",
+  "type" : "资讯",
+  "descript" : "①空客公司首席执行官Guillaume Faury表示，公司今年有望实现飞机交付目标，但取决于发动机供应，目前仍面临紧缺；\n②在8月份，空客交付了61架飞机，使得截至目前的总交付量达到434架。",
+  "link" : "https://www.cls.cn/detail/2140321",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 18838
+}, {
+  "id" : "news_226",
+  "name" : "特斯拉市值如何冲击8.5万亿美元？机器人与Robotaxi成关键",
+  "type" : "资讯",
+  "descript" : "①特斯拉上周公布了一项惊人的薪酬方案，若其CEO埃隆·马斯克带领公司实现8.5万亿美元的估值，他将获得1万亿美元的天价薪酬；\n②分析人士指出，在电动汽车市场已经放缓的背景下，特斯拉的发力空间集中在机器人和无人出租车（Robotaxi）这两大领域。",
+  "link" : "https://www.cls.cn/detail/2140141",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47116
+}, {
+  "id" : "news_227",
+  "name" : "美国经济增长已接近停滞？高盛警告： 至少要降息几次才能重振",
+  "type" : "资讯",
+  "descript" : "①高盛首席经济学家哈祖斯预计，美国经济增长已接近停滞，需多次降息才能重获动力，可能要到2026年经济才会出现起色；\n②哈祖斯预测美联储将在9月、10月和12月三次降息，明年可能还会再降息几次，以应对经济疲弱。",
+  "link" : "https://www.cls.cn/detail/2139991",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 29049
+}, {
+  "id" : "news_228",
+  "name" : "美股期指走高 重磅就业报告来袭 苹果新品发布在即 | 今夜看点",
+  "type" : "资讯",
+  "descript" : "①大众汽车：计划至2030年累计投资10亿欧元布局人工智能领域；\n②英美资源与泰克资源将进行合并；\n③ASML向Mistral AI注资13亿欧元，持有约11%股权。",
+  "link" : "https://www.cls.cn/detail/2140207",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20231
+}, {
+  "id" : "news_229",
+  "name" : "美能源部长质疑2050年净零排放计划：不切实际，注定要失败",
+  "type" : "资讯",
+  "descript" : "①美国能源部长克里斯·赖特猛烈抨击到2050年实现净零排放的计划，声称这一气候目标是“一场巨大的火车事故”，各国极有可能无法实现;\n②作为曾经的石油和天然气行业高管，赖特承认气候变化是一个“值得关注”的全球挑战，但同时批评了他所称的“气候危言耸听者”。",
+  "link" : "https://www.cls.cn/detail/2140293",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 22399
+}, {
+  "id" : "news_230",
+  "name" : "国际氢能委员会报告回击悲观论调：行业投资仍能年增50%",
+  "type" : "资讯",
+  "descript" : "①国际氢能委员会报告显示，过去一年里有350亿美元的新项目落地，自2020年以来，投资的年增长率超过50%；\n②尽管BP、壳牌等企业已放弃至少50个项目，但全球现已建成100万吨氢能产能，另有500万吨正在建设中。",
+  "link" : "https://www.cls.cn/detail/2140213",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 38984
+}, {
+  "id" : "news_231",
+  "name" : "年度非农岗位下修近百万，美联储还敢说“就业稳固”吗？",
+  "type" : "资讯",
+  "descript" : "①截至今年3月底的12个月里，美国经济实际新增的非农就业岗位较之前公布的数字少了91.1万个，平均每个月减少近7.6万个，这是最近10年最大的降幅；\n②数据修正为特朗普质疑劳工统计局数据提供了更多理由，美国劳工部长表示将继续致力于推进统计方法现代化。",
+  "link" : "https://www.cls.cn/detail/2140301",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 24202
+}, {
+  "id" : "news_232",
+  "name" : "第16届慧眼中国环球论坛—在全球变局中应对挑战、把握新机遇",
+  "type" : "资讯",
+  "descript" : "第16届慧眼中国环球论坛将于2025年9月19日在新加坡滨海湾金沙会展中心举行。",
+  "link" : "https://www.cls.cn/detail/2140630",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32802
+}, {
+  "id" : "news_233",
+  "name" : "美联储降息恐引发投机性上涨！分析师警告美股短期内恐存在风险",
+  "type" : "资讯",
+  "descript" : "①华尔街预计美联储下周会议降息，但有分析师担忧，降息对美股短期行情存在干扰；\n②有策略师警告，降息可能引发美股投机性上涨，而非基本面驱动的上涨；\n③另一方面，美联储还面临通胀压力，就业问题和通胀矛盾将使美股走势波动，但有观点认为回调可能为强劲增长铺路。",
+  "link" : "https://www.cls.cn/detail/2140702",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 12444
+}, {
+  "id" : "news_234",
+  "name" : "【午报】三大指数全线收红，算力硬件股集体反弹，胜宏科技再创历史新高",
+  "type" : "资讯",
+  "descript" : "①今日早盘市场震荡分化，三大指数虽冲高回落但仍全线收红，其中算力硬件股全线修复，工业富联等个股涨停，胜宏科技再创历史新高；\n②个股层面，早盘涨停数量为34家，封板率为63%，连板股数量为7家，首开股份6连板。",
+  "link" : "https://www.cls.cn/detail/2140745",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 36864
+}, {
+  "id" : "news_235",
+  "name" : "宁德时代锂矿复产预期引发锂电股走低 天齐锂业跌近8%",
+  "type" : "资讯",
+  "descript" : "①机构如何看待宁德时代锂矿复产？\n②枧下窝锂矿产为何引发市场关注？",
+  "link" : "https://www.cls.cn/detail/2140697",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 47179
+}, {
+  "id" : "news_236",
+  "name" : "马斯克Neuralink：全球已有12人植入脑机芯片 累计使用超过1.5万小时",
+  "type" : "资讯",
+  "descript" : "①Neuralink公司宣布全球已有12人接受其研发的脑机芯片N1植入试验，累计使用时长超15000小时；\n②这项更新标志着自6月份以来的进展，当时报道有7名患者已接受了植入试验；\n③在该芯片的作用下，肌萎缩侧索硬化症（ALS）患者可以玩视频游戏、设计3D零件、交流等。",
+  "link" : "https://www.cls.cn/detail/2140712",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 32708
+}, {
+  "id" : "news_237",
+  "name" : "本地生活“战火”再升级！阿里借高德切入大众点评业务 剑指美团第二战场",
+  "type" : "资讯",
+  "descript" : "①与日均订单峰值方面，淘宝闪购达到 1.2 亿单。 值得注意的是，闪购拉动淘宝8月DAU增长20%。\n②与传统点评业务不同，高德扫街榜在评价体系构建上融入了阿里系的优势。除了基础的用户评价数据，还引入了支付宝的信用分作为辅助评价依据。",
+  "link" : "https://www.cls.cn/detail/2140685",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 31512
+}, {
+  "id" : "news_238",
+  "name" : "券商国际业务收入贡献度新排名，投行堪称排头兵，财富管理是新引擎",
+  "type" : "资讯",
+  "descript" : "①2025年半年报数据显示，16家券商14家实现国际业务收入增长，12家国际业务收入占比提升；\n②券商国际业务在投行、财富管理等领域表现亮眼，并加速布局亚太及“一带一路”市场；\n③下半年将聚焦投行业务与财富管理，强调境内外协同与风控，头部与中小券商各有差异化布局。",
+  "link" : "https://www.cls.cn/detail/2140757",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 12089
+}, {
+  "id" : "news_239",
+  "name" : "苹果“史上最薄” iPhone登场，分析师怎么看？一文了解",
+  "type" : "资讯",
+  "descript" : "①苹果最新发布的iPhone 17 Air被视作其8年来最大设计革新，但为追求超薄机身在电池容量、摄像头配置上有所妥协；\n②分析师预测iPhone Air有望刺激大量用户升级，提振苹果假日购物季销量，并帮助苹果在中国市场赢回客户。",
+  "link" : "https://www.cls.cn/detail/2140688",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 21571
+}, {
+  "id" : "news_240",
+  "name" : "港股早报：美股走强中国金龙指数涨1.48% 苹果推出最薄iPhone",
+  "type" : "资讯",
+  "descript" : "①以军袭击在卡塔尔的哈马斯高层，原油、黄金短线冲高。\n②美国年度非农岗位下修近百万。\n③美国三大股指均创收盘历史新高；纳斯达克中国金龙指数收涨1.48%。\n④EIA略微上调今年油价预期，明年价格预期维持不变。\n⑤苹果秋季发布会推出最薄iPhone，eSIM受关注。",
+  "link" : "https://www.cls.cn/detail/2139462",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 43779
+}, {
+  "id" : "news_241",
+  "name" : "金融街证券来了，恒泰证券焕新出发，战略新布局正待揭秘",
+  "type" : "资讯",
+  "descript" : "①以“金融街”命名，能够更好地彰显公司立足首都金融核心区、辐射全国的战略布局；\n②公司计划在客户服务体系优化、产品创新研发、信息技术投入等方面加大力度，包括组建 “金融街智库”以及集团赋能企业金融服务；\n③北京国资体系方面券商后续是否会加速整合成为关注项。",
+  "link" : "https://www.cls.cn/detail/2139869",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 30131
+}, {
+  "id" : "news_242",
+  "name" : "六类券商监管处分案例曝光！有投顾以欺诈手段上岗，有券商文化建设流于形式",
+  "type" : "资讯",
+  "descript" : "①通报案例涵盖从业人员以虚假材料办理执业登记、有偿出借从业登记信息，以及券商薪酬与项目收入直接挂钩、文化建设实践评估不实等问题；\n②文化建设自评不实问题，暴露出部分券商在落实文化建设要求过程中可能存在弄虚作假现象，实践落地才是行业所期待的。",
+  "link" : "https://www.cls.cn/detail/2139300",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 34173
+}, {
+  "id" : "news_243",
+  "name" : "又一只主动权益基金一日售罄，基金新发市场见暖意",
+  "type" : "资讯",
+  "descript" : "①此次一日售罄基金募集上限为10亿元，启动了末日比例配售机制；\n②公司已运用固有资金500万元自购；\n③9月以来已有5至主动权益新基金成立规模超10亿，混合型基金平均发行份额回升。",
+  "link" : "https://www.cls.cn/detail/2139291",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 22115
+}, {
+  "id" : "news_244",
+  "name" : "财联社C50风向指数调查：9月MLF和买断式逆回购或延续超额续作 年内是否二次降息市场预期分化",
+  "type" : "资讯",
+  "descript" : "①9月MLF和买断式逆回购或延续超额续作，流动性有望维持均衡偏松；\n②前期央行买入的国债逐步到期，年内重启买卖国债概率增加；\n③美联储降息预期升温后，我国10-20BP的降息仍然可期。",
+  "link" : "https://www.cls.cn/detail/2139371",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 6622
+}, {
+  "id" : "news_245",
+  "name" : "卫星互联网加速组网：捷龙三号送11颗卫星入轨，产业链上市公司积极布局",
+  "type" : "资讯",
+  "descript" : "①目前北京丰台区卫星互联网产业园已经开园。丰台区相关负责人此前对财联社记者透露，将加强与卫星互联网头部企业及其生态伙伴的协调联动。\n②财联社记者注意到，不只是深度参与各个产业链，亦有多家上市公司加快卫星互联网领域投资。",
+  "link" : "https://www.cls.cn/detail/2139697",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 3666
+}, {
+  "id" : "news_246",
+  "name" : "Labubu炒作回归理性？二手市场大降温 泡泡玛特股价跌破300整数关",
+  "type" : "资讯",
+  "descript" : "①面对高溢价，泡泡玛特此前进行了全渠道补货；\n②Labubu在二手市场成交均价呈下降趋势；\n③8月底至今泡泡玛特股价持续回调。",
+  "link" : "https://www.cls.cn/detail/2140731",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 1466
+}, {
+  "id" : "news_248",
+  "name" : "两分钟速览苹果新品热点：国行iPhone Air支持联通eSIM",
+  "type" : "资讯",
+  "descript" : "①苹果9月发布会推出4款新iPhone、Airpods Pro 3，以及3款5G版Apple Watch；\n②苹果中国官网显示，iPhone Air成为目前中国大陆地区唯一支持eSIM的iPhone；\n③Apple Watch推出基于光电传感器的高血压通知功能。",
+  "link" : "https://www.cls.cn/detail/2140370",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 9764
+}, {
+  "id" : "news_249",
+  "name" : "【研选】硫化物固态路线远期最具潜力，市场空间超千亿元，分析师看好相关产业链公司；成品油运2025上半年景气企稳回升，分析师看好公司下半年业绩同比继续改善",
+  "type" : "资讯",
+  "descript" : "【研选】硫化物固态路线远期最具潜力，市场空间超千亿元，分析师看好相关产业链公司；成品油运2025上半年景气企稳回升，分析师看好公司下半年业绩同比继续改善",
+  "link" : "https://www.cls.cn/detail/2135405",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20581
+}, {
+  "id" : "news_250",
+  "name" : "【电报解读回顾】主力资金+产业动态多维追踪！巧用短线题材“神器” 高效读懂资讯背后的价值",
+  "type" : "资讯",
+  "descript" : "【电报解读回顾】主力资金+产业动态多维追踪！巧用短线题材“神器” 高效读懂资讯背后的价值",
+  "link" : "https://www.cls.cn/detail/2136826",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 12809
+}, {
+  "id" : "news_252",
+  "name" : "港股评级汇总 | 汇丰研究维持阿里健康持有评级",
+  "type" : "资讯",
+  "descript" : "财联社将定期整理各家机构对于港股的评级和目标价。",
+  "link" : "https://www.cls.cn/detail/2139732",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17776
+}, {
+  "id" : "news_253",
+  "name" : "港股2025年盈利预测现结构性分化 机构称互联网消费拖累大盘",
+  "type" : "资讯",
+  "descript" : "①在整体盈利预测下调的背景下，哪些行业表现出较强的增长韧性或显著上修？\n②从基金重仓股的角度看，哪些公司的盈利预测发生了变化？",
+  "link" : "https://www.cls.cn/detail/2140813",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 4988
+}, {
+  "id" : "news_254",
+  "name" : "三年85个项目！沙特阿美宣布未来投资计划 涉及大量材料采购需求",
+  "type" : "资讯",
+  "descript" : "①沙特阿美计划在未来三年内执行85个新建、扩建及升级项目，涵盖油气生产、管道网络及民用基础设施等领域；\n②预计这些项目将带来庞大的采购需求，包括2.1万公里碳钢管道、220万吨结构钢材等。",
+  "link" : "https://www.cls.cn/detail/2140822",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 14034
+}, {
+  "id" : "news_255",
+  "name" : "沙特二季度经济增速达3.9% 非油部门贡献2.7个百分点",
+  "type" : "资讯",
+  "descript" : "①沙特阿拉伯2025年第二季度实际国内生产总值增长3.9%，所有重要经济领域均实现稳定增长；\n②非油部门以4.6%的增速居首，成为整体增长的主要引擎，为GDP增长贡献2.7个百分点。",
+  "link" : "https://www.cls.cn/detail/2140748",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 17024
+}, {
+  "id" : "news_256",
+  "name" : "AI初创公司Reflection最新融资估值或达55亿美元，背后有英伟达撑腰！",
+  "type" : "资讯",
+  "descript" : "①创立仅一年的AI公司Reflection正推动新一轮融资，公司估值或达55亿美元；\n②该公司不仅拥有来自知名AI大厂的人才，背后还得到了英伟达和红杉资本的支持。",
+  "link" : "https://www.cls.cn/detail/2140807",
+  "publishTime" : "2025-09-11 10:53:23",
+  "author" : "恒丰银行",
+  "readCount" : 20324
+}, {
+  "id" : "product_10096",
+  "name" : "ynet慧财宝货币A",
+  "type" : "产品",
+  "descript" : "一种货币市场基金，通常被视为低风险投资，旨在提供稳定的收益。",
+  "link" : "/product/000542",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10097",
+  "name" : "鑫红利两全保险分红型",
+  "type" : "产品",
+  "descript" : "这是一款分红型两全保险，通常提供生存满期给付和身故/全残保障。它还具有分红功能，保单持有人有机会分享保险公司的经营成果，以增加保单价值。",
+  "link" : "/product/31001053",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10099",
+  "name" : "中欧明睿新起点混合",
+  "type" : "产品",
+  "descript" : "一款混合型基金，投资范围广泛，可能包括股票和债券，以在控制风险的前提下追求高于业绩比较基准的投资回报。",
+  "link" : "/product/001000",
+  "riskLevel" : "1",
+  "minAmount" : 1,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10101",
+  "name" : "易精灵2号",
+  "type" : "产品",
+  "descript" : "结合产品名称推测，这可能是一种易于操作的线上或移动端理财产品，旨在为用户提供便捷的资金管理和收益获取方式。",
+  "link" : "/product/w2016901a",
+  "riskLevel" : "1",
+  "minAmount" : 1000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10102",
+  "name" : "开放净值T+1",
+  "type" : "产品",
+  "descript" : "一种净值型理财产品，其价值每日计算并公布。该产品通常允许客户在交易日后的一个工作日（T+1）进行赎回或申购。",
+  "link" : "/product/ptkfjz300d",
+  "riskLevel" : "4",
+  "minAmount" : 100000000,
+  "expectedReturn" : "3%~4%"
+}, {
+  "id" : "product_10108",
+  "name" : "易精灵手机专享",
+  "type" : "产品",
+  "descript" : "专为移动设备用户设计的理财产品，旨在通过手机应用程序提供便利、高效的投资体验。",
+  "link" : "/product/yjlds0812d",
+  "riskLevel" : "5",
+  "minAmount" : 1000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10110",
+  "name" : "净享利五月优化一号产品",
+  "type" : "产品",
+  "descript" : "推测是一款净值型理财产品，可能在五月推出或有特定期限，旨在通过优化投资策略为客户带来收益。",
+  "link" : "/product/d301dtf5001",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10119",
+  "name" : "易精灵1700",
+  "type" : "产品",
+  "descript" : "结合“易精灵”系列名称推测，这可能是该系列中的一款特定编号产品，可能具有特定的投资期限、起购金额或收益特点。",
+  "link" : "/product/yjl1700",
+  "riskLevel" : "1",
+  "minAmount" : 100,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10126",
+  "name" : "封闭式净值产品0407",
+  "type" : "产品",
+  "descript" : "一款有固定投资期限的净值型理财产品，其净值会根据所投资产的价值波动。0407可能代表其发行日期或特定批次。",
+  "link" : "/product/fbsjz0407",
+  "riskLevel" : "1",
+  "minAmount" : 0,
+  "expectedReturn" : "封闭净值详情页业绩比较基准超长文字验证超长长长长长"
+}, {
+  "id" : "product_10130",
+  "name" : "中欧骏泰",
+  "type" : "产品",
+  "descript" : "鉴于“中欧”是基金管理公司，这可能是一款基金产品，但具体类型和投资策略需进一步确认。",
+  "link" : "/product/004039",
+  "riskLevel" : "2",
+  "minAmount" : 1,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10142",
+  "name" : "中信保诚安享隽生养老年金保险",
+  "type" : "产品",
+  "descript" : "一款养老年金保险，旨在为客户提供长期、稳定的养老收入。该产品具有终身保障特点，并可能在达到特定年龄后开始给付年金，保障客户的晚年生活。",
+  "link" : "/product/67000019",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10143",
+  "name" : "大都会人寿都会恒盈年金保险分红型",
+  "type" : "产品",
+  "descript" : "这是一款终身年金保险，具有分红功能。除了提供终身年金给付外，该产品还可能让保单持有人分享公司的分红收益，以增加保单价值。",
+  "link" : "/product/36000004",
+  "riskLevel" : "1",
+  "minAmount" : 100,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10174",
+  "name" : "私募对私FBSSMDSH01C",
+  "type" : "产品",
+  "descript" : "一款面向特定私人客户发行的私募理财产品，具有较高的起投门槛和风险等级。FBSSMDSH01C可能是其内部编号。",
+  "link" : "/product/fbssmdsh01c",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "3.0%"
+}, {
+  "id" : "product_10175",
+  "name" : "平安信托YC金融联测23号集合资金信托计划",
+  "type" : "产品",
+  "descript" : "由平安信托发行，旨在通过集合客户资金，投资于特定项目或资产，以实现信托收益。这是一款信托产品，通常面向高净值客户。",
+  "link" : "/product/shyh23",
+  "riskLevel" : "4",
+  "minAmount" : 300000,
+  "expectedReturn" : "8%"
+}, {
+  "id" : "product_10177",
+  "name" : "易基天天理财货币A",
+  "type" : "产品",
+  "descript" : "一款由易方达基金管理的货币市场基金，其特点是申赎灵活，被视为低风险投资，适合日常现金管理。",
+  "link" : "/product/000009",
+  "riskLevel" : "1",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10178",
+  "name" : "易方达货币A",
+  "type" : "产品",
+  "descript" : "一种由易方达基金管理、风险较低的货币市场基金，投资于短期货币工具，适合作为流动性管理工具。",
+  "link" : "/product/110006",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10179",
+  "name" : "易方达创业板ETF联接A",
+  "type" : "产品",
+  "descript" : "一款股票型基金，主要通过投资于易方达创业板ETF，间接投资于创业板市场的股票。 旨在追踪创业板指数表现。",
+  "link" : "/product/110026",
+  "riskLevel" : "1",
+  "minAmount" : 5,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10180",
+  "name" : "易方达策略成长二号混合",
+  "type" : "产品",
+  "descript" : "一款混合型基金，投资于股票和债券，其投资策略可能侧重于具有成长潜力的公司。",
+  "link" : "/product/112002",
+  "riskLevel" : "2",
+  "minAmount" : 100,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10181",
+  "name" : "易方达消费行业股票",
+  "type" : "产品",
+  "descript" : "一款股票型基金，主要投资于消费行业相关的股票，旨在分享该行业的增长红利。",
+  "link" : "/product/110022",
+  "riskLevel" : "2",
+  "minAmount" : 100,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10182",
+  "name" : "嘉实回报灵活配置基金",
+  "type" : "产品",
+  "descript" : "一款混合型基金，投资范围灵活，包括股票和债券。其投资目标是力求通过灵活的资产配置策略，获得较高的绝对回报。",
+  "link" : "/product/070018",
+  "riskLevel" : "4",
+  "minAmount" : 5000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10183",
+  "name" : "嘉实资本ynet1号集合资产管理计划",
+  "type" : "产品",
+  "descript" : "由嘉实资本管理的集合资产管理计划，旨在汇集多个客户的资金进行投资，投资范围和策略可能由产品合同约定。",
+  "link" : "/product/0h2037",
+  "riskLevel" : "5",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10188",
+  "name" : "鑫享利001A",
+  "type" : "产品",
+  "descript" : "推测是一款金融理财产品，可能具有特定的收益模式和产品代号，具体性质（如固定收益或净值型）不明。",
+  "link" : "/product/wpxk22m001a",
+  "riskLevel" : "3",
+  "minAmount" : 10000,
+  "expectedReturn" : "中债指数+3%"
+}, {
+  "id" : "product_10189",
+  "name" : "贵金属产品01",
+  "type" : "产品",
+  "descript" : "一种投资于贵金属（如黄金、白银）的金融产品，可能是实物黄金交易或与贵金属价格挂钩的投资工具。",
+  "link" : "/product/zy0001",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10190",
+  "name" : "贵金属产品02",
+  "type" : "产品",
+  "descript" : "一种投资于贵金属的金融产品，与“贵金属产品01”可能在交易规则、投资标的或产品形式上有所区别。",
+  "link" : "/product/zy0002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10192",
+  "name" : "中国黄金财富金条10克",
+  "type" : "产品",
+  "descript" : "一款10克重的实物黄金金条，具有投资和收藏价值。",
+  "link" : "/product/shhj0001",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10197",
+  "name" : "ynet慧财宝货币B",
+  "type" : "产品",
+  "descript" : "与“ynet慧财宝货币A”同属一个基金，但可能在收费模式、申购门槛或销售渠道上有所不同。",
+  "link" : "/product/000543",
+  "riskLevel" : "1",
+  "minAmount" : 1000000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10198",
+  "name" : "大成添利宝货币B",
+  "type" : "产品",
+  "descript" : "一款货币市场基金，投资于短期货币工具，适合风险偏好较低的投资者进行短期资金管理。",
+  "link" : "/product/000725",
+  "riskLevel" : "1",
+  "minAmount" : 5000000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10204",
+  "name" : "大额存单养老金专享产品",
+  "type" : "产品",
+  "descript" : "银行发行的大额存单，专为养老金客户设计，可能提供更具吸引力的利率或特定的优惠。",
+  "link" : "/product/20211129rt02",
+  "riskLevel" : "",
+  "minAmount" : 1,
+  "expectedReturn" : "6%"
+}, {
+  "id" : "product_10208",
+  "name" : "大额存单分期产品存期3M利率4",
+  "type" : "产品",
+  "descript" : "一种可以分期存入或支取的大额存单，存期为3个月，利率为4%。",
+  "link" : "/product/20200619rt002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "4%"
+}, {
+  "id" : "product_10209",
+  "name" : "大额存单20W起存",
+  "type" : "产品",
+  "descript" : "银行发行的一种大额存单，起存金额为20万元人民币，通常提供比普通定期存款更高的利率。",
+  "link" : "/product/20211210rt0001",
+  "riskLevel" : "",
+  "minAmount" : 20,
+  "expectedReturn" : "4.15%"
+}, {
+  "id" : "product_10213",
+  "name" : "心意存ITM靠档001",
+  "type" : "产品",
+  "descript" : "一种灵活的定期存款产品，ITM和靠档可能意味着其在提前支取时能部分享受定期利率，减少利息损失。",
+  "link" : "/product/20201103rt1002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "6%"
+}, {
+  "id" : "product_10214",
+  "name" : "封闭式理财等级001",
+  "type" : "产品",
+  "descript" : "一款有固定投资期限的净值型理财产品，其净值会根据所投资产的价值波动。001可能代表其风险等级。",
+  "link" : "/product/fbslcdj001",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10221",
+  "name" : "易精灵1号",
+  "type" : "产品",
+  "descript" : "“易精灵”系列的首款产品，推测为一款操作简便的线上理财工具，可能具有特定的新手体验或优惠。",
+  "link" : "/product/w2009901a",
+  "riskLevel" : "2",
+  "minAmount" : 1000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10222",
+  "name" : "易精灵产品",
+  "type" : "产品",
+  "descript" : "泛指“易精灵”系列下的所有产品，特点是操作便捷，适合线上或移动端用户。",
+  "link" : "/product/yjl1103",
+  "riskLevel" : "2",
+  "minAmount" : 1000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10223",
+  "name" : "净享利对私",
+  "type" : "产品",
+  "descript" : "一款面向私人客户（非机构）发行的净值型理财产品，其投资和收益情况每日公布。",
+  "link" : "/product/jxld3010119d",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "6.6%"
+}, {
+  "id" : "product_10224",
+  "name" : "净享利",
+  "type" : "产品",
+  "descript" : "泛指“净享利”系列产品，以其净值型特性为主要卖点，可能提供不同风险和期限的选项。",
+  "link" : "/product/jxlld3011112d",
+  "riskLevel" : "1",
+  "minAmount" : 0,
+  "expectedReturn" : "4%"
+}, {
+  "id" : "product_10227",
+  "name" : "封闭净值手机专属0119D",
+  "type" : "产品",
+  "descript" : "一款有固定投资期限的净值型理财产品，专供手机用户购买，0119D可能是其编号或到期日期。",
+  "link" : "/product/fbjzsj0119d",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "超长超长超长超长超长超长超长超长超长超长超长超长超长超长超长"
+}, {
+  "id" : "product_10233",
+  "name" : "封闭式美元手机0515",
+  "type" : "产品",
+  "descript" : "一款以美元计价的封闭式理财产品，通过手机端进行交易，0515可能是其发行日期或编号。",
+  "link" : "/product/fbsussj0515",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "3.5%"
+}, {
+  "id" : "product_10237",
+  "name" : "心意存3年期产品",
+  "type" : "产品",
+  "descript" : "一款存期为3年的定期存款或理财产品，可能提供比短期产品更高的收益。",
+  "link" : "/product/20220217rt0001",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "12%"
+}, {
+  "id" : "product_10238",
+  "name" : "心意稳存（5年美好款）",
+  "type" : "产品",
+  "descript" : "推测为一款存期为5年的定期存款或类存款产品，可能强调其稳健的收益和长期的规划。",
+  "link" : "/product/20211214rt0002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "3.5%"
+}, {
+  "id" : "product_10239",
+  "name" : "心意存5年期产品",
+  "type" : "产品",
+  "descript" : "一款存期为5年的定期存款或类存款产品，适合长期闲置资金的规划。",
+  "link" : "/product/20220217rt0002",
+  "riskLevel" : "",
+  "minAmount" : 10,
+  "expectedReturn" : "13%"
+}, {
+  "id" : "product_10240",
+  "name" : "心意存3年3W3.5%",
+  "type" : "产品",
+  "descript" : "一款存期为3年的存款或理财产品，起存金额为3万元，年化收益率为3.5%。",
+  "link" : "/product/20211216rt0001",
+  "riskLevel" : "",
+  "minAmount" : 3,
+  "expectedReturn" : "3.5%"
+}, {
+  "id" : "product_10241",
+  "name" : "心意存手机专享美元产品",
+  "type" : "产品",
+  "descript" : "一款以美元计价的存款或理财产品，专为手机银行用户设计，可用于外汇资产配置。",
+  "link" : "/product/20211216rt00025",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "12%"
+}, {
+  "id" : "product_10242",
+  "name" : "大额存单智能计息",
+  "type" : "产品",
+  "descript" : "一种具有智能计息功能的大额存单，可能在提前支取时根据持有天数，提供更优的利息计算方式。",
+  "link" : "/product/20211230rt0002",
+  "riskLevel" : "",
+  "minAmount" : 1,
+  "expectedReturn" : "20%"
+}, {
+  "id" : "product_10243",
+  "name" : "申赎分离产品",
+  "type" : "产品",
+  "descript" : "一种金融产品，其申购和赎回操作有不同的规则或时间。例如，申购即时生效，但赎回需等待特定时间。",
+  "link" : "/product/d3090107a",
+  "riskLevel" : "2",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10244",
+  "name" : "封闭式私募固定费率",
+  "type" : "产品",
+  "descript" : "一款有固定投资期限的私募理财产品，通常面向合格投资者，其管理费采用固定费率而非业绩提成。",
+  "link" : "/product/fbssm0214",
+  "riskLevel" : "1",
+  "minAmount" : 100000000,
+  "expectedReturn" : "5%"
+}, {
+  "id" : "product_10245",
+  "name" : "ynet周开白名单高净值渠道差异化产品名称超长展示测试",
+  "type" : "产品",
+  "descript" : "一款每周开放申购和赎回的理财产品，面向高净值客户，并通过白名单机制进行管理。该名称为内部测试使用。",
+  "link" : "/product/syzkgjz07",
+  "riskLevel" : "3",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10246",
+  "name" : "ynet周开养老代发养老客户机构差异化手续费产品名称超长展示",
+  "type" : "产品",
+  "descript" : "一款每周开放的理财产品，专为养老金代发客户和机构设计，提供差异化的手续费。该名称为内部测试使用。",
+  "link" : "/product/syzkyljgcyh06",
+  "riskLevel" : "2",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10249",
+  "name" : "封闭净值美元01封闭净值美元01封闭净值美元",
+  "type" : "产品",
+  "descript" : "一款以美元计价的封闭式净值型理财产品，可能提供多种期限或不同收益等级的选择。",
+  "link" : "/product/fbjzus002d",
+  "riskLevel" : "2",
+  "minAmount" : 100,
+  "expectedReturn" : "4.0%"
+}, {
+  "id" : "product_10250",
+  "name" : "易精灵对私0106",
+  "type" : "产品",
+  "descript" : "“易精灵”系列中面向个人客户的产品，0106可能是其发行编号或日期。",
+  "link" : "/product/yjlds0106",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10254",
+  "name" : "心意存测试起存金额",
+  "type" : "产品",
+  "descript" : "一款用于测试起存金额的“心意存”系列存款产品。",
+  "link" : "/product/20211227rt0001",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "20%"
+}, {
+  "id" : "product_10255",
+  "name" : "华安动态灵活配置混合",
+  "type" : "产品",
+  "descript" : "一款混合型证券投资基金，其投资策略灵活，可以根据市场情况调整股票和债券的配置比例。",
+  "link" : "/product/040015",
+  "riskLevel" : "4",
+  "minAmount" : 500,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10256",
+  "name" : "智能利生利1天测试",
+  "type" : "产品",
+  "descript" : "一款用于测试的理财产品，其特点是收益可以日结，并自动进行再投资。",
+  "link" : "/product/20211111ar00003",
+  "riskLevel" : "",
+  "minAmount" : 5,
+  "expectedReturn" : "1.37%"
+}, {
+  "id" : "product_10257",
+  "name" : "净享利对私踢出119",
+  "type" : "产品",
+  "descript" : "一款面向个人客户的“净享利”理财产品，其中“踢出119”可能是内部操作代码或产品管理的特定规则。",
+  "link" : "/product/d321dstc119",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "4%"
+}, {
+  "id" : "product_10258",
+  "name" : "自营1303私募理财名称超长展示自营1303私募理财名称超长展示",
+  "type" : "产品",
+  "descript" : "一款由金融机构自有资金投资的私募理财产品，1303可能是其编号，名称的重复是为了内部测试。",
+  "link" : "/product/d303030101",
+  "riskLevel" : "3",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10259",
+  "name" : "苏银定开产品D55H006",
+  "type" : "产品",
+  "descript" : "推测是一款由江苏银行（“苏银”）发行的定期开放型理财产品，具有固定的开放期供客户进行申购和赎回。",
+  "link" : "/product/d55h006",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "3.0%~5.0%"
+}, {
+  "id" : "product_10265",
+  "name" : "国华盈如意两全保险万能型",
+  "type" : "产品",
+  "descript" : "一款万能型两全保险，除了提供生存和身故保障外，还设有万能账户，保费和保额可灵活调整，保单价值随投资收益变化。",
+  "link" : "/product/37000006",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10266",
+  "name" : "中信保诚鼎信盛世两全保险分红型",
+  "type" : "产品",
+  "descript" : "一款由中信保诚发行的分红型两全保险，在提供生存和身故保障的同时，客户有机会获得保险公司的分红。",
+  "link" : "/product/67000012",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10267",
+  "name" : "大家利泰两全保险万能型",
+  "type" : "产品",
+  "descript" : "一款万能型两全保险，保单价值的增长与保险公司设定的投资账户收益挂钩，同时提供生存和身故保障。",
+  "link" : "/product/53000022",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10268",
+  "name" : "大家久安21终身寿险",
+  "type" : "产品",
+  "descript" : "一款终身寿险，提供对被保险人终身的保障。该产品提供身故保险金给付，可以作为财富传承的规划工具。",
+  "link" : "/product/53000024",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10269",
+  "name" : "浦江盛世五号",
+  "type" : "产品",
+  "descript" : "“浦江盛世”系列下的信托或资管产品，可能以固定期限或特定投资标的为主要特点。",
+  "link" : "/product/52000012",
+  "riskLevel" : "2",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10270",
+  "name" : "景顺长城宁景6个月持有期混合型证券投资基金A",
+  "type" : "产品",
+  "descript" : "一款混合型基金，设有6个月的强制持有期，旨在鼓励投资者进行长期投资，并可能通过股票和债券的配置来增强收益。",
+  "link" : "/product/011803",
+  "riskLevel" : "2",
+  "minAmount" : 1,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10271",
+  "name" : "上投摩根中证消费服务领先指数型证券投资基金",
+  "type" : "产品",
+  "descript" : "一款指数型基金，主要投资于中证消费服务领先指数的成分股，旨在追踪该指数的表现。",
+  "link" : "/product/370023",
+  "riskLevel" : "5",
+  "minAmount" : 1000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10273",
+  "name" : "大额存单不可提取支取003",
+  "type" : "产品",
+  "descript" : "一款大额存单，在存期内不能提前支取，003可能是其产品系列或编号。",
+  "link" : "/product/20211202rt003",
+  "riskLevel" : "",
+  "minAmount" : 1,
+  "expectedReturn" : "17%"
+}, {
+  "id" : "product_10277",
+  "name" : "持有期净值开放型产品持有期净值开放型产品",
+  "type" : "产品",
+  "descript" : "一种具有固定持有期的净值型开放式理财产品，客户需持有一定时间后才能赎回，但产品本身是开放式管理的。",
+  "link" : "/product/cyqjz0228",
+  "riskLevel" : "5",
+  "minAmount" : 10000,
+  "expectedReturn" : "3.5%"
+}, {
+  "id" : "product_10280",
+  "name" : "普通持有期产品名称超长展示超长展示超长展示超长展示超长展示",
+  "type" : "产品",
+  "descript" : "一款具有特定持有期的普通理财产品，名称中的重复是为了内部系统测试。",
+  "link" : "/product/cyqjz0324",
+  "riskLevel" : "1",
+  "minAmount" : 0,
+  "expectedReturn" : "3.46%~4.23%"
+}, {
+  "id" : "product_10281",
+  "name" : "太平洋人寿金佑人生终身寿险（分红型）A款（2018版）",
+  "type" : "产品",
+  "descript" : "一款分红型终身寿险，提供终身保障。该产品通常包含身故和全残保障，并可能提供分红，以增加保单价值。",
+  "link" : "/product/31001025",
+  "riskLevel" : "1",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10282",
+  "name" : "领航精选08B",
+  "type" : "产品",
+  "descript" : "一款理财或资管产品，可能由“领航”系列发行，08B可能是其特定的产品编号或类别。",
+  "link" : "/product/wplk22m1408b",
+  "riskLevel" : "2",
+  "minAmount" : 1,
+  "expectedReturn" : "4.00%~5.88%"
+}, {
+  "id" : "product_10283",
+  "name" : "天弘货币A",
+  "type" : "产品",
+  "descript" : "一款由天弘基金管理的货币市场基金，具有低风险、高流动性的特点，被广泛用于日常闲置资金的管理。",
+  "link" : "/product/420003",
+  "riskLevel" : "3",
+  "minAmount" : 1000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10284",
+  "name" : "理财回归专用",
+  "type" : "产品",
+  "descript" : "一款专门为从其他投资渠道“回归”或转入理财产品的资金设计的特定产品，可能提供特定的优惠或便利。",
+  "link" : "/product/fbsds1127",
+  "riskLevel" : "2",
+  "minAmount" : 10000,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10285",
+  "name" : "封闭净值私募2",
+  "type" : "产品",
+  "descript" : "一款面向合格投资者发行的封闭式私募净值型理财产品。",
+  "link" : "/product/d303030102",
+  "riskLevel" : "1",
+  "minAmount" : 10000,
+  "expectedReturn" : "业绩比较基准业绩比较基准业绩比较基准"
+}, {
+  "id" : "product_10286",
+  "name" : "上海现金0328超长名称测试展示查看测试展示查看测试展示查看D709展示查看",
+  "type" : "产品",
+  "descript" : "一款用于内部系统测试的现金管理产品，0328可能是其发行日期，名称的重复是为了测试超长文本的显示效果。",
+  "link" : "/product/shxj220328",
+  "riskLevel" : "3",
+  "minAmount" : 10,
+  "expectedReturn" : "4%"
+}, {
+  "id" : "product_10288",
+  "name" : "大都会人寿安享健康重大疾病保险",
+  "type" : "产品",
+  "descript" : null,
+  "link" : "/product/36000011",
+  "riskLevel" : "1",
+  "minAmount" : 257,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10289",
+  "name" : "定开1301超长超长超长超长超长超长超级超级长非常长很长就是长",
+  "type" : "产品",
+  "descript" : "一款定期开放型产品，1301可能是其编号，名称的重复和夸张是为了内部系统测试。",
+  "link" : "/product/shdk220401",
+  "riskLevel" : "1",
+  "minAmount" : 10,
+  "expectedReturn" : "6.9%"
+}, {
+  "id" : "product_10291",
+  "name" : "双周利08B",
+  "type" : "产品",
+  "descript" : "一款每两周结算一次收益的理财产品，08B可能是其编号。",
+  "link" : "/product/wptk22d1408b",
+  "riskLevel" : "2",
+  "minAmount" : 1,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10293",
+  "name" : "ITM心意存养老金专享产品",
+  "type" : "产品",
+  "descript" : "一款针对养老金客户的“心意存”系列产品，ITM可能代表其特定的技术或服务模式。",
+  "link" : "/product/20211112rt002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "8.9%"
+}, {
+  "id" : "product_10294",
+  "name" : "第五个持有期测试产品",
+  "type" : "产品",
+  "descript" : "一款用于内部测试的产品，其特点是具有一个固定的持有期。",
+  "link" : "/product/ptkfjz202200331",
+  "riskLevel" : "0",
+  "minAmount" : 0,
+  "expectedReturn" : "3.5%"
+}, {
+  "id" : "product_10297",
+  "name" : "养老代发-心意存",
+  "type" : "产品",
+  "descript" : "一款专为养老金代发客户设计的“心意存”系列存款产品。",
+  "link" : "/product/20220411rt002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "7.9%"
+}, {
+  "id" : "product_10298",
+  "name" : "心意存-养老代发3年期",
+  "type" : "产品",
+  "descript" : "一款存期为3年，专为养老金代发客户提供的“心意存”系列产品。",
+  "link" : "/product/20210805rt0013",
+  "riskLevel" : "",
+  "minAmount" : 2,
+  "expectedReturn" : "5.1%"
+}, {
+  "id" : "product_10300",
+  "name" : "中国黄金财富金条10克",
+  "type" : "产品",
+  "descript" : "一款10克重的实物黄金金条，具有投资和收藏价值。",
+  "link" : "/product/shhj0002",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10301",
+  "name" : "十二生肖护身金卡（猪）",
+  "type" : "产品",
+  "descript" : "一款以中国十二生肖中的“猪”为主题的黄金护身卡，具有收藏和纪念意义。",
+  "link" : "/product/qjh0027",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10302",
+  "name" : "YC金融20周年熊猫纪念金银币套装",
+  "type" : "产品",
+  "descript" : "一套为纪念YC金融成立20周年而发行的熊猫主题金银纪念币，具有收藏价值。",
+  "link" : "/product/shyh0001",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "—"
+}, {
+  "id" : "product_10303",
+  "name" : "心意存-养老代发-2年期",
+  "type" : "产品",
+  "descript" : "一款存期为2年，专为养老金代发客户提供的“心意存”系列产品。",
+  "link" : "/product/20220411rt0011",
+  "riskLevel" : "",
+  "minAmount" : 0,
+  "expectedReturn" : "3.7%"
+} ]

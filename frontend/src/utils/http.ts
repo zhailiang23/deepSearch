@@ -52,7 +52,7 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 // 创建axios实例
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000,
+  timeout: 300000, // 5分钟超时，适配数据导入等长时间操作
   headers: {
     'Content-Type': 'application/json',
   }
@@ -198,7 +198,7 @@ http.interceptors.response.use(
  */
 export const httpWithRetry = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000,
+  timeout: 300000, // 5分钟超时，适配数据导入等长时间操作
 })
 
 // 为重试实例添加重试拦截器

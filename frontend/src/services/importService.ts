@@ -81,10 +81,10 @@ export class ImportService {
    * 同步导入JSON文件（新的简化方法）
    */
   static async importFileSync(
-    searchSpaceId: number, 
-    file: File, 
+    searchSpaceId: number,
+    file: File,
     mode: 'APPEND' | 'REPLACE' = 'APPEND',
-    batchSize: number = 1000,
+    batchSize: number = 100, // 降低默认批次大小，避免ES熔断器错误
     errorHandling: 'STOP_ON_ERROR' | 'SKIP_ERROR' = 'SKIP_ERROR'
   ): Promise<ImportSyncResponse> {
     const formData = new FormData()
@@ -99,7 +99,8 @@ export class ImportService {
       {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 300000 // 5分钟超时，专门用于数据导入
       }
     )
 
@@ -136,7 +137,8 @@ export class ImportService {
       {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 300000 // 5分钟超时，适配大文件上传
       }
     )
 
@@ -153,7 +155,10 @@ export class ImportService {
   static async executeImport(searchSpaceId: number, request: ImportExecuteRequest): Promise<ImportTaskStatus> {
     const response = await http.post<ApiResponse<ImportTaskStatus>>(
       `/search-spaces/${searchSpaceId}/import/execute`,
-      request
+      request,
+      {
+        timeout: 300000 // 5分钟超时，适配数据导入任务
+      }
     )
 
     if (!response.data.success) {
