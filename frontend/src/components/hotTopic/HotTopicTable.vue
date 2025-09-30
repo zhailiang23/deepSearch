@@ -48,9 +48,6 @@
       <div class="bg-muted px-6 py-3 border-b border-border">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-lg leading-6 font-medium text-foreground">
-              热门话题列表
-            </h3>
             <div v-if="!loading && hotTopics.length" class="text-sm text-muted-foreground mt-1">
               共 {{ pagination.totalElements }} 个话题
             </div>

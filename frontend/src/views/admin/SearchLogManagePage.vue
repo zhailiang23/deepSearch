@@ -108,7 +108,7 @@ const headerStats = computed(() => [
 // 筛选参数
 const filterParams = reactive<SearchLogQuery>({
   page: 0,
-  size: 20,
+  size: 10,
   sort: 'createdAt',
   direction: 'desc'
 })
@@ -119,7 +119,7 @@ const pagination = reactive<PaginatedResponse<SearchLog>>({
   content: [],
   totalElements: 0,
   totalPages: 0,
-  size: 20,
+  size: 10,
   number: 0,
   first: true,
   last: true
@@ -241,7 +241,7 @@ const loadTableData = async () => {
         content: [],
         totalElements: 0,
         totalPages: 0,
-        size: filterParams.size || 20,
+        size: filterParams.size || 10,
         number: filterParams.page || 0,
         first: true,
         last: true
@@ -281,7 +281,7 @@ const handleResetFilter = () => {
     minResponseTime: undefined,
     maxResponseTime: undefined,
     page: 0,
-    size: 20,
+    size: 10,
     sort: 'createdAt',
     direction: 'desc'
   })

@@ -11,7 +11,7 @@ import java.util.List;
 public class PageResult<T> {
 
     private List<T> content;
-    private int page;
+    private int number;  // 当前页码（0-based），与Spring Data Page保持一致
     private int size;
     private long totalElements;
     private int totalPages;
@@ -21,14 +21,14 @@ public class PageResult<T> {
     // 构造函数
     public PageResult() {}
 
-    public PageResult(List<T> content, int page, int size, long totalElements, int totalPages) {
+    public PageResult(List<T> content, int number, int size, long totalElements, int totalPages) {
         this.content = content;
-        this.page = page;
+        this.number = number;
         this.size = size;
         this.totalElements = totalElements;
         this.totalPages = totalPages;
-        this.first = page == 0;
-        this.last = page >= totalPages - 1;
+        this.first = number == 0;
+        this.last = number >= totalPages - 1;
     }
 
     // Builder模式
@@ -45,7 +45,12 @@ public class PageResult<T> {
         }
 
         public Builder<T> page(int page) {
-            result.page = page;
+            result.number = page;
+            return this;
+        }
+
+        public Builder<T> number(int number) {
+            result.number = number;
             return this;
         }
 
@@ -105,12 +110,23 @@ public class PageResult<T> {
         this.content = content;
     }
 
-    public int getPage() {
-        return page;
+    public int getNumber() {
+        return number;
     }
 
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    // 兼容旧的方法名
+    @Deprecated
+    public int getPage() {
+        return number;
+    }
+
+    @Deprecated
     public void setPage(int page) {
-        this.page = page;
+        this.number = page;
     }
 
     public int getSize() {
@@ -156,7 +172,7 @@ public class PageResult<T> {
     @Override
     public String toString() {
         return "PageResult{" +
-                "page=" + page +
+                "number=" + number +
                 ", size=" + size +
                 ", totalElements=" + totalElements +
                 ", totalPages=" + totalPages +

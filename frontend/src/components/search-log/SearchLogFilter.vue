@@ -1,7 +1,6 @@
 <template>
   <div class="search-log-filter">
     <div class="filter-section">
-      <h3 class="filter-title">筛选条件</h3>
 
       <div class="filter-grid">
         
@@ -258,7 +257,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-section {
-  @apply p-6;
+  @apply px-6 pt-6 pb-7;
 }
 
 .filter-title {
@@ -266,7 +265,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6;
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
 }
 
 
@@ -281,7 +280,7 @@ onBeforeUnmount(() => {
 
 
 .filter-actions {
-  @apply flex items-center space-x-3 pb-4;
+  @apply flex items-center space-x-3;
 }
 
 
