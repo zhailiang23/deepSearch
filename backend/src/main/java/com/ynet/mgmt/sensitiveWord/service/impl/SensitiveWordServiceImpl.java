@@ -7,6 +7,7 @@ import com.ynet.mgmt.sensitiveWord.exception.SensitiveWordNotFoundException;
 import com.ynet.mgmt.sensitiveWord.mapper.SensitiveWordMapper;
 import com.ynet.mgmt.sensitiveWord.repository.SensitiveWordRepository;
 import com.ynet.mgmt.sensitiveWord.service.SensitiveWordService;
+import com.ynet.mgmt.sensitiveWord.cache.SensitiveWordCache;
 import com.ynet.mgmt.common.dto.PageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +35,14 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
 
     private final SensitiveWordRepository repository;
     private final SensitiveWordMapper mapper;
+    private final SensitiveWordCache sensitiveWordCache;
 
-    public SensitiveWordServiceImpl(SensitiveWordRepository repository, SensitiveWordMapper mapper) {
+    public SensitiveWordServiceImpl(SensitiveWordRepository repository,
+                                    SensitiveWordMapper mapper,
+                                    SensitiveWordCache sensitiveWordCache) {
         this.repository = repository;
         this.mapper = mapper;
+        this.sensitiveWordCache = sensitiveWordCache;
     }
 
     // ========== 基本CRUD操作 ==========
@@ -58,6 +63,11 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
         SensitiveWord saved = repository.save(entity);
 
         logger.info("敏感词创建成功: id={}, name={}", saved.getId(), saved.getName());
+
+        // 刷新缓存
+        sensitiveWordCache.refresh();
+        logger.debug("敏感词缓存已刷新");
+
         return mapper.toDTO(saved);
     }
 
@@ -73,6 +83,10 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
 
         repository.deleteById(id);
         logger.info("敏感词删除成功: id={}", id);
+
+        // 刷新缓存
+        sensitiveWordCache.refresh();
+        logger.debug("敏感词缓存已刷新");
     }
 
     @Override
@@ -96,6 +110,11 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
         SensitiveWord updated = repository.save(entity);
 
         logger.info("敏感词更新成功: id={}, name={}", updated.getId(), updated.getName());
+
+        // 刷新缓存
+        sensitiveWordCache.refresh();
+        logger.debug("敏感词缓存已刷新");
+
         return mapper.toDTO(updated);
     }
 
@@ -182,6 +201,11 @@ public class SensitiveWordServiceImpl implements SensitiveWordService {
         SensitiveWord updated = repository.save(entity);
 
         logger.info("敏感词状态切换成功: id={}, enabled={}", id, updated.getEnabled());
+
+        // 刷新缓存（启用/禁用状态变化会影响检测）
+        sensitiveWordCache.refresh();
+        logger.debug("敏感词缓存已刷新");
+
         return mapper.toDTO(updated);
     }
 

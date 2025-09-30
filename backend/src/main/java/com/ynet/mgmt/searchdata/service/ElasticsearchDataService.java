@@ -42,6 +42,7 @@ public class ElasticsearchDataService {
 
     private final ElasticsearchClient elasticsearchClient;
     private final EmbeddingService embeddingService;
+    private final com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService;
 
     /**
      * 是否启用语义搜索功能
@@ -57,9 +58,11 @@ public class ElasticsearchDataService {
 
     @Autowired
     public ElasticsearchDataService(ElasticsearchClient elasticsearchClient,
-                                  EmbeddingService embeddingService) {
+                                  EmbeddingService embeddingService,
+                                  com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService) {
         this.elasticsearchClient = elasticsearchClient;
         this.embeddingService = embeddingService;
+        this.sensitiveWordCheckService = sensitiveWordCheckService;
     }
 
     /**
@@ -74,6 +77,11 @@ public class ElasticsearchDataService {
         String indexName = searchSpace.getIndexName();
 
         try {
+            // 敏感词检测（在搜索前进行）
+            if (request.getQuery() != null && !request.getQuery().trim().isEmpty()) {
+                sensitiveWordCheckService.checkAndThrow(request.getQuery());
+            }
+
             log.info("开始搜索ES数据: index={}, query={}, page={}, size={}, pinyin={}, mode={}",
                     indexName, request.getQuery(), request.getPage(), request.getSize(),
                     request.getEnablePinyinSearch(), request.getPinyinMode());

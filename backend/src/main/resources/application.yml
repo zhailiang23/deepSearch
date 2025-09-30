@@ -243,3 +243,12 @@ siliconflow:
       max-height: ${SILICONFLOW_VISION_MAX_HEIGHT:3584}
       min-width: ${SILICONFLOW_VISION_MIN_WIDTH:56}
       min-height: ${SILICONFLOW_VISION_MIN_HEIGHT:56}
+
+# 敏感词检测配置
+sensitive-word:
+  check:
+    # 是否启用敏感词检测，默认启用
+    enabled: ${SENSITIVE_WORD_CHECK_ENABLED:true}
+  cache:
+    # 缓存刷新间隔（毫秒），默认5分钟
+    refresh-interval: ${SENSITIVE_WORD_CACHE_REFRESH_INTERVAL:300000}
