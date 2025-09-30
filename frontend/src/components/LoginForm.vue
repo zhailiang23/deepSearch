@@ -21,6 +21,7 @@
           required
           :disabled="loading"
           autocomplete="username"
+          tabindex="1"
         />
       </div>
 
@@ -31,7 +32,7 @@
           <a
             href="#"
             class="ml-auto text-sm underline-offset-4 hover:underline"
-            tabindex="-1"
+            tabindex="5"
             @click.prevent="$emit('forgot-password')"
           >
             忘记密码？
@@ -45,6 +46,7 @@
           required
           :disabled="loading"
           autocomplete="current-password"
+          tabindex="2"
         />
       </div>
 
@@ -60,7 +62,7 @@
       </div>
 
       <!-- 登录按钮 -->
-      <Button type="submit" class="w-full" :disabled="loading || !isFormValid">
+      <Button type="submit" class="w-full" :disabled="loading || !isFormValid" tabindex="3">
         <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
         {{ loading ? '登录中...' : '登录' }}
       </Button>
@@ -68,11 +70,12 @@
 
     <!-- 注册链接 -->
     <div class="text-center text-sm">
-      还没有账户？{" "}
+      还没有账户？
       <a
         href="#"
         class="underline underline-offset-4"
         @click.prevent="$emit('sign-up')"
+        tabindex="6"
       >
         立即注册
       </a>
@@ -81,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { AlertCircle, Loader2 } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button'
@@ -128,4 +131,13 @@ const handleSubmit = () => {
     password: form.value.password
   })
 }
+
+// 生命周期
+onMounted(() => {
+  // 聚焦到用户名输入框
+  const usernameInput = document.getElementById('username')
+  if (usernameInput) {
+    usernameInput.focus()
+  }
+})
 </script>

@@ -27,7 +27,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("/api/statistics/mismatch-keywords")
+@RequestMapping("/statistics/mismatch-keywords")
 @Tag(name = "关键词不匹配度统计", description = "关键词不匹配度统计相关接口")
 @Validated
 public class MismatchKeywordController {
