@@ -37,7 +37,6 @@ public class RankingServiceImpl implements RankingService {
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME, key = "#request.timeRange + '_' + #request.page + '_' + #request.size")
     public RankingQueryResponse getRanking(RankingQueryRequest request) {
         logger.info("获取排行榜数据 - request: {}", request);
 

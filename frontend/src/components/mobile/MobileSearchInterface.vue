@@ -547,6 +547,7 @@ const realSearch = async () => {
       query: searchQuery.value,
       page: 1,
       size: store.config.pagination.pageSize,
+      channel: store.config.channel, // 渠道参数
       enablePinyinSearch: store.config.pinyinSearch.enabled,
       pinyinMode: store.config.pinyinSearch.enabled ?
         (store.config.pinyinSearch.mode === 'fuzzy' ? 'FUZZY' as const :
@@ -651,6 +652,7 @@ const loadMore = async () => {
       query: searchQuery.value,
       page: nextPage,
       size: store.config.pagination.pageSize,
+      channel: store.config.channel, // 渠道参数
       enablePinyinSearch: store.config.pinyinSearch.enabled,
       pinyinMode: store.config.pinyinSearch.enabled ?
         (store.config.pinyinSearch.mode === 'fuzzy' ? 'FUZZY' as const :

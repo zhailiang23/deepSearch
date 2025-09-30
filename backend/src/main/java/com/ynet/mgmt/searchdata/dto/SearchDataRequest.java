@@ -59,6 +59,9 @@ public class SearchDataRequest {
             defaultValue = "0.3")
     private Double semanticWeight;
 
+    @Schema(description = "搜索渠道代码", example = "mobile_app")
+    private String channel;
+
     /**
      * 排序配置
      */

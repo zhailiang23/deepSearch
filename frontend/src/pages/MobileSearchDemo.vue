@@ -86,6 +86,9 @@ const handleParameterChange = (event: ParameterChangeEvent) => {
   if (event.type === 'searchSpace') {
     console.log('更新搜索空间:', event.value)
     store.selectSearchSpaces(event.value)
+  } else if (event.type === 'channel') {
+    console.log('更新渠道:', event.value)
+    store.updateConfig({ channel: event.value })
   } else if (event.type === 'pinyin') {
     console.log('更新拼音配置:', event.value)
     store.updateConfig({ pinyinSearch: event.value })

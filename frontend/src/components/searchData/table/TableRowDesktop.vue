@@ -44,10 +44,21 @@
       </div>
 
       <!-- 操作列 -->
-      <div class="w-32 flex-shrink-0 p-3 flex items-center justify-end gap-2 sticky right-0 bg-white z-20 border-r">
-      
+      <div class="w-40 flex-shrink-0 p-3 flex items-center justify-end gap-2 sticky right-0 bg-white z-20 border-r">
+
       <!-- 操作按钮 -->
       <div class="flex items-center gap-1">
+        <!-- 渠道配置按钮 -->
+        <Button
+          variant="ghost"
+          size="sm"
+          @click="handleChannelConfig"
+          class="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          title="渠道配置"
+        >
+          <Settings class="w-4 h-4" />
+        </Button>
+
         <!-- 编辑按钮 -->
         <Button
           variant="ghost"
@@ -80,7 +91,8 @@ import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Edit,
-  Trash2
+  Trash2,
+  Settings
 } from 'lucide-vue-next'
 import CellRenderer from './CellRenderer.vue'
 import type { TableColumn, TableRow } from '@/types/tableData'
@@ -92,6 +104,7 @@ interface Props {
 }
 
 interface Emits {
+  (e: 'channelConfig', row: TableRow): void
   (e: 'edit', row: TableRow): void
   (e: 'delete', row: TableRow): void
   (e: 'click', row: TableRow, index: number, event: MouseEvent | KeyboardEvent): void
@@ -135,6 +148,14 @@ const handleKeyboardClick = (event: KeyboardEvent) => {
 
     emit('click', props.row, props.index, event)
   }
+}
+
+/**
+ * 处理渠道配置按钮点击
+ */
+const handleChannelConfig = (event: MouseEvent) => {
+  event.stopPropagation()
+  emit('channelConfig', props.row)
 }
 
 /**
@@ -193,8 +214,8 @@ function getCalculatedTableWidth(): string {
     totalWidth += parseInt(width.replace('px', ''))
   })
 
-  // 加上操作列的宽度（128px = w-32）
-  totalWidth += 128
+  // 加上操作列的宽度（160px = w-40）
+  totalWidth += 160
 
   // 返回计算出的总宽度
   return `${totalWidth}px`

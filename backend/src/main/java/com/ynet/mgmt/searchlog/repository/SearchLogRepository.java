@@ -489,4 +489,19 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
            "AND s.createdAt BETWEEN :startTime AND :endTime")
     List<Long> findActiveUserIds(@Param("startTime") LocalDateTime startTime,
                                 @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 查询时间范围内的搜索查询字符串和结果数（用于分词后的关键词不匹配度分析）
+     * 返回格式：[searchQuery, totalResults]
+     * 不查询 response_data 等大字段，性能优化
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 查询字符串和结果数列表
+     */
+    @Query("SELECT s.searchQuery, s.totalResults " +
+           "FROM SearchLog s " +
+           "WHERE s.createdAt BETWEEN :startTime AND :endTime")
+    List<Object[]> findQueryAndResultsInTimeRange(@Param("startTime") LocalDateTime startTime,
+                                                   @Param("endTime") LocalDateTime endTime);
 }

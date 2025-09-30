@@ -2,7 +2,6 @@ package com.ynet.mgmt.searchlog.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ynet.mgmt.common.exception.BusinessException;
-import com.ynet.mgmt.config.CacheConfig;
 import com.ynet.mgmt.searchlog.dto.*;
 import com.ynet.mgmt.searchlog.entity.SearchClickLog;
 import com.ynet.mgmt.searchlog.entity.SearchLog;
@@ -13,8 +12,6 @@ import com.ynet.mgmt.searchlog.service.ChineseSegmentationService;
 import com.ynet.mgmt.searchlog.service.SearchLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +43,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     private final ObjectMapper objectMapper;
 
     @Override
-    @CacheEvict(value = {CacheConfig.STATISTICS_CACHE, CacheConfig.HOT_WORDS_CACHE}, allEntries = true)
     public SearchLog saveSearchLog(SearchLog searchLog) {
         try {
             // 设置默认值
@@ -188,7 +184,6 @@ public class SearchLogServiceImpl implements SearchLogService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.STATISTICS_CACHE, keyGenerator = "customKeyGenerator")
     public SearchLogStatistics getSearchStatistics(StatisticsRequest request) {
         try {
             LocalDateTime startTime = request.getStartTime();
@@ -237,7 +232,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     }
 
     @Override
-    @CacheEvict(value = {CacheConfig.STATISTICS_CACHE, CacheConfig.HOT_WORDS_CACHE}, allEntries = true)
     public long cleanupExpiredLogs(int retentionDays) {
         try {
             LocalDateTime cutoffTime = LocalDateTime.now().minusDays(retentionDays);
@@ -258,7 +252,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     }
 
     @Override
-    @CacheEvict(value = {CacheConfig.STATISTICS_CACHE, CacheConfig.HOT_WORDS_CACHE}, allEntries = true)
     public long batchDeleteLogs(List<Long> logIds) {
         try {
             if (logIds == null || logIds.isEmpty()) {
@@ -426,7 +419,6 @@ public class SearchLogServiceImpl implements SearchLogService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.HOT_WORDS_CACHE, keyGenerator = "customKeyGenerator")
     public List<HotWordResponse> getHotWords(HotWordRequest request) {
         try {
             log.debug("开始获取热词统计: request={}", request);
@@ -441,12 +433,7 @@ public class SearchLogServiceImpl implements SearchLogService {
                 endTime = LocalDateTime.now();
             }
 
-            // 性能优化：首先尝试使用数据库聚合查询（适用于简单场景）
-            if (request.getMinWordLength() <= 2 && !request.getExcludeStopWords()) {
-                return getHotWordsFromDatabaseAggregation(request, startTime, endTime);
-            }
-
-            // 复杂场景：使用分页加载和内存处理
+            // 使用分页加载和内存处理（支持中文分词）
             return getHotWordsWithPaginatedProcessing(request, startTime, endTime);
 
         } catch (Exception e) {
@@ -466,6 +453,11 @@ public class SearchLogServiceImpl implements SearchLogService {
         List<Object[]> dbResults = searchLogRepository.findHotQueriesOptimized(
                 startTime, endTime, PageRequest.of(0, request.getLimit() * 2)); // 多取一些用于后续过滤
 
+        // 计算总次数（所有热词的总出现次数）
+        long totalCount = dbResults.stream()
+                .mapToLong(row -> ((Number) row[1]).longValue())
+                .sum();
+
         return dbResults.stream()
                 .map(row -> {
                     String query = (String) row[0];
@@ -476,7 +468,7 @@ public class SearchLogServiceImpl implements SearchLogService {
                     return HotWordResponse.builder()
                             .word(query)
                             .count(count)
-                            .percentage(calculatePercentage(count, count)) // 简化计算
+                            .percentage(calculatePercentage(count, totalCount)) // 修复：使用总次数计算百分比
                             .wordLength(query.length())
                             .relatedQueriesCount(1L) // 简化计算
                             .firstOccurrence(firstOccurrence)
@@ -546,9 +538,14 @@ public class SearchLogServiceImpl implements SearchLogService {
 
         } while (queryPage.hasNext() && pageNumber < 100); // 限制最大页数防止内存溢出
 
+        // 计算所有词的总出现次数
+        long totalCount = wordStatsMap.values().stream()
+                .mapToLong(WordStatistics::getCount)
+                .sum();
+
         // 转换为响应对象并排序
         List<HotWordResponse> hotWords = wordStatsMap.values().stream()
-                .map(stats -> buildHotWordResponse(stats, wordStatsMap.values().size()))
+                .map(stats -> buildHotWordResponse(stats, totalCount))
                 .sorted((w1, w2) -> Long.compare(w2.getCount(), w1.getCount()))
                 .limit(request.getLimit())
                 .collect(Collectors.toList());
@@ -671,11 +668,11 @@ public class SearchLogServiceImpl implements SearchLogService {
     /**
      * 构建热词响应对象
      */
-    private HotWordResponse buildHotWordResponse(WordStatistics stats, int totalWords) {
+    private HotWordResponse buildHotWordResponse(WordStatistics stats, long totalCount) {
         HotWordResponse.HotWordResponseBuilder builder = HotWordResponse.builder()
                 .word(stats.getWord())
                 .count(stats.getCount())
-                .percentage(calculatePercentage(stats.getCount(), stats.getTotalOccurrences()))
+                .percentage(calculatePercentage(stats.getCount(), totalCount))
                 .wordLength(stats.getWord().length())
                 .relatedQueriesCount((long) stats.getRelatedQueries().size())
                 .firstOccurrence(stats.getFirstOccurrence())

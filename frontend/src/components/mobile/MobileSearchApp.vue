@@ -61,6 +61,7 @@ export interface MobileSearchAppProps {
   enableHistory?: boolean
   pageSize?: number
   searchSpaceId?: string
+  channel?: string
 }
 
 const props = withDefaults(defineProps<MobileSearchAppProps>(), {
@@ -151,7 +152,8 @@ const performSearch = async (query: string, reset = false) => {
       searchSpaceId: props.searchSpaceId,
       query: query.trim(),
       page: currentPage.value,
-      size: props.pageSize
+      size: props.pageSize,
+      channel: props.channel
     }
 
     const response = await searchDataService.search(searchParams)

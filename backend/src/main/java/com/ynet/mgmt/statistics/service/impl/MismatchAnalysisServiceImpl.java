@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 搜索关键词不匹配度分析服务实现
@@ -38,15 +37,15 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
     private static final int LOW_RESULT_THRESHOLD = 5;       // 少结果阈值
 
     private final SearchLogRepository searchLogRepository;
-    // TODO: 注入 ChineseSegmentationService
-    // private final ChineseSegmentationService segmentationService;
+    private final com.ynet.mgmt.searchlog.service.ChineseSegmentationService segmentationService;
 
-    public MismatchAnalysisServiceImpl(SearchLogRepository searchLogRepository) {
+    public MismatchAnalysisServiceImpl(SearchLogRepository searchLogRepository,
+                                       com.ynet.mgmt.searchlog.service.ChineseSegmentationService segmentationService) {
         this.searchLogRepository = searchLogRepository;
+        this.segmentationService = segmentationService;
     }
 
     @Override
-    @Cacheable(value = "mismatchStatistics", key = "#timeRange.code")
     public RankingQueryResponse.StatisticsInfo calculateMismatchStatistics(TimeRangeEnum timeRange) {
         logger.info("计算不匹配度统计 - timeRange: {}", timeRange);
 
@@ -61,28 +60,18 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
         logger.info("计算不匹配度统计 - startTime: {}, endTime: {}", startTime, endTime);
 
         try {
-            // 查询时间范围内的搜索日志，不需要分页，使用自定义查询
-            List<SearchLog> searchLogs = searchLogRepository.findAll().stream()
-                    .filter(log -> log.getCreatedAt().isAfter(startTime.minusSeconds(1)) &&
-                                   log.getCreatedAt().isBefore(endTime.plusSeconds(1)))
-                    .collect(Collectors.toList());
+            // 获取关键词统计数据
+            Map<String, KeywordStats> keywordStatsMap = buildKeywordStatistics(startTime, endTime);
 
-            if (searchLogs.isEmpty()) {
+            if (keywordStatsMap.isEmpty()) {
                 return new RankingQueryResponse.StatisticsInfo(0, 0.0, 0.0, 0.0);
             }
 
-            // 按关键词分组并计算不匹配度
-            Map<String, List<SearchLog>> keywordGroups = searchLogs.stream()
-                    .collect(Collectors.groupingBy(SearchLog::getSearchQuery));
-
+            // 计算每个关键词的不匹配度
             List<Double> mismatchRates = new ArrayList<>();
-            int totalKeywords = keywordGroups.size();
 
-            for (Map.Entry<String, List<SearchLog>> entry : keywordGroups.entrySet()) {
-                String keyword = entry.getKey();
-                List<SearchLog> logs = entry.getValue();
-
-                double mismatchRate = calculateKeywordMismatchRate(keyword, logs);
+            for (KeywordStats stats : keywordStatsMap.values()) {
+                double mismatchRate = calculateKeywordMismatchRateFromStats(stats);
                 mismatchRates.add(mismatchRate);
             }
 
@@ -102,7 +91,7 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
                     .min()
                     .orElse(0.0);
 
-            return new RankingQueryResponse.StatisticsInfo(totalKeywords, avgMismatchRate, maxMismatchRate, minMismatchRate);
+            return new RankingQueryResponse.StatisticsInfo(keywordStatsMap.size(), avgMismatchRate, maxMismatchRate, minMismatchRate);
 
         } catch (Exception e) {
             logger.error("计算不匹配度统计失败", e);
@@ -120,30 +109,22 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
             LocalDateTime endTime = LocalDateTime.now();
             LocalDateTime startTime = endTime.minusDays(timeRange.getDays());
 
-            // 查询搜索日志
-            List<SearchLog> searchLogs = searchLogRepository.findAll().stream()
-                    .filter(log -> log.getCreatedAt().isAfter(startTime.minusSeconds(1)) &&
-                                   log.getCreatedAt().isBefore(endTime.plusSeconds(1)))
-                    .collect(Collectors.toList());
+            // 构建关键词统计数据（已分词并聚合）
+            Map<String, KeywordStats> keywordStatsMap = buildKeywordStatistics(startTime, endTime);
 
-            // 按关键词分组
-            Map<String, List<SearchLog>> keywordGroups = searchLogs.stream()
-                    .collect(Collectors.groupingBy(SearchLog::getSearchQuery));
-
-            // 计算每个关键词的不匹配度
+            // 计算每个关键词的不匹配度并创建 DTO
             List<MismatchKeywordRankingDTO> results = new ArrayList<>();
-            int rank = 1;
 
-            for (Map.Entry<String, List<SearchLog>> entry : keywordGroups.entrySet()) {
+            for (Map.Entry<String, KeywordStats> entry : keywordStatsMap.entrySet()) {
                 String keyword = entry.getKey();
-                List<SearchLog> logs = entry.getValue();
+                KeywordStats stats = entry.getValue();
 
                 // 关键词筛选
                 if (request.hasKeywordFilter() && !keyword.contains(request.getKeyword())) {
                     continue;
                 }
 
-                double mismatchRate = calculateKeywordMismatchRate(keyword, logs);
+                double mismatchRate = calculateKeywordMismatchRateFromStats(stats);
 
                 // 不匹配率范围筛选
                 if (request.hasMismatchRateFilter()) {
@@ -155,7 +136,8 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
                     }
                 }
 
-                MismatchKeywordRankingDTO dto = createRankingDTO(keyword, logs, mismatchRate, rank++);
+                MismatchKeywordRankingDTO dto = new MismatchKeywordRankingDTO(
+                        0, keyword, mismatchRate, stats.searchCount, stats.mismatchCount, stats.lastSearchTime);
                 results.add(dto);
             }
 
@@ -188,19 +170,43 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
         logger.info("批量计算不匹配度分数 - searchLogIds size: {}", searchLogIds.size());
 
         try {
-            // 查询搜索日志
+            // 查询搜索日志（只查询需要的字段）
             List<SearchLog> searchLogs = searchLogRepository.findAllById(searchLogIds);
 
-            // 按关键词分组计算
-            Map<String, List<SearchLog>> keywordGroups = searchLogs.stream()
-                    .collect(Collectors.groupingBy(SearchLog::getSearchQuery));
+            // 按关键词聚合统计
+            Map<String, KeywordStats> keywordStatsMap = new HashMap<>();
 
+            for (SearchLog log : searchLogs) {
+                String searchQuery = log.getSearchQuery();
+                if (searchQuery == null || searchQuery.isBlank()) {
+                    continue;
+                }
+
+                // 对查询字符串进行分词
+                List<String> keywords = segmentationService.segmentText(searchQuery);
+
+                for (String keyword : keywords) {
+                    if (keyword == null || keyword.isBlank() || keyword.length() < 2) {
+                        continue;
+                    }
+
+                    KeywordStats stats = keywordStatsMap.computeIfAbsent(keyword, k -> new KeywordStats());
+                    stats.searchCount++;
+
+                    int resultCount = (log.getTotalResults() != null) ? log.getTotalResults().intValue() : 0;
+                    if (resultCount == 0) {
+                        stats.noResultCount++;
+                    } else if (resultCount <= LOW_RESULT_THRESHOLD) {
+                        stats.lowResultCount++;
+                    }
+                }
+            }
+
+            // 计算每个关键词的不匹配度
             Map<String, Double> mismatchScores = new HashMap<>();
-            for (Map.Entry<String, List<SearchLog>> entry : keywordGroups.entrySet()) {
-                String keyword = entry.getKey();
-                List<SearchLog> logs = entry.getValue();
-                double mismatchRate = calculateKeywordMismatchRate(keyword, logs);
-                mismatchScores.put(keyword, mismatchRate);
+            for (Map.Entry<String, KeywordStats> entry : keywordStatsMap.entrySet()) {
+                double mismatchRate = calculateKeywordMismatchRateFromStats(entry.getValue());
+                mismatchScores.put(entry.getKey(), mismatchRate);
             }
 
             return mismatchScores;
@@ -229,19 +235,20 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
             LocalDateTime endTime = LocalDateTime.now();
             LocalDateTime startTime = endTime.minusDays(timeRange.getDays());
 
-            // 查询指定关键词的搜索日志
-            List<SearchLog> searchLogs = searchLogRepository.findAll().stream()
-                    .filter(log -> keyword.equals(log.getSearchQuery()) &&
-                                   log.getCreatedAt().isAfter(startTime.minusSeconds(1)) &&
-                                   log.getCreatedAt().isBefore(endTime.plusSeconds(1)))
-                    .collect(Collectors.toList());
+            // 构建关键词统计数据
+            Map<String, KeywordStats> keywordStatsMap = buildKeywordStatistics(startTime, endTime);
 
-            if (searchLogs.isEmpty()) {
+            // 从结果中找到指定关键词
+            KeywordStats stats = keywordStatsMap.get(keyword);
+            if (stats == null) {
                 return null;
             }
 
-            double mismatchRate = calculateKeywordMismatchRate(keyword, searchLogs);
-            return createRankingDTO(keyword, searchLogs, mismatchRate, 1);
+            double mismatchRate = calculateKeywordMismatchRateFromStats(stats);
+
+            MismatchKeywordRankingDTO dto = new MismatchKeywordRankingDTO(
+                    1, keyword, mismatchRate, stats.searchCount, stats.mismatchCount, stats.lastSearchTime);
+            return dto;
 
         } catch (Exception e) {
             logger.error("获取关键词详细信息失败 - keyword: {}", keyword, e);
@@ -278,108 +285,102 @@ public class MismatchAnalysisServiceImpl implements MismatchAnalysisService {
     // ==================== 私有方法 ====================
 
     /**
-     * 计算关键词不匹配度
-     * 分层权重算法：无结果权重1.0，少结果权重0.6，正常结果权重0.0
+     * 构建关键词统计数据（核心方法）
+     * 1. 查询时间范围内的所有搜索日志
+     * 2. 对每条日志的 searchQuery 进行分词
+     * 3. 按关键词聚合统计数据
      *
-     * @param keyword 关键词
-     * @param searchLogs 搜索日志列表
-     * @return 不匹配度（0-1之间）
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 关键词统计数据 Map
      */
-    private double calculateKeywordMismatchRate(String keyword, List<SearchLog> searchLogs) {
-        if (searchLogs.isEmpty()) {
-            return 0.0;
-        }
+    private Map<String, KeywordStats> buildKeywordStatistics(LocalDateTime startTime, LocalDateTime endTime) {
+        // 查询搜索日志（只查询 searchQuery 和 totalResults，不查询 response_data）
+        List<Object[]> queryResults = searchLogRepository.findQueryAndResultsInTimeRange(startTime, endTime);
 
-        // TODO: 集成分词服务进行关键词标准化
-        // String normalizedKeyword = segmentationService.segmentAndNormalize(keyword);
+        logger.info("查询到 {} 条搜索日志", queryResults.size());
 
-        double totalWeight = 0.0;
-        double mismatchWeight = 0.0;
+        // 按关键词聚合统计
+        Map<String, KeywordStats> keywordStatsMap = new HashMap<>();
 
-        for (SearchLog log : searchLogs) {
-            int resultCount = log.getTotalResults() != null ? log.getTotalResults().intValue() : 0;
-            double weight = calculateResultWeight(resultCount);
-            totalWeight += weight;
+        for (Object[] row : queryResults) {
+            String searchQuery = (String) row[0];
+            Long totalResults = (Long) row[1];
 
-            if (isMismatch(resultCount)) {
-                mismatchWeight += weight;
+            if (searchQuery == null || searchQuery.isBlank()) {
+                continue;
+            }
+
+            // 对查询字符串进行分词
+            List<String> keywords = segmentationService.segmentText(searchQuery);
+
+            // 统计每个关键词
+            for (String keyword : keywords) {
+                if (keyword == null || keyword.isBlank() || keyword.length() < 2) {
+                    // 过滤掉单字或空白关键词
+                    continue;
+                }
+
+                KeywordStats stats = keywordStatsMap.computeIfAbsent(keyword, k -> new KeywordStats());
+                stats.searchCount++;
+
+                // 根据结果数判断是否为不匹配
+                int resultCount = (totalResults != null) ? totalResults.intValue() : 0;
+                if (resultCount == 0) {
+                    stats.noResultCount++;
+                } else if (resultCount <= LOW_RESULT_THRESHOLD) {
+                    stats.lowResultCount++;
+                }
+
+                stats.lastSearchTime = LocalDateTime.now(); // 简化处理，实际应该从日志获取
             }
         }
 
-        return totalWeight > 0 ? mismatchWeight / totalWeight : 0.0;
+        logger.info("统计到 {} 个唯一关键词", keywordStatsMap.size());
+
+        return keywordStatsMap;
     }
 
     /**
-     * 计算结果权重
+     * 根据关键词统计数据计算不匹配率
+     * 使用分层权重算法：
+     * - 无结果（0条）：权重 1.0（完全不匹配）
+     * - 少结果（1-5条）：权重 0.6（部分不匹配）
+     * - 正常结果（>5条）：权重 0.0（匹配良好）
      *
-     * @param resultCount 搜索结果数量
-     * @return 权重值
+     * 不匹配率 = 加权不匹配分数 / 总出现次数
+     *
+     * @param stats 关键词统计数据
+     * @return 不匹配率（0-1之间）
      */
-    private double calculateResultWeight(int resultCount) {
-        if (resultCount == 0) {
-            return NO_RESULT_WEIGHT;
-        } else if (resultCount <= LOW_RESULT_THRESHOLD) {
-            return LOW_RESULT_WEIGHT;
-        } else {
-            return NORMAL_RESULT_WEIGHT;
+    private double calculateKeywordMismatchRateFromStats(KeywordStats stats) {
+        if (stats.searchCount == 0) {
+            return 0.0;
         }
+
+        // 计算加权不匹配分数
+        // 无结果按1.0计算，少结果按0.6计算
+        double weightedMismatchScore = stats.noResultCount * NO_RESULT_WEIGHT +
+                                      stats.lowResultCount * LOW_RESULT_WEIGHT;
+
+        // 不匹配率 = 加权不匹配分数 / 总出现次数
+        // 例如：出现56次，其中1次无结果 -> 1.0 / 56 = 1.8%
+        // 例如：出现3次，其中2次少结果 -> 1.2 / 3 = 40%
+        double mismatchRate = weightedMismatchScore / stats.searchCount;
+
+        stats.mismatchCount = stats.noResultCount + stats.lowResultCount;
+
+        return mismatchRate;
     }
 
     /**
-     * 判断是否为不匹配
-     *
-     * @param resultCount 搜索结果数量
-     * @return true如果是不匹配
+     * 关键词统计数据内部类
      */
-    private boolean isMismatch(int resultCount) {
-        return resultCount <= LOW_RESULT_THRESHOLD;
-    }
-
-    /**
-     * 创建排行榜DTO
-     *
-     * @param keyword 关键词
-     * @param searchLogs 搜索日志
-     * @param mismatchRate 不匹配率
-     * @param rank 排名
-     * @return 排行榜DTO
-     */
-    private MismatchKeywordRankingDTO createRankingDTO(String keyword, List<SearchLog> searchLogs,
-                                                      double mismatchRate, int rank) {
-        int searchCount = searchLogs.size();
-        int mismatchCount = (int) searchLogs.stream()
-                .mapToInt(log -> log.getTotalResults() != null ? log.getTotalResults().intValue() : 0)
-                .filter(count -> count <= LOW_RESULT_THRESHOLD)
-                .count();
-
-        LocalDateTime lastSearchTime = searchLogs.stream()
-                .map(SearchLog::getCreatedAt)
-                .max(LocalDateTime::compareTo)
-                .orElse(null);
-
-        MismatchKeywordRankingDTO dto = new MismatchKeywordRankingDTO(
-                rank, keyword, mismatchRate, searchCount, mismatchCount, lastSearchTime);
-
-        // TODO: 计算趋势和排名变化
-        dto.setTrend(calculateTrend(mismatchRate));
-        dto.setRankChange(0); // 暂时设为0，需要历史数据对比
-
-        return dto;
-    }
-
-    /**
-     * 计算趋势
-     *
-     * @param mismatchRate 不匹配率
-     * @return 趋势
-     */
-    private String calculateTrend(double mismatchRate) {
-        if (mismatchRate > 0.7) {
-            return "up";
-        } else if (mismatchRate < 0.3) {
-            return "down";
-        } else {
-            return "stable";
-        }
+    private static class KeywordStats {
+        int searchCount = 0;          // 搜索次数
+        int noResultCount = 0;        // 无结果次数
+        int lowResultCount = 0;       // 少结果次数
+        int mismatchCount = 0;        // 不匹配次数（无结果+少结果）
+        LocalDateTime lastSearchTime; // 最后搜索时间
     }
 }

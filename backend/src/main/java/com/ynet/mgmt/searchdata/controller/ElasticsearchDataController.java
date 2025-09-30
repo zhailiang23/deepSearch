@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -198,6 +199,26 @@ public class ElasticsearchDataController {
                     content = @Content(schema = @Schema(implementation = String.class))
             )
     })
+    @PutMapping("/document/{id}/channels")
+    public ResponseEntity<ApiResponse<UpdateDocumentResponse>> updateDocumentChannels(
+            @Parameter(description = "文档ID", required = true) @PathVariable String id,
+            @Parameter(description = "索引名称", required = true) @RequestParam String index,
+            @Parameter(description = "渠道白名单", required = true) @RequestBody List<String> channels) {
+
+        logger.info("更新文档渠道配置: id={}, index={}, channels={}", id, index, channels);
+
+        try {
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("request_channel_white_list", channels);
+
+            UpdateDocumentResponse response = elasticsearchDataService.updateDocumentFields(id, index, fields);
+            return ResponseEntity.ok(ApiResponse.success(response));
+        } catch (RuntimeException e) {
+            logger.error("更新文档渠道配置失败: id={}, index={}", id, index, e);
+            return ResponseEntity.badRequest().body(ApiResponse.error("更新文档渠道配置失败: " + e.getMessage()));
+        }
+    }
+
     @PutMapping("/document/{id}")
     public ResponseEntity<ApiResponse<UpdateDocumentResponse>> updateDocument(
             @Parameter(description = "文档ID", required = true) @PathVariable String id,

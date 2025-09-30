@@ -25,6 +25,37 @@
         </CollapsibleContent>
       </Collapsible>
 
+      <!-- 渠道选择 -->
+      <Collapsible v-model:open="sections.channel" class="border rounded-lg">
+        <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
+          <span class="text-emerald-700">渠道选择</span>
+          <ChevronDown class="h-4 w-4 transition-transform duration-200"
+                      :class="{ 'rotate-180': sections.channel }" />
+        </CollapsibleTrigger>
+        <CollapsibleContent class="px-3 pb-3">
+          <div class="space-y-2">
+            <Label class="text-sm">选择渠道</Label>
+            <select
+              v-model="localConfig.channel"
+              class="w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
+              :disabled="loadingChannels"
+            >
+              <option value="">全部渠道</option>
+              <option
+                v-for="channel in channels"
+                :key="channel.id"
+                :value="channel.code"
+              >
+                {{ channel.name }}
+              </option>
+            </select>
+            <p class="text-xs text-muted-foreground">
+              选择特定渠道将只显示该渠道可访问的文档
+            </p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
       <!-- 拼音搜索配置 -->
       <Collapsible v-model:open="sections.pinyinSearch" class="border rounded-lg">
         <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
@@ -159,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import { useVModel } from '@vueuse/core'
 
@@ -188,6 +219,9 @@ import type {
   ParameterChangeEvent
 } from '@/types/demo'
 
+import { channelApi } from '@/services/channelApi'
+import type { Channel } from '@/types/channel'
+
 // Props & Emits
 const props = withDefaults(defineProps<ParameterPanelProps>(), {
   collapsed: false,
@@ -211,6 +245,7 @@ const collapsed = ref(props.collapsed)
 
 const sections = ref({
   searchSpaces: true,
+  channel: false,
   pinyinSearch: false,
   semanticSearch: true,
   pagination: false,
@@ -222,7 +257,23 @@ const syncStatus = ref<SyncStatus>({
   lastSync: Date.now()
 })
 
+// 渠道列表
+const channels = ref<Channel[]>([])
+const loadingChannels = ref(false)
 
+// 加载渠道列表
+onMounted(async () => {
+  loadingChannels.value = true
+  try {
+    // Spring Data JPA分页从0开始
+    const response = await channelApi.list({ page: 0, size: 100 })
+    channels.value = response.data.content
+  } catch (error) {
+    console.error('加载渠道列表失败:', error)
+  } finally {
+    loadingChannels.value = false
+  }
+})
 
 // Computed
 const canReset = computed(() => {
@@ -292,6 +343,17 @@ function detectChanges(oldConfig: SearchDemoConfig, newConfig: SearchDemoConfig)
       key: 'config',
       value: newConfig.pagination,
       previous: oldConfig.pagination,
+      timestamp
+    })
+  }
+
+  // 检查渠道变更
+  if (oldConfig.channel !== newConfig.channel) {
+    changes.push({
+      type: 'channel',
+      key: 'channel',
+      value: newConfig.channel,
+      previous: oldConfig.channel,
       timestamp
     })
   }

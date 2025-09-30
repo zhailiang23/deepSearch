@@ -19,6 +19,7 @@ export interface SearchDataRequest {
     value: any
     operator: 'eq' | 'contains' | 'startsWith' | 'endsWith' | 'range' | 'in'
   }>
+  channel?: string
 }
 
 // 搜索数据响应
@@ -125,5 +126,13 @@ export const searchDataService = {
     errors: boolean
     items: Array<any>
   }> =>
-    http.post('/elasticsearch/bulk', { operations })
+    http.post('/elasticsearch/bulk', { operations }),
+
+  /**
+   * 更新文档渠道配置
+   */
+  updateDocumentChannels: (id: string, index: string, channels: string[]): Promise<UpdateDocumentResponse> =>
+    http.put(`/elasticsearch/document/${id}/channels`, channels, {
+      params: { index }
+    })
 }

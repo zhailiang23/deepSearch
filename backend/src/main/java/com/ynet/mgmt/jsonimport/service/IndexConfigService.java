@@ -620,6 +620,14 @@ public class IndexConfigService {
                 .index(true)
                 .docValues(true)
                 .build());
+
+        // 请求渠道白名单字段（字符串数组）
+        mappings.put("request_channel_white_list", IndexMappingConfig.FieldMapping.builder()
+                .fieldName("request_channel_white_list")
+                .elasticsearchType("keyword")
+                .index(true)
+                .docValues(true)
+                .build());
     }
 
     /**

@@ -82,12 +82,17 @@ public class ElasticsearchDataService {
                 sensitiveWordCheckService.checkAndThrow(request.getQuery());
             }
 
-            log.info("开始搜索ES数据: index={}, query={}, page={}, size={}, pinyin={}, mode={}",
+            log.info("开始搜索ES数据: index={}, query={}, page={}, size={}, pinyin={}, mode={}, channel={}",
                     indexName, request.getQuery(), request.getPage(), request.getSize(),
-                    request.getEnablePinyinSearch(), request.getPinyinMode());
+                    request.getEnablePinyinSearch(), request.getPinyinMode(), request.getChannel());
 
             // 构建查询
             Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName, request.getEnableSemanticSearch(), request.getSemanticWeight());
+
+            // 如果指定了渠道，添加渠道过滤
+            if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
+                query = addChannelFilter(query, request.getChannel());
+            }
 
             // 计算分页参数
             int from = (request.getPage() - 1) * request.getSize();
@@ -262,6 +267,53 @@ public class ElasticsearchDataService {
     }
 
     /**
+     * 部分更新文档字段
+     *
+     * @param id 文档ID
+     * @param index 索引名称
+     * @param fields 要更新的字段
+     * @return 更新结果
+     */
+    public UpdateDocumentResponse updateDocumentFields(String id, String index, Map<String, Object> fields) {
+        try {
+            log.info("部分更新文档字段: id={}, index={}, fields={}", id, index, fields.keySet());
+
+            // 构建部分更新请求
+            co.elastic.clients.elasticsearch.core.UpdateRequest<Map<String, Object>, Map<String, Object>> updateRequest =
+                    new co.elastic.clients.elasticsearch.core.UpdateRequest.Builder<Map<String, Object>, Map<String, Object>>()
+                            .index(index)
+                            .id(id)
+                            .doc(fields)
+                            .build();
+
+            // 执行更新
+            co.elastic.clients.elasticsearch.core.UpdateResponse<Map<String, Object>> response =
+                    elasticsearchClient.update(updateRequest, Map.class);
+
+            log.info("文档字段更新成功: id={}, index={}, version={}, result={}",
+                    id, index, response.version(), response.result());
+
+            return UpdateDocumentResponse.builder()
+                    .id(id)
+                    .index(index)
+                    .version(response.version())
+                    .result(response.result().jsonValue())
+                    .build();
+
+        } catch (ElasticsearchException e) {
+            if (e.getMessage().contains("version_conflict")) {
+                log.warn("文档版本冲突: id={}, index={}", id, index);
+                throw new RuntimeException("version_conflict: 文档已被其他用户修改", e);
+            }
+            log.error("部分更新文档字段失败: id={}, index={}", id, index, e);
+            throw new RuntimeException("更新失败: " + e.getMessage(), e);
+        } catch (IOException e) {
+            log.error("部分更新文档字段异常: id={}, index={}", id, index, e);
+            throw new RuntimeException("更新异常: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * 删除文档
      *
      * @param id 文档ID
@@ -399,6 +451,52 @@ public class ElasticsearchDataService {
 
         log.debug("构建高亮字段配置: index={}, fields={}", indexName, highlightFields.size());
         return highlightFields;
+    }
+
+    /**
+     * 添加渠道过滤
+     * 当指定渠道时，只返回以下三种文档：
+     * 1. request_channel_white_list字段不存在的文档
+     * 2. request_channel_white_list字段值为空或空数组的文档
+     * 3. request_channel_white_list字段包含指定渠道的文档
+     *
+     * @param originalQuery 原始查询
+     * @param channel 渠道代码
+     * @return 添加渠道过滤后的查询
+     */
+    private Query addChannelFilter(Query originalQuery, String channel) {
+        log.debug("添加渠道过滤: channel={}", channel);
+
+        return BoolQuery.of(b -> b
+                .must(originalQuery)
+                .should(s -> s
+                        // 条件1: request_channel_white_list字段不存在
+                        .bool(notExists -> notExists
+                                .mustNot(mn -> mn
+                                        .exists(e -> e.field("request_channel_white_list"))
+                                )
+                        )
+                )
+                .should(s -> s
+                        // 条件2: request_channel_white_list字段值为空或空数组
+                        .bool(isEmpty -> isEmpty
+                                .must(m -> m
+                                        .exists(e -> e.field("request_channel_white_list"))
+                                )
+                                .mustNot(mn -> mn
+                                        .exists(e -> e.field("request_channel_white_list").queryName("has_value"))
+                                )
+                        )
+                )
+                .should(s -> s
+                        // 条件3: request_channel_white_list字段包含指定渠道
+                        .term(t -> t
+                                .field("request_channel_white_list")
+                                .value(channel)
+                        )
+                )
+                .minimumShouldMatch("1")
+        )._toQuery();
     }
 
     /**

@@ -63,6 +63,9 @@ export interface SearchDemoConfig {
     allowMultiple: boolean
   }
 
+  // 渠道选择
+  channel?: string
+
   // 拼音搜索配置
   pinyinSearch: PinyinSearchConfig
 
@@ -92,7 +95,7 @@ export interface ConfigPreset {
 
 // 参数变更事件
 export interface ParameterChangeEvent {
-  type: 'searchSpace' | 'pinyin' | 'semantic' | 'pagination' | 'behavior' | 'display'
+  type: 'searchSpace' | 'channel' | 'pinyin' | 'semantic' | 'pagination' | 'behavior' | 'display'
   key: string
   value: any
   previous: any
@@ -146,6 +149,7 @@ export const DEFAULT_SEARCH_DEMO_CONFIG: SearchDemoConfig = {
     available: [],
     allowMultiple: true
   },
+  channel: undefined,
   pinyinSearch: {
     enabled: true,
     mode: 'both',
