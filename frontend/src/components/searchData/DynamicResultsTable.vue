@@ -31,7 +31,7 @@
                   v-for="column in visibleColumns"
                   :key="column.key"
                   :class="[
-                    'p-3 border-r font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none',
+                    'p-2 border-r font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors select-none',
                     column.sortable ? 'cursor-pointer' : 'cursor-default'
                   ]"
                   :style="{
@@ -62,7 +62,7 @@
                 </div>
 
                 <!-- 操作列头 -->
-                <div class="w-40 flex-shrink-0 p-3 border-r font-medium text-gray-700 sticky right-0 bg-gray-50 z-20">
+                <div class="w-40 flex-shrink-0 p-2 border-r font-medium text-gray-700 sticky right-0 bg-gray-50 z-20">
                   <span>操作</span>
                 </div>
               </div>
@@ -74,7 +74,7 @@
               v-if="virtualScrollEnabled"
               ref="virtualListRef"
               :items="tableRows"
-              :item-height="60"
+              :item-height="44"
               :container-height="500"
               :visible-count="15"
               :buffer-size="5"
@@ -270,6 +270,7 @@ interface Props {
   height?: number
   searchLogId?: number
   enableClickTracking?: boolean
+  columns?: TableColumn[] // 外部传入的列配置
 }
 
 interface Emits {
@@ -807,13 +808,17 @@ watch(isMobile, (mobile) => {
 })
 
 // 初始化列配置
-watch(allColumns, (columns) => {
-  if (columns.length > 0) {
-    // 每次allColumns变化时都重新生成可见列
-    // 显示所有列
+watch([allColumns, () => props.columns], ([columns, externalColumns]) => {
+  if (externalColumns && externalColumns.length > 0) {
+    // 如果外部传入了列配置，优先使用外部配置
+    visibleColumns.value = externalColumns
+    console.log('DynamicResultsTable: 使用外部列配置', externalColumns.length)
+  } else if (columns.length > 0) {
+    // 否则使用内部生成的列配置
     visibleColumns.value = columns.filter(col => col.visible)
+    console.log('DynamicResultsTable: 使用默认列配置', visibleColumns.value.length)
   }
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // 内存优化：清理定时器
 onMounted(() => {

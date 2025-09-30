@@ -8,27 +8,38 @@
       <!-- 搜索条件面板 -->
       <Card>
         <CardContent class="pt-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- 搜索空间选择 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 搜索空间选择和字段管理 -->
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700">搜索空间选择</label>
-              <select
-                v-model="currentIndex"
-                @change="handleIndexChange"
-                :disabled="loading"
-                class="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
-              >
-                <option value="">请选择搜索空间</option>
-                <option
-                  v-for="space in availableSearchSpaces"
-                  :key="space.id"
-                  :value="space.id"
+              <div class="flex gap-2">
+                <select
+                  v-model="currentIndex"
+                  @change="handleIndexChange"
+                  :disabled="loading"
+                  class="flex-1 h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
                 >
-                  {{ space.name }}
-                </option>
-              </select>
+                  <option value="">请选择搜索空间</option>
+                  <option
+                    v-for="space in availableSearchSpaces"
+                    :key="space.id"
+                    :value="space.id"
+                  >
+                    {{ space.name }}
+                  </option>
+                </select>
+                <Button
+                  @click="openColumnConfigDialog"
+                  :disabled="!currentIndex || !indexMapping"
+                  variant="outline"
+                  class="h-10 border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-4 whitespace-nowrap"
+                >
+                  <Settings class="w-4 h-4 mr-2" />
+                  字段管理
+                </Button>
+              </div>
             </div>
-            
+
             <!-- 搜索关键词和按钮 -->
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700">搜索关键词</label>
@@ -54,9 +65,6 @@
                 </Button>
               </div>
             </div>
-
-            <!-- 空白占位 -->
-            <div></div>
           </div>
         </CardContent>
       </Card>
@@ -72,6 +80,7 @@
             ref="tableRef"
             :data="searchResults.hits"
             :mapping="indexMapping"
+            :columns="visibleColumns"
             :loading="loading"
             :total-count="totalCount"
             :enable-virtual-scroll="false"
@@ -130,6 +139,16 @@
       </DialogContent>
     </Dialog>
     -->
+
+    <!-- 字段管理对话框 -->
+    <ColumnConfigDialog
+      v-model:open="columnConfigDialogOpen"
+      :all-columns="allColumns"
+      :visible-columns="visibleColumns"
+      @save="handleColumnConfigSave"
+      @reset="handleColumnConfigReset"
+      @clear="handleColumnConfigClear"
+    />
   </div>
 </template>
 
@@ -154,19 +173,24 @@ import {
   ChevronDown,
   FileText,
   Clock,
-  CheckSquare
+  CheckSquare,
+  Settings
 } from 'lucide-vue-next'
 
 // 组件导入
 import DynamicResultsTable from '@/components/searchData/DynamicResultsTable.vue'
+import ColumnConfigDialog from '@/components/searchData/ColumnConfigDialog.vue'
 
 // 服务导入
 import { searchDataService } from '@/services/searchDataService'
 
+// Composable导入
+import { useColumnConfig } from '@/composables/useColumnConfig'
+
 // 类型导入
-import type { 
-  TableColumn, 
-  TableRow, 
+import type {
+  TableColumn,
+  TableRow,
   ESIndexMapping,
   SearchParams,
   SearchResults
@@ -195,6 +219,18 @@ const availableSearchSpaces = ref<Array<{id: number, name: string, description?:
 const searchQuery = ref('')
 const sortField = ref('')
 const sortOrder = ref<'asc' | 'desc'>('desc')
+
+// 字段管理对话框状态
+const columnConfigDialogOpen = ref(false)
+const allColumns = ref<TableColumn[]>([])
+
+// 列配置管理(根据当前搜索空间ID)
+const getColumnConfig = () => {
+  if (!currentIndex.value) {
+    return null
+  }
+  return useColumnConfig(currentIndex.value)
+}
 
 // 计算当前搜索空间名称
 const currentSearchSpaceName = computed(() => {
@@ -383,7 +419,7 @@ function generateInitialColumns(): TableColumn[] {
       type: mapFieldType(field.type),
       sortable: ['keyword', 'number', 'date', 'boolean'].includes(field.type),
       filterable: true,
-      visible: true, // 显示所有字段
+      visible: true, // 默认显示所有字段
       resizable: true,
       width: getDefaultWidth(field.type),
       esField: key,
@@ -393,6 +429,21 @@ function generateInitialColumns(): TableColumn[] {
     visibleIndex++
   })
 
+  // 应用保存的配置
+  const columnConfig = getColumnConfig()
+  if (columnConfig && columnConfig.hasConfig()) {
+    const configuredColumns = columnConfig.applyConfig(columns)
+    console.log('应用了保存的列配置:', configuredColumns)
+
+    // 保存所有列(包括隐藏的)到allColumns
+    allColumns.value = [...configuredColumns]
+
+    // 只返回可见的列
+    return configuredColumns.filter(col => col.visible)
+  }
+
+  // 没有保存的配置时，保存所有列
+  allColumns.value = [...columns]
   return columns
 }
 
@@ -802,6 +853,77 @@ function showErrorToast(message: string) {
     description: message,
     variant: 'destructive'
   })
+}
+
+// 字段管理相关方法
+function openColumnConfigDialog() {
+  if (!currentIndex.value || !indexMapping.value) {
+    showErrorToast('请先选择搜索空间')
+    return
+  }
+  columnConfigDialogOpen.value = true
+}
+
+function handleColumnConfigSave(newColumns: TableColumn[]) {
+  console.log('保存列配置 - 可见列:', newColumns.length)
+
+  // 创建完整的列配置（包括可见和隐藏的列）
+  const visibleKeys = new Set(newColumns.map(col => col.key))
+
+  // 找出所有隐藏的列
+  const hiddenColumns = allColumns.value
+    .filter(col => !visibleKeys.has(col.key))
+    .map(col => ({ ...col, visible: false }))
+
+  // 合并可见列和隐藏列
+  const allColumnsToSave = [
+    ...newColumns.map(col => ({ ...col, visible: true })),
+    ...hiddenColumns
+  ]
+
+  console.log('保存列配置 - 总列数:', allColumnsToSave.length, '(可见:', newColumns.length, '隐藏:', hiddenColumns.length, ')')
+
+  // 更新可见列
+  visibleColumns.value = [...newColumns]
+
+  // 更新allColumns以包含最新配置
+  allColumns.value = [...allColumnsToSave]
+
+  // 保存完整配置到localStorage
+  const columnConfig = getColumnConfig()
+  if (columnConfig) {
+    columnConfig.saveConfig(allColumnsToSave)
+    showSuccessToast('列配置已保存')
+  }
+}
+
+function handleColumnConfigReset() {
+  console.log('重置列配置')
+
+  // 清除保存的配置
+  const columnConfig = getColumnConfig()
+  if (columnConfig) {
+    columnConfig.clearConfig()
+  }
+
+  // 重新生成初始列
+  visibleColumns.value = generateInitialColumns()
+
+  showSuccessToast('列配置已重置为默认')
+}
+
+function handleColumnConfigClear() {
+  console.log('清除列配置')
+
+  // 清除保存的配置
+  const columnConfig = getColumnConfig()
+  if (columnConfig) {
+    columnConfig.clearConfig()
+    showSuccessToast('列配置已清除')
+  }
+
+  // 重新生成初始列
+  visibleColumns.value = generateInitialColumns()
 }
 </script>
 

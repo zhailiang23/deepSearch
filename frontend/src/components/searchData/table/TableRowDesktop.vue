@@ -20,7 +20,7 @@
         v-for="column in columns"
         :key="column.key"
         :class="[
-          'p-3 border-r',
+          'p-2 border-r',
           `text-${column.align || 'left'}`,
           {
             'sticky left-12 bg-white z-10': column.fixed === 'left',
@@ -44,7 +44,7 @@
       </div>
 
       <!-- 操作列 -->
-      <div class="w-40 flex-shrink-0 p-3 flex items-center justify-end gap-2 sticky right-0 bg-white z-20 border-r">
+      <div class="w-40 flex-shrink-0 p-2 flex items-center justify-end gap-2 sticky right-0 bg-white z-20 border-r">
 
       <!-- 操作按钮 -->
       <div class="flex items-center gap-1">
@@ -269,7 +269,7 @@ function getCellValue(row: TableRow, column: TableColumn): any {
 <style scoped>
 /* 表格行样式 */
 .table-row {
-  min-height: 60px;
+  min-height: 44px;
 }
 
 /* 点击反馈样式 */
@@ -334,11 +334,11 @@ function getCellValue(row: TableRow, column: TableColumn): any {
 /* 响应式优化 */
 @media (max-width: 1024px) {
   .table-row {
-    min-height: 56px;
+    min-height: 40px;
   }
-  
-  .table-row .p-3 {
-    padding: 0.5rem;
+
+  .table-row .p-2 {
+    padding: 0.375rem;
   }
 }
 

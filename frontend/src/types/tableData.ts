@@ -80,9 +80,26 @@ export interface ESFieldMapping {
 }
 
 export interface ESIndexMapping {
-  mappings: {
+  mappings?: {
     properties: Record<string, ESFieldMapping>
   }
+  properties?: Record<string, ESFieldMapping>  // 支持直接的properties格式
+}
+
+// 搜索结果类型
+export interface SearchResults {
+  hits: TableRow[]
+  total: number
+  took: number
+}
+
+// 搜索参数类型
+export interface SearchParams {
+  keyword?: string
+  filters?: FilterConfig[]
+  sort?: SortConfig
+  page: number
+  size: number
 }
 
 // 响应式断点配置
