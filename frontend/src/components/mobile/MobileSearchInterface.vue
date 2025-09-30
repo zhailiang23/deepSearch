@@ -168,12 +168,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
               <input
+                ref="searchInputRef"
                 v-model="searchQuery"
                 type="text"
                 placeholder="搜索..."
                 class="search-input"
                 @input="handleSearch"
                 @keydown.enter="performSearch"
+                @focus="handleFocus"
               />
               <button
                 v-if="searchQuery"
@@ -253,7 +255,7 @@
                   <div class="result-header">
                     <div class="result-title-wrapper">
                       <h3 class="result-title" v-html="highlightText(result.title, result, 'name')"></h3>
-                      <span v-if="result.source?.type && !groupByType" class="result-type-tag">{{ result.source.type }}</span>
+                      <span v-if="result.source?.type && (!groupByType || activeTab === 'all')" class="result-type-tag">{{ result.source.type }}</span>
                     </div>
                     <span v-if="showScore" class="result-score">{{ result.score?.toFixed(2) }}</span>
                   </div>
@@ -365,6 +367,7 @@ const currentTime = ref('')
 const activeSpace = ref('')
 const infiniteScrollTrigger = ref<HTMLElement>()
 const isLoadingMore = ref(false)
+const searchInputRef = ref<HTMLInputElement>()
 
 // 热门搜索数据（从热门话题API获取）
 const hotSearches = ref<Array<{ query: string; isHot: boolean }>>([])
@@ -474,6 +477,23 @@ const loadHotTopics = async () => {
     ]
   } finally {
     isLoadingHotTopics.value = false
+  }
+}
+
+const handleFocus = () => {
+  // 当搜索框获取焦点时，如果搜索框为空，清除之前的搜索结果和状态
+  if (searchQuery.value.trim() === '') {
+    store.clearResults()
+    currentSearchLogId.value = null
+    store.setSearchState({
+      loading: false,
+      error: null,
+      query: '',
+      hasMore: false,
+      total: 0,
+      page: 1
+    })
+    console.log('搜索框获取焦点，搜索框为空，已清除搜索结果和状态')
   }
 }
 
@@ -875,6 +895,11 @@ onMounted(() => {
   if (selectedSpaces.value.length > 0) {
     activeSpace.value = selectedSpaces.value[0].id
   }
+
+  // 自动让搜索框获取焦点
+  nextTick(() => {
+    searchInputRef.value?.focus()
+  })
 })
 
 onUnmounted(() => {

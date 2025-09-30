@@ -194,20 +194,41 @@ public class SearchLogAspect {
                 }
             }
             searchLog.setIpAddress(userIp);
-            searchLog.setSearchSpaceId(Long.valueOf(request.getSearchSpaceId()));
+
+            // 处理搜索空间ID - 支持单空间和多空间搜索
+            String searchSpaceIdStr = request.getSearchSpaceId();
+            if (searchSpaceIdStr == null || searchSpaceIdStr.trim().isEmpty()) {
+                // 如果是多空间搜索，使用第一个空间ID
+                if (request.getSearchSpaceIds() != null && !request.getSearchSpaceIds().isEmpty()) {
+                    searchSpaceIdStr = request.getSearchSpaceIds().get(0);
+                }
+            }
+
+            // 设置搜索空间ID
+            if (searchSpaceIdStr != null && !searchSpaceIdStr.trim().isEmpty()) {
+                try {
+                    searchLog.setSearchSpaceId(Long.valueOf(searchSpaceIdStr));
+                } catch (NumberFormatException e) {
+                    log.warn("搜索空间ID格式错误: {}", searchSpaceIdStr, e);
+                    searchLog.setSearchSpaceId(null);
+                }
+            }
+
             searchLog.setSearchQuery(request.getQuery());
             searchLog.setUserAgent(userAgent);
             searchLog.setSessionId(sessionId);
 
             // 获取并设置搜索空间信息
-            try {
-                SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(request.getSearchSpaceId()));
-                if (searchSpace != null) {
-                    searchLog.setSearchSpaceCode(searchSpace.getCode());
-                    searchLog.setSearchSpaceName(searchSpace.getName());
+            if (searchSpaceIdStr != null && !searchSpaceIdStr.trim().isEmpty()) {
+                try {
+                    SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(searchSpaceIdStr));
+                    if (searchSpace != null) {
+                        searchLog.setSearchSpaceCode(searchSpace.getCode());
+                        searchLog.setSearchSpaceName(searchSpace.getName());
+                    }
+                } catch (Exception e) {
+                    log.warn("获取搜索空间信息失败，searchSpaceId: {}", searchSpaceIdStr, e);
                 }
-            } catch (Exception e) {
-                log.warn("获取搜索空间信息失败，searchSpaceId: {}", request.getSearchSpaceId(), e);
             }
 
             // 设置请求参数
