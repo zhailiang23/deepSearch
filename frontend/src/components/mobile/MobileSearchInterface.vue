@@ -556,9 +556,14 @@ const realSearch = async () => {
     currentSearchLogId.value = Date.now() // 使用时间戳作为临时ID
     console.log('生成搜索日志ID:', currentSearchLogId.value)
 
-    // 构建搜索请求参数
+    // 构建搜索请求参数 - 支持多空间搜索
+    const searchSpaceIds = selectedSpaces.value.map(space => space.id)
     const searchRequest = {
-      searchSpaceId: selectedSpaces.value[0].id, // 目前只支持单个搜索空间
+      // 如果选择了多个空间，使用 searchSpaceIds；否则使用 searchSpaceId
+      ...(searchSpaceIds.length > 1
+        ? { searchSpaceIds: searchSpaceIds }
+        : { searchSpaceId: searchSpaceIds[0] }
+      ),
       query: searchQuery.value,
       page: 1,
       size: store.config.pagination.pageSize,
@@ -670,9 +675,14 @@ const loadMore = async () => {
   try {
     const nextPage = store.searchState.page + 1
 
-    // 构建加载更多的搜索请求参数
+    // 构建加载更多的搜索请求参数 - 支持多空间搜索
+    const searchSpaceIds = selectedSpaces.value.map(space => space.id)
     const searchRequest = {
-      searchSpaceId: selectedSpaces.value[0].id,
+      // 如果选择了多个空间，使用 searchSpaceIds；否则使用 searchSpaceId
+      ...(searchSpaceIds.length > 1
+        ? { searchSpaceIds: searchSpaceIds }
+        : { searchSpaceId: searchSpaceIds[0] }
+      ),
       query: searchQuery.value,
       page: nextPage,
       size: store.config.pagination.pageSize,
@@ -880,12 +890,24 @@ watch(() => store.config, () => {
   }
 }, { deep: true })
 
-watch(() => selectedSpaces.value, () => {
+watch(() => selectedSpaces.value, (newSpaces, oldSpaces) => {
   // 搜索空间变更时更新活跃空间
   if (selectedSpaces.value.length > 0 && !selectedSpaces.value.find(s => s.id === activeSpace.value)) {
     activeSpace.value = selectedSpaces.value[0].id
   }
-})
+
+  // 如果已经有搜索词，且搜索空间发生变化，则自动触发搜索
+  if (searchQuery.value && searchQuery.value.trim().length >= minQueryLength.value) {
+    // 检查搜索空间是否真的变化了
+    const oldIds = oldSpaces?.map(s => s.id).sort().join(',') || ''
+    const newIds = newSpaces?.map(s => s.id).sort().join(',') || ''
+
+    if (oldIds !== newIds && newSpaces && newSpaces.length > 0) {
+      console.log('搜索空间变化，重新搜索:', { oldIds, newIds })
+      performSearch()
+    }
+  }
+}, { deep: true })
 
 // 监听分组模式变化
 watch(() => groupByType.value, (newValue) => {

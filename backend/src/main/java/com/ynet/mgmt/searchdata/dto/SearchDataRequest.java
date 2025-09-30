@@ -17,9 +17,11 @@ import java.util.List;
 @Schema(description = "搜索数据请求参数")
 public class SearchDataRequest {
 
-    @Schema(description = "搜索空间ID", required = true, example = "1")
-    @NotBlank(message = "搜索空间ID不能为空")
+    @Schema(description = "搜索空间ID（单个空间搜索）", example = "1")
     private String searchSpaceId;
+
+    @Schema(description = "搜索空间ID列表（多空间搜索）", example = "[\"1\", \"2\", \"3\"]")
+    private List<String> searchSpaceIds;
 
     @Schema(description = "搜索查询语句", example = "user AND active:true")
     private String query;

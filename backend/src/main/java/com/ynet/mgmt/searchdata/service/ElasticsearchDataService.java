@@ -43,6 +43,7 @@ public class ElasticsearchDataService {
     private final ElasticsearchClient elasticsearchClient;
     private final EmbeddingService embeddingService;
     private final com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService;
+    private final com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService;
 
     /**
      * 是否启用语义搜索功能
@@ -59,10 +60,12 @@ public class ElasticsearchDataService {
     @Autowired
     public ElasticsearchDataService(ElasticsearchClient elasticsearchClient,
                                   EmbeddingService embeddingService,
-                                  com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService) {
+                                  com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService,
+                                  com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService) {
         this.elasticsearchClient = elasticsearchClient;
         this.embeddingService = embeddingService;
         this.sensitiveWordCheckService = sensitiveWordCheckService;
+        this.searchSpaceService = searchSpaceService;
     }
 
     /**
@@ -183,6 +186,139 @@ public class ElasticsearchDataService {
             long duration = System.currentTimeMillis() - startTime;
             log.error("搜索过程中出现未预期异常: index={}, query={}, took={}ms",
                     indexName, request.getQuery(), duration, e);
+            throw new RuntimeException("搜索失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 搜索多个搜索空间的数据
+     *
+     * @param request 搜索请求
+     * @param userRole 当前用户角色（可为空，为空时不进行角色过滤）
+     * @return 搜索结果
+     */
+    public SearchDataResponse searchMultipleSpaces(SearchDataRequest request, String userRole) {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            log.info("开始多空间搜索: searchSpaceIds={}, query={}, page={}, size={}",
+                    request.getSearchSpaceIds(), request.getQuery(), request.getPage(), request.getSize());
+
+            // 敏感词检测
+            if (request.getQuery() != null && !request.getQuery().trim().isEmpty()) {
+                sensitiveWordCheckService.checkAndThrow(request.getQuery());
+            }
+
+            // 获取所有搜索空间的索引名称
+            List<String> indexNames = new ArrayList<>();
+            for (String spaceId : request.getSearchSpaceIds()) {
+                try {
+                    SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(spaceId));
+                    indexNames.add(searchSpace.getIndexName());
+                } catch (NumberFormatException e) {
+                    log.warn("搜索空间ID格式无效: {}", spaceId);
+                    throw new RuntimeException("搜索空间ID格式无效: " + spaceId);
+                } catch (Exception e) {
+                    log.warn("搜索空间不存在或无法访问: {}", spaceId, e);
+                    throw new RuntimeException("搜索空间不存在: " + spaceId);
+                }
+            }
+
+            if (indexNames.isEmpty()) {
+                throw new RuntimeException("没有有效的搜索空间");
+            }
+
+            log.info("搜索索引列表: {}", indexNames);
+
+            // 构建查询（复用原有逻辑）
+            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(),
+                    request.getPinyinMode(), String.join(",", indexNames),
+                    request.getEnableSemanticSearch(), request.getSemanticWeight());
+
+            // 添加渠道过滤
+            if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
+                query = addChannelFilter(query, request.getChannel());
+            }
+
+            // 添加角色过滤
+            if (userRole != null && !userRole.trim().isEmpty()) {
+                query = addRoleFilter(query, userRole);
+            }
+
+            // 计算分页参数
+            int from = (request.getPage() - 1) * request.getSize();
+
+            // 构建搜索请求 - 搜索多个索引
+            SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
+                    .index(indexNames)  // 多个索引
+                    .query(query)
+                    .from(from)
+                    .size(request.getSize())
+                    .trackTotalHits(t -> t.enabled(true));
+
+            // 添加排序
+            if (request.getSort() != null) {
+                String sortField = request.getSort().getField();
+                String sortOrder = request.getSort().getOrder();
+                searchBuilder.sort(s -> s.field(f -> f
+                        .field(sortField)
+                        .order("desc".equalsIgnoreCase(sortOrder) ?
+                                co.elastic.clients.elasticsearch._types.SortOrder.Desc :
+                                co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
+                log.debug("添加排序: field={}, order={}", sortField, sortOrder);
+            }
+
+            // 添加高亮配置
+            if (StringUtils.hasText(request.getQuery())) {
+                searchBuilder.highlight(h -> h
+                    .type(HighlighterType.Unified)
+                    .fragmentSize(0)
+                    .numberOfFragments(0)
+                    .fields(buildHighlightFields(indexNames.get(0)))  // 使用第一个索引的字段配置
+                );
+                log.debug("添加高亮配置");
+            }
+
+            // 执行搜索
+            SearchResponse<Map> searchResponse = elasticsearchClient.search(searchBuilder.build(), Map.class);
+
+            // 转换结果
+            List<SearchDataResponse.DocumentData> documents = searchResponse.hits().hits().stream()
+                    .map(this::convertHitToDocument)
+                    .collect(Collectors.toList());
+
+            // 获取总数
+            long totalHits = 0L;
+            if (searchResponse.hits().total() != null) {
+                totalHits = searchResponse.hits().total().value();
+            }
+
+            long duration = System.currentTimeMillis() - startTime;
+            log.info("多空间搜索完成: indices={}, total={}, returned={}, took={}ms",
+                    indexNames, totalHits, documents.size(), duration);
+
+            return SearchDataResponse.builder()
+                    .data(documents)
+                    .total(totalHits)
+                    .page(request.getPage())
+                    .size(request.getSize())
+                    .build();
+
+        } catch (IOException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("多空间搜索IO异常: searchSpaceIds={}, query={}, took={}ms",
+                    request.getSearchSpaceIds(), request.getQuery(), duration, e);
+            throw new RuntimeException("搜索IO异常: " + e.getMessage(), e);
+        } catch (ElasticsearchException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("多空间ES查询异常: searchSpaceIds={}, query={}, status={}, took={}ms",
+                    request.getSearchSpaceIds(), request.getQuery(), e.status(), duration, e);
+            String errorMsg = getElasticsearchErrorMessage(e);
+            throw new RuntimeException("查询异常: " + errorMsg, e);
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("多空间搜索过程中出现未预期异常: searchSpaceIds={}, query={}, took={}ms",
+                    request.getSearchSpaceIds(), request.getQuery(), duration, e);
             throw new RuntimeException("搜索失败: " + e.getMessage(), e);
         }
     }

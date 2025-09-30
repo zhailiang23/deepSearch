@@ -5,7 +5,8 @@ import type { SearchResult, SearchResponse } from '@/types/demo'
  * 搜索数据请求参数
  */
 export interface SearchDataRequest {
-  searchSpaceId: string
+  searchSpaceId?: string  // 单空间搜索
+  searchSpaceIds?: string[]  // 多空间搜索
   query?: string
   page?: number
   size?: number
@@ -20,6 +21,10 @@ export interface SearchDataRequest {
   }>
   enablePinyinSearch?: boolean
   pinyinMode?: 'AUTO' | 'STRICT' | 'FUZZY'
+  enableSemanticSearch?: boolean
+  semanticMode?: string
+  semanticWeight?: number
+  channel?: string
 }
 
 /**

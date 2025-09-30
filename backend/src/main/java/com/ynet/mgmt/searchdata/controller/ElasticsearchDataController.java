@@ -87,21 +87,37 @@ public class ElasticsearchDataController {
             @Parameter(description = "搜索请求参数", required = true)
             @Valid @RequestBody SearchDataRequest request) {
 
-        logger.info("搜索ES数据: searchSpaceId={}, query={}, page={}, size={}, pinyin={}, pinyinMode={}, semantic={}, semanticMode={}, semanticWeight={}",
-                request.getSearchSpaceId(), request.getQuery(), request.getPage(), request.getSize(),
+        // 判断是单空间搜索还是多空间搜索
+        boolean isMultiSpaceSearch = request.getSearchSpaceIds() != null && !request.getSearchSpaceIds().isEmpty();
+
+        logger.info("搜索ES数据: searchSpaceId={}, searchSpaceIds={}, query={}, page={}, size={}, pinyin={}, pinyinMode={}, semantic={}, semanticMode={}, semanticWeight={}, multiSpace={}",
+                request.getSearchSpaceId(), request.getSearchSpaceIds(), request.getQuery(), request.getPage(), request.getSize(),
                 request.getEnablePinyinSearch(), request.getPinyinMode(),
-                request.getEnableSemanticSearch(), request.getSemanticMode(), request.getSemanticWeight());
+                request.getEnableSemanticSearch(), request.getSemanticMode(), request.getSemanticWeight(), isMultiSpaceSearch);
 
         try {
-            // 验证搜索空间是否存在
-            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(request.getSearchSpaceId()));
-
             // 获取当前用户角色（从token中）
             String userRole = getCurrentUserRole();
             logger.debug("当前用户角色: {}", userRole);
 
-            // 执行搜索
-            SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace, userRole);
+            SearchDataResponse response;
+
+            if (isMultiSpaceSearch) {
+                // 多空间搜索
+                response = elasticsearchDataService.searchMultipleSpaces(request, userRole);
+            } else {
+                // 单空间搜索（原有逻辑）
+                if (request.getSearchSpaceId() == null || request.getSearchSpaceId().trim().isEmpty()) {
+                    return ResponseEntity.badRequest()
+                            .body(ApiResponse.badRequest("搜索空间ID不能为空"));
+                }
+
+                // 验证搜索空间是否存在
+                SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(request.getSearchSpaceId()));
+
+                // 执行搜索
+                response = elasticsearchDataService.searchData(request, searchSpace, userRole);
+            }
 
             logger.info("搜索完成: searchSpaceId={}, total={}, returned={}, mode={}, actualType={}, totalTime={}ms",
                     request.getSearchSpaceId(), response.getTotal(), response.getData().size(),

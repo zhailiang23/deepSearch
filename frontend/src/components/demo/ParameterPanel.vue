@@ -8,17 +8,16 @@
     <!-- 配置内容 -->
     <div class="space-y-6">
       <!-- 搜索空间选择 -->
-      <Collapsible v-model:open="sections.searchSpaces" class="border rounded-lg">
+      <Collapsible v-model:open="sections.searchSpaces" class="border rounded-lg" style="overflow: visible;">
         <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
           <span class="text-emerald-700">搜索空间选择</span>
           <ChevronDown class="h-4 w-4 transition-transform duration-200"
                       :class="{ 'rotate-180': sections.searchSpaces }" />
         </CollapsibleTrigger>
-        <CollapsibleContent class="px-3 pb-3">
-          <SearchSpaceSelector
+        <CollapsibleContent class="px-3 pb-3" style="overflow: visible;">
+          <!-- 使用多选组件 -->
+          <MultiSearchSpaceSelector
             v-model="localConfig.searchSpaces.selected"
-            :multiple="localConfig.searchSpaces.allowMultiple"
-            show-details
             @loading="handleSearchSpaceLoading"
             @error="handleSearchSpaceError"
           />
@@ -204,6 +203,7 @@ import {
 } from '@/components/ui/collapsible'
 
 import SearchSpaceSelector from './SearchSpaceSelector.vue'
+import MultiSearchSpaceSelector from '../mobile/MultiSearchSpaceSelector.vue'
 import PinyinSearchConfig from './PinyinSearchConfig.vue'
 import SemanticSearchConfig from './SemanticSearchConfig.vue'
 import PagingConfig from './PagingConfig.vue'
