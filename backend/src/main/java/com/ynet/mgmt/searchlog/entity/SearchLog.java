@@ -158,7 +158,7 @@ public class SearchLog extends BaseEntity {
      * 请求参数JSON字符串
      */
     @Lob
-    @Column(name = "request_params")
+    @Column(name = "request_params", columnDefinition = "LONGTEXT")
     @Comment("请求参数JSON字符串")
     private String requestParams;
 
@@ -166,7 +166,7 @@ public class SearchLog extends BaseEntity {
      * 响应数据JSON字符串
      */
     @Lob
-    @Column(name = "response_data")
+    @Column(name = "response_data", columnDefinition = "LONGTEXT")
     @Comment("响应数据JSON字符串")
     private String responseData;
 
@@ -243,7 +243,7 @@ public class SearchLog extends BaseEntity {
      * 错误消息
      */
     @Lob
-    @Column(name = "error_message")
+    @Column(name = "error_message", columnDefinition = "LONGTEXT")
     @Comment("错误消息")
     private String errorMessage;
 
@@ -251,7 +251,7 @@ public class SearchLog extends BaseEntity {
      * 错误堆栈跟踪
      */
     @Lob
-    @Column(name = "error_stack_trace")
+    @Column(name = "error_stack_trace", columnDefinition = "LONGTEXT")
     @Comment("错误堆栈跟踪")
     private String errorStackTrace;
 
