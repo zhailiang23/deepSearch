@@ -450,4 +450,38 @@ public class ElasticsearchDataController {
         }
         return null;
     }
+
+    /**
+     * 简化的搜索接口
+     * 用于搜索数据管理页面的基本关键词搜索
+     */
+    @Operation(summary = "简化的数据搜索", description = "只针对索引可检索字段进行简单的关键词匹配搜索")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "搜索成功",
+            content = @Content(schema = @Schema(implementation = SimpleSearchResponse.class))
+        )
+    })
+    @PostMapping("/simple-search")
+    public ResponseEntity<ApiResponse<SimpleSearchResponse>> simpleSearch(
+            @Valid @RequestBody SimpleSearchRequest request) {
+
+        logger.info("收到简化搜索请求: searchSpaceId={}, keyword={}",
+            request.getSearchSpaceId(), request.getKeyword());
+
+        try {
+            SimpleSearchResponse response = elasticsearchDataService.simpleSearch(request);
+
+            return ResponseEntity.ok(ApiResponse.success(
+                String.format("搜索成功，共找到%d条结果", response.getTotal()),
+                response
+            ));
+
+        } catch (Exception e) {
+            logger.error("简化搜索失败", e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.badRequest("搜索失败: " + e.getMessage()));
+        }
+    }
 }

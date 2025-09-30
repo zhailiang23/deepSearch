@@ -1391,4 +1391,80 @@ public class ElasticsearchDataService {
 
         return result;
     }
+
+    /**
+     * 简化的搜索方法
+     * 只针对索引的可检索字段进行关键词匹配查询
+     *
+     * @param request 简化的搜索请求
+     * @return 简化的搜索响应
+     */
+    public SimpleSearchResponse simpleSearch(SimpleSearchRequest request) {
+        log.info("执行简化搜索 - searchSpaceId: {}, keyword: {}", request.getSearchSpaceId(), request.getKeyword());
+
+        try {
+            // 获取搜索空间信息
+            SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(request.getSearchSpaceId()));
+            String indexName = searchSpace.getIndexName();
+
+            // 获取索引的映射信息，找出所有可检索的text字段
+            List<String> searchableFields = getSearchableFields(indexName);
+            log.info("可检索字段: {}", searchableFields);
+
+            // 构建查询
+            Query query;
+            if (request.getKeyword() == null || request.getKeyword().trim().isEmpty()) {
+                // 如果没有关键词，返回所有文档
+                query = new Query.Builder()
+                    .matchAll(m -> m)
+                    .build();
+            } else {
+                // 构建 multi_match 查询，在所有可检索字段中搜索
+                query = new Query.Builder()
+                    .multiMatch(m -> m
+                        .query(request.getKeyword())
+                        .fields(searchableFields)
+                        .type(co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType.BestFields)
+                    )
+                    .build();
+            }
+
+            // 构建搜索请求
+            SearchRequest searchRequest = new SearchRequest.Builder()
+                .index(indexName)
+                .query(query)
+                .from((request.getPage() - 1) * request.getSize())
+                .size(request.getSize())
+                .trackTotalHits(t -> t.enabled(true))
+                .build();
+
+            // 执行搜索
+            SearchResponse<Map> searchResponse = elasticsearchClient.search(searchRequest, Map.class);
+
+            // 转换结果
+            List<SimpleSearchResponse.SearchResultItem> results = searchResponse.hits().hits().stream()
+                .map(hit -> SimpleSearchResponse.SearchResultItem.builder()
+                    .id(hit.id())
+                    .score(hit.score())
+                    .index(hit.index())
+                    .source(hit.source())
+                    .build())
+                .collect(Collectors.toList());
+
+            long total = searchResponse.hits().total() != null ? searchResponse.hits().total().value() : 0;
+
+            log.info("简化搜索完成 - 找到 {} 条结果", total);
+
+            return SimpleSearchResponse.builder()
+                .results(results)
+                .total(total)
+                .page(request.getPage())
+                .size(request.getSize())
+                .build();
+
+        } catch (Exception e) {
+            log.error("简化搜索失败", e);
+            throw new RuntimeException("搜索失败: " + e.getMessage(), e);
+        }
+    }
 }

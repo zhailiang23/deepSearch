@@ -461,39 +461,34 @@ async function handleSearch() {
     loading.value = true
     loadingText.value = '搜索中...'
 
-    // 构建搜索请求参数
+    // 构建简化搜索请求参数
     const requestBody = {
       searchSpaceId: currentIndex.value,
-      query: searchQuery.value || undefined,
+      keyword: searchQuery.value || undefined,
       page: currentPage.value,
-      size: pageSize.value,
-      sort: sortField.value ? {
-        field: sortField.value,
-        order: sortOrder.value
-      } : undefined
+      size: pageSize.value
     }
 
-    console.log('发送搜索请求:', requestBody)
+    console.log('发送简化搜索请求:', requestBody)
 
-    // 调用后端搜索API
-    const response = await http.post('/elasticsearch/search', requestBody)
+    // 调用后端简化搜索API
+    const response = await http.post('/elasticsearch/simple-search', requestBody)
 
     console.log('搜索API响应:', response)
 
     if (response.success && response.data) {
       const responseData = response.data
 
-      // 转换响应数据格式以匹配前端期望的格式
+      // 转换简化响应数据格式以匹配前端期望的格式
       searchResults.value = {
-        hits: responseData.data || [],
+        hits: (responseData.results || []).map((item: any) => ({
+          _id: item.id,
+          _score: item.score,
+          _index: item.index,
+          _source: item.source
+        })),
         total: responseData.total || 0,
-        took: 0 // 后端响应中没有took字段，暂时设为0
-      }
-
-      // 如果响应中包含映射信息，更新索引映射
-      if (responseData.mapping) {
-        indexMapping.value = responseData.mapping
-        visibleColumns.value = generateInitialColumns()
+        took: 0
       }
 
       // 更新URL

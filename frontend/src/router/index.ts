@@ -123,7 +123,7 @@ const routes = [
         component: () => import('@/pages/MobileSearchDemo.vue'),
         meta: {
           requiresAuth: false,
-          title: '移动搜索演示'
+          title: '搜索召回演示'
         }
       },
       {
