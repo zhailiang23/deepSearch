@@ -78,6 +78,15 @@ const routes = [
         }
       },
       {
+        path: 'sensitive-words',
+        name: 'SensitiveWords',
+        component: () => import('@/pages/sensitive-words/SensitiveWordManage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '敏感词管理'
+        }
+      },
+      {
         path: 'roles',
         name: 'Roles',
         component: () => import('@/pages/roles/RoleManage.vue'),

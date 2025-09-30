@@ -464,7 +464,7 @@ public class SearchLogServiceImpl implements SearchLogService {
         log.debug("使用数据库聚合查询获取热词");
 
         List<Object[]> dbResults = searchLogRepository.findHotQueriesOptimized(
-                startTime, endTime, request.getLimit() * 2); // 多取一些用于后续过滤
+                startTime, endTime, PageRequest.of(0, request.getLimit() * 2)); // 多取一些用于后续过滤
 
         return dbResults.stream()
                 .map(row -> {

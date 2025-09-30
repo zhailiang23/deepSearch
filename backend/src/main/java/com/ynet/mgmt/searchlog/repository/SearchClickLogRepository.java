@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -183,13 +184,13 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      *
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @param limit     限制数量
+     * @param pageable  分页参数（用于限制数量）
      * @return 热门文档列表（文档ID、标题、点击次数）
      */
     @Query(value = "SELECT document_id, document_title, COUNT(*) as click_count FROM search_click_logs " +
                    "WHERE click_time BETWEEN :startTime AND :endTime " +
-                   "GROUP BY document_id, document_title ORDER BY click_count DESC LIMIT :limit", nativeQuery = true)
-    List<Object[]> findPopularDocuments(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("limit") int limit);
+                   "GROUP BY document_id, document_title ORDER BY click_count DESC", nativeQuery = true)
+    List<Object[]> findPopularDocuments(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, Pageable pageable);
 
     /**
      * 查找点击位置分布统计
@@ -302,6 +303,7 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      * @param beforeTime 时间点
      * @return 删除的记录数
      */
+    @Modifying
     @Query("DELETE FROM SearchClickLog c WHERE c.clickTime < :beforeTime")
     int deleteByClickTimeBefore(@Param("beforeTime") LocalDateTime beforeTime);
 
@@ -311,6 +313,7 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      * @param beforeTime 时间点
      * @return 删除的记录数
      */
+    @Modifying
     @Query("DELETE FROM SearchClickLog c WHERE c.searchLog.createdAt < :beforeTime")
     long deleteBySearchLogCreatedAtBefore(@Param("beforeTime") LocalDateTime beforeTime);
 
@@ -320,6 +323,7 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      * @param searchLogIds 搜索日志ID列表
      * @return 删除的记录数
      */
+    @Modifying
     @Query("DELETE FROM SearchClickLog c WHERE c.searchLog.id IN :searchLogIds")
     long deleteBySearchLogIdIn(@Param("searchLogIds") List<Long> searchLogIds);
 
@@ -330,10 +334,11 @@ public interface SearchClickLogRepository extends JpaRepository<SearchClickLog, 
      * @param batchSize  批次大小
      * @return 删除的记录数
      */
-    @Query(value = "DELETE FROM search_click_logs WHERE id IN (" +
-                   "SELECT id FROM search_click_logs c " +
+    @Modifying
+    @Query(value = "DELETE FROM search_click_logs WHERE ctid IN (" +
+                   "SELECT c.ctid FROM search_click_logs c " +
                    "INNER JOIN search_logs s ON c.search_log_id = s.id " +
-                   "WHERE s.created_at < :cutoffDate LIMIT :batchSize)",
+                   "WHERE s.created_at < :cutoffDate LIMIT CAST(:batchSize AS INTEGER))",
            nativeQuery = true)
     int deleteExpiredClickLogsBatch(@Param("cutoffDate") LocalDateTime cutoffDate, @Param("batchSize") int batchSize);
 

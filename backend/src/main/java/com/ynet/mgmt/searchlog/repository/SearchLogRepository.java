@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -246,13 +247,14 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
     /**
      * 查找热门搜索关键词
      *
-     * @param limit 限制数量
+     * @param startTime 开始时间
+     * @param pageable  分页参数（用于限制数量）
      * @return 热门关键词列表（关键词和搜索次数）
      */
     @Query(value = "SELECT search_query, COUNT(*) as search_count FROM search_logs " +
                    "WHERE status = 'SUCCESS' AND created_at >= :startTime " +
-                   "GROUP BY search_query ORDER BY search_count DESC LIMIT :limit", nativeQuery = true)
-    List<Object[]> findPopularSearchQueries(@Param("startTime") LocalDateTime startTime, @Param("limit") int limit);
+                   "GROUP BY search_query ORDER BY search_count DESC", nativeQuery = true)
+    List<Object[]> findPopularSearchQueries(@Param("startTime") LocalDateTime startTime, Pageable pageable);
 
     /**
      * 查找搜索性能统计
@@ -340,6 +342,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param beforeTime 时间点
      * @return 删除的记录数
      */
+    @Modifying
     @Query("DELETE FROM SearchLog s WHERE s.createdAt < :beforeTime")
     int deleteByCreatedAtBefore(@Param("beforeTime") LocalDateTime beforeTime);
 
@@ -350,8 +353,9 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      * @param batchSize  批次大小
      * @return 删除的记录数
      */
-    @Query(value = "DELETE FROM search_logs WHERE created_at < :cutoffDate " +
-                   "AND id IN (SELECT id FROM search_logs WHERE created_at < :cutoffDate LIMIT :batchSize)",
+    @Modifying
+    @Query(value = "DELETE FROM search_logs WHERE ctid IN (" +
+                   "SELECT ctid FROM search_logs WHERE created_at < :cutoffDate LIMIT CAST(:batchSize AS INTEGER))",
            nativeQuery = true)
     int deleteExpiredSearchLogsBatch(@Param("cutoffDate") LocalDateTime cutoffDate, @Param("batchSize") int batchSize);
 
@@ -404,7 +408,7 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
      *
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @param limit     限制数量
+     * @param pageable  分页参数（用于限制数量）
      * @return 查询词频统计
      */
     @Query(value = "SELECT search_query, COUNT(*) as query_count, " +
@@ -413,11 +417,10 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
                    "WHERE status = 'SUCCESS' AND created_at BETWEEN :startTime AND :endTime " +
                    "AND search_query IS NOT NULL AND search_query != '' " +
                    "GROUP BY search_query " +
-                   "ORDER BY query_count DESC " +
-                   "LIMIT :limit", nativeQuery = true)
+                   "ORDER BY query_count DESC", nativeQuery = true)
     List<Object[]> findHotQueriesOptimized(@Param("startTime") LocalDateTime startTime,
                                           @Param("endTime") LocalDateTime endTime,
-                                          @Param("limit") int limit);
+                                          Pageable pageable);
 
     /**
      * 批量统计查询
