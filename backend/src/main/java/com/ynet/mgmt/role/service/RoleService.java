@@ -63,4 +63,9 @@ public interface RoleService {
      * 检查角色名称可用性
      */
     boolean isNameAvailable(String name, Long excludeId);
+
+    /**
+     * 获取所有角色（不分页）
+     */
+    java.util.List<RoleDTO> getAllRoles();
 }

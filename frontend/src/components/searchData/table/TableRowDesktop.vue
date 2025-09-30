@@ -59,6 +59,17 @@
           <Settings class="w-4 h-4" />
         </Button>
 
+        <!-- 角色配置按钮 -->
+        <Button
+          variant="ghost"
+          size="sm"
+          @click="handleRoleConfig"
+          class="h-8 w-8 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+          title="角色配置"
+        >
+          <Shield class="w-4 h-4" />
+        </Button>
+
         <!-- 编辑按钮 -->
         <Button
           variant="ghost"
@@ -92,7 +103,8 @@ import { Button } from '@/components/ui/button'
 import {
   Edit,
   Trash2,
-  Settings
+  Settings,
+  Shield
 } from 'lucide-vue-next'
 import CellRenderer from './CellRenderer.vue'
 import type { TableColumn, TableRow } from '@/types/tableData'
@@ -105,6 +117,7 @@ interface Props {
 
 interface Emits {
   (e: 'channelConfig', row: TableRow): void
+  (e: 'roleConfig', row: TableRow): void
   (e: 'edit', row: TableRow): void
   (e: 'delete', row: TableRow): void
   (e: 'click', row: TableRow, index: number, event: MouseEvent | KeyboardEvent): void
@@ -156,6 +169,14 @@ const handleKeyboardClick = (event: KeyboardEvent) => {
 const handleChannelConfig = (event: MouseEvent) => {
   event.stopPropagation()
   emit('channelConfig', props.row)
+}
+
+/**
+ * 处理角色配置按钮点击
+ */
+const handleRoleConfig = (event: MouseEvent) => {
+  event.stopPropagation()
+  emit('roleConfig', props.row)
 }
 
 /**

@@ -134,5 +134,13 @@ export const searchDataService = {
   updateDocumentChannels: (id: string, index: string, channels: string[]): Promise<UpdateDocumentResponse> =>
     http.put(`/elasticsearch/document/${id}/channels`, channels, {
       params: { index }
+    }),
+
+  /**
+   * 更新文档角色配置
+   */
+  updateDocumentRoles: (id: string, index: string, roles: string[]): Promise<UpdateDocumentResponse> =>
+    http.put(`/elasticsearch/document/${id}/roles`, roles, {
+      params: { index }
     })
 }

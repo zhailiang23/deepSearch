@@ -87,6 +87,15 @@ const routes = [
         }
       },
       {
+        path: 'users',
+        name: 'Users',
+        component: () => import('@/pages/users/UserManage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '用户管理'
+        }
+      },
+      {
         path: 'roles',
         name: 'Roles',
         component: () => import('@/pages/roles/RoleManage.vue'),

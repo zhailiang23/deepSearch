@@ -109,4 +109,11 @@ public class RoleController {
         boolean available = roleService.isNameAvailable(name, excludeId);
         return ResponseEntity.ok(ApiResponse.success(available));
     }
+
+    @GetMapping("/all")
+    @Operation(summary = "获取所有角色", description = "获取所有角色列表（不分页）")
+    public ResponseEntity<ApiResponse<java.util.List<RoleDTO>>> getAllRoles() {
+        java.util.List<RoleDTO> result = roleService.getAllRoles();
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
 }

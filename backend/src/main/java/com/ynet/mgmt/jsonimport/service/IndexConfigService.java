@@ -628,6 +628,14 @@ public class IndexConfigService {
                 .index(true)
                 .docValues(true)
                 .build());
+
+        // 请求角色白名单字段（字符串数组）
+        mappings.put("request_role_white_list", IndexMappingConfig.FieldMapping.builder()
+                .fieldName("request_role_white_list")
+                .elasticsearchType("keyword")
+                .index(true)
+                .docValues(true)
+                .build());
     }
 
     /**

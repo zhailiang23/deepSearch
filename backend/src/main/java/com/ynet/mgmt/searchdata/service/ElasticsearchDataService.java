@@ -70,9 +70,10 @@ public class ElasticsearchDataService {
      *
      * @param request 搜索请求
      * @param searchSpace 搜索空间
+     * @param userRole 当前用户角色（可为空，为空时不进行角色过滤）
      * @return 搜索结果
      */
-    public SearchDataResponse searchData(SearchDataRequest request, SearchSpaceDTO searchSpace) {
+    public SearchDataResponse searchData(SearchDataRequest request, SearchSpaceDTO searchSpace, String userRole) {
         long startTime = System.currentTimeMillis();
         String indexName = searchSpace.getIndexName();
 
@@ -92,6 +93,11 @@ public class ElasticsearchDataService {
             // 如果指定了渠道，添加渠道过滤
             if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
                 query = addChannelFilter(query, request.getChannel());
+            }
+
+            // 如果指定了用户角色，添加角色过滤
+            if (userRole != null && !userRole.trim().isEmpty()) {
+                query = addRoleFilter(query, userRole);
             }
 
             // 计算分页参数
@@ -493,6 +499,51 @@ public class ElasticsearchDataService {
                         .term(t -> t
                                 .field("request_channel_white_list")
                                 .value(channel)
+                        )
+                )
+                .minimumShouldMatch("1")
+        )._toQuery();
+    }
+
+    /**
+     * 添加角色过滤
+     * 当指定角色时，只返回以下两种文档：
+     * 1. request_role_white_list字段为空或不存在的文档（公开文档）
+     * 2. request_role_white_list字段包含指定角色的文档
+     *
+     * @param originalQuery 原始查询
+     * @param userRole 用户角色
+     * @return 添加角色过滤后的查询
+     */
+    private Query addRoleFilter(Query originalQuery, String userRole) {
+        log.debug("添加角色过滤: userRole={}", userRole);
+
+        return BoolQuery.of(b -> b
+                .must(originalQuery)
+                .should(s -> s
+                        // 条件1: request_role_white_list字段不存在（公开文档）
+                        .bool(notExists -> notExists
+                                .mustNot(mn -> mn
+                                        .exists(e -> e.field("request_role_white_list"))
+                                )
+                        )
+                )
+                .should(s -> s
+                        // 条件2: request_role_white_list字段值为空或空数组（公开文档）
+                        .bool(isEmpty -> isEmpty
+                                .must(m -> m
+                                        .exists(e -> e.field("request_role_white_list"))
+                                )
+                                .mustNot(mn -> mn
+                                        .exists(e -> e.field("request_role_white_list").queryName("has_value"))
+                                )
+                        )
+                )
+                .should(s -> s
+                        // 条件3: request_role_white_list字段包含指定角色
+                        .term(t -> t
+                                .field("request_role_white_list")
+                                .value(userRole)
                         )
                 )
                 .minimumShouldMatch("1")

@@ -89,6 +89,7 @@
                   :columns="visibleColumns"
                   :index="index"
                   @channel-config="handleChannelConfig(item)"
+                  @role-config="handleRoleConfig(item)"
                   @edit="handleEdit(item)"
                   @delete="handleDelete(item)"
                   @click="handleTableRowClick(item, index, $event)"
@@ -113,6 +114,7 @@
                 :columns="visibleColumns"
                 :index="index"
                 @channel-config="handleChannelConfig(row)"
+                @role-config="handleRoleConfig(row)"
                 @edit="handleEdit(row)"
                 @delete="handleDelete(row)"
                 @click="handleTableRowClick(row, index, $event)"
@@ -220,6 +222,13 @@
       :document="configuringDocument"
       @success="handleChannelConfigSuccess"
     />
+
+    <!-- 角色配置对话框 -->
+    <RoleConfigDialog
+      v-model:open="roleConfigDialogOpen"
+      :document="configuringRoleDocument"
+      @success="handleRoleConfigSuccess"
+    />
   </div>
 </template>
 
@@ -236,6 +245,7 @@ import TableRowCard from './table/TableRowCard.vue'
 import DocumentEditDialog from './DocumentEditDialog.vue'
 import DeleteConfirmDialog from './DeleteConfirmDialog.vue'
 import ChannelConfigDialog from './ChannelConfigDialog.vue'
+import RoleConfigDialog from './RoleConfigDialog.vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { debounce, throttle } from '@/utils/performance'
 import { useClickTracking } from '@/composables/useClickTracking'
@@ -317,6 +327,10 @@ const deleteLoading = ref(false)
 // 渠道配置对话框状态
 const channelConfigDialogOpen = ref(false)
 const configuringDocument = ref<TableRow | null>(null)
+
+// 角色配置对话框状态
+const roleConfigDialogOpen = ref(false)
+const configuringRoleDocument = ref<TableRow | null>(null)
 
 // Toast 初始化
 const { toast } = useToast()
@@ -560,6 +574,45 @@ async function handleChannelConfigSuccess() {
     // 关闭对话框
     channelConfigDialogOpen.value = false
     configuringDocument.value = null
+  }
+}
+
+/**
+ * 处理角色配置
+ */
+function handleRoleConfig(row: TableRow) {
+  configuringRoleDocument.value = row
+  roleConfigDialogOpen.value = true
+}
+
+/**
+ * 角色配置成功后刷新数据
+ */
+async function handleRoleConfigSuccess() {
+  if (!configuringRoleDocument.value) return
+
+  const documentId = configuringRoleDocument.value._id
+  const documentIndex = configuringRoleDocument.value._index
+
+  try {
+    // 重新获取文档最新数据
+    const updatedDocument = await searchDataService.getDocument(documentId, documentIndex)
+
+    // 更新本地数据
+    const index = tableRows.value.findIndex(row => row._id === documentId)
+    if (index !== -1) {
+      tableRows.value[index] = updatedDocument
+    }
+
+    // 显示成功提示
+    showSuccessMessage('角色配置已更新')
+  } catch (error: any) {
+    console.error('刷新文档数据失败:', error)
+    showErrorMessage('角色配置已保存，但刷新数据失败')
+  } finally {
+    // 关闭对话框
+    roleConfigDialogOpen.value = false
+    configuringRoleDocument.value = null
   }
 }
 

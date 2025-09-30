@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -94,8 +96,12 @@ public class ElasticsearchDataController {
             // 验证搜索空间是否存在
             SearchSpaceDTO searchSpace = searchSpaceService.getSearchSpace(Long.valueOf(request.getSearchSpaceId()));
 
+            // 获取当前用户角色（从token中）
+            String userRole = getCurrentUserRole();
+            logger.debug("当前用户角色: {}", userRole);
+
             // 执行搜索
-            SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+            SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace, userRole);
 
             logger.info("搜索完成: searchSpaceId={}, total={}, returned={}, mode={}, actualType={}, totalTime={}ms",
                     request.getSearchSpaceId(), response.getTotal(), response.getData().size(),
@@ -216,6 +222,35 @@ public class ElasticsearchDataController {
         } catch (RuntimeException e) {
             logger.error("更新文档渠道配置失败: id={}, index={}", id, index, e);
             return ResponseEntity.badRequest().body(ApiResponse.error("更新文档渠道配置失败: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 更新文档角色白名单
+     *
+     * @param id 文档ID
+     * @param index 索引名称
+     * @param roles 角色白名单
+     * @return 更新结果
+     */
+    @Operation(summary = "更新文档角色白名单", description = "更新文档的角色访问控制白名单")
+    @PutMapping("/document/{id}/roles")
+    public ResponseEntity<ApiResponse<UpdateDocumentResponse>> updateDocumentRoles(
+            @Parameter(description = "文档ID", required = true) @PathVariable String id,
+            @Parameter(description = "索引名称", required = true) @RequestParam String index,
+            @Parameter(description = "角色白名单", required = true) @RequestBody List<String> roles) {
+
+        logger.info("更新文档角色配置: id={}, index={}, roles={}", id, index, roles);
+
+        try {
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("request_role_white_list", roles);
+
+            UpdateDocumentResponse response = elasticsearchDataService.updateDocumentFields(id, index, fields);
+            return ResponseEntity.ok(ApiResponse.success(response));
+        } catch (RuntimeException e) {
+            logger.error("更新文档角色配置失败: id={}, index={}", id, index, e);
+            return ResponseEntity.badRequest().body(ApiResponse.error("更新文档角色配置失败: " + e.getMessage()));
         }
     }
 
@@ -372,5 +407,31 @@ public class ElasticsearchDataController {
             return ResponseEntity.internalServerError()
                     .body(ApiResponse.error("批量操作失败: " + e.getMessage()));
         }
+    }
+
+    /**
+     * 获取当前用户角色
+     * 从Spring Security上下文中获取当前认证用户的角色
+     *
+     * @return 用户角色代码（如"ADMIN"、"USER"），如果未认证则返回null
+     */
+    private String getCurrentUserRole() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName())) {
+
+                // 从权限中提取角色
+                return authentication.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .filter(auth -> auth.startsWith("ROLE_"))
+                    .map(auth -> auth.substring(5)) // 移除"ROLE_"前缀
+                    .findFirst()
+                    .orElse(null);
+            }
+        } catch (Exception e) {
+            logger.debug("获取用户角色失败", e);
+        }
+        return null;
     }
 }

@@ -74,5 +74,11 @@ export const roleApi = {
       params.excludeId = excludeId
     }
     return http.get(`${BASE_URL}/check-name`, { params })
-  }
+  },
+
+  /**
+   * 获取所有角色（不分页）
+   */
+  getAll: (): Promise<ApiResponse<Role[]>> =>
+    http.get(`${BASE_URL}/all`)
 }

@@ -169,4 +169,13 @@ public class RoleServiceImpl implements RoleService {
         }
         return !roleRepository.existsByNameAndIdNot(name, excludeId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<RoleDTO> getAllRoles() {
+        logger.info("获取所有角色列表");
+        return roleRepository.findAll().stream()
+                .map(roleMapper::toDTO)
+                .toList();
+    }
 }
