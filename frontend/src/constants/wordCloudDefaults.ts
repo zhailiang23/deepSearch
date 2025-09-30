@@ -106,7 +106,7 @@ export const LIGHT_THEME_CONFIG: WordCloudThemeConfig = {
   font: DEFAULT_FONT_CONFIG,
   rotation: DEFAULT_ROTATION_CONFIG,
   shape: DEFAULT_SHAPE_CONFIG,
-  gridSize: 8
+  gridSize: 16
 }
 
 // 暗色主题配置
@@ -132,7 +132,7 @@ export const DARK_THEME_CONFIG: WordCloudThemeConfig = {
   },
   rotation: DEFAULT_ROTATION_CONFIG,
   shape: DEFAULT_SHAPE_CONFIG,
-  gridSize: 8
+  gridSize: 16
 }
 
 // 默认wordcloud2.js配置
@@ -152,7 +152,7 @@ export const DEFAULT_WORDCLOUD_CONFIG: WordCloudConfig = {
   backgroundColor: THEME_COLORS.LIGHT.BACKGROUND,
   minSize: DEFAULT_FONT_CONFIG.minSize,
   weightFactor: DEFAULT_FONT_CONFIG.weightFactor,
-  gridSize: 8,
+  gridSize: 16,
   origin: undefined, // 将由组件计算
   rotationSteps: DEFAULT_ROTATION_CONFIG.rotationSteps,
   minRotation: DEFAULT_ROTATION_CONFIG.minRotation,
@@ -201,7 +201,7 @@ export const PRESET_THEMES: WordCloudThemeConfig[] = [
     font: DEFAULT_FONT_CONFIG,
     rotation: DEFAULT_ROTATION_CONFIG,
     shape: DEFAULT_SHAPE_CONFIG,
-    gridSize: 8
+    gridSize: 16
   },
 
   // 单色主题
@@ -223,7 +223,7 @@ export const PRESET_THEMES: WordCloudThemeConfig[] = [
     font: DEFAULT_FONT_CONFIG,
     rotation: DEFAULT_ROTATION_CONFIG,
     shape: DEFAULT_SHAPE_CONFIG,
-    gridSize: 8
+    gridSize: 16
   },
 
   // 海洋主题
@@ -245,7 +245,7 @@ export const PRESET_THEMES: WordCloudThemeConfig[] = [
     font: DEFAULT_FONT_CONFIG,
     rotation: DEFAULT_ROTATION_CONFIG,
     shape: DEFAULT_SHAPE_CONFIG,
-    gridSize: 8
+    gridSize: 16
   }
 ]
 
@@ -273,9 +273,9 @@ export const SHAPE_FUNCTIONS = {
 
 // 响应式断点
 export const RESPONSIVE_BREAKPOINTS = {
-  mobile: { maxWidth: 640, gridSize: 6, minSize: 16, maxSize: 50 },
-  tablet: { maxWidth: 1024, gridSize: 8, minSize: 18, maxSize: 65 },
-  desktop: { maxWidth: Infinity, gridSize: 10, minSize: 20, maxSize: 80 }
+  mobile: { maxWidth: 640, gridSize: 12, minSize: 16, maxSize: 50 },
+  tablet: { maxWidth: 1024, gridSize: 16, minSize: 18, maxSize: 65 },
+  desktop: { maxWidth: Infinity, gridSize: 20, minSize: 20, maxSize: 80 }
 } as const
 
 // 性能阈值
@@ -289,12 +289,12 @@ export const PERFORMANCE_THRESHOLDS = {
 // 根据数据集大小调整性能配置
 export const getPerformanceConfigBySize = (wordCount: number): Partial<WordCloudConfig> => {
   if (wordCount <= PERFORMANCE_THRESHOLDS.SMALL_DATASET) {
-    return { wait: 0, abortThreshold: 5000, gridSize: 10 }
+    return { wait: 0, abortThreshold: 5000, gridSize: 20 }
   } else if (wordCount <= PERFORMANCE_THRESHOLDS.MEDIUM_DATASET) {
-    return { wait: 1, abortThreshold: 8000, gridSize: 8 }
+    return { wait: 1, abortThreshold: 8000, gridSize: 16 }
   } else if (wordCount <= PERFORMANCE_THRESHOLDS.LARGE_DATASET) {
-    return { wait: 2, abortThreshold: 12000, gridSize: 6 }
+    return { wait: 2, abortThreshold: 12000, gridSize: 12 }
   } else {
-    return { wait: 5, abortThreshold: 15000, gridSize: 4 }
+    return { wait: 5, abortThreshold: 15000, gridSize: 8 }
   }
 }
