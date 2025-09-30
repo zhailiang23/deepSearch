@@ -482,6 +482,21 @@ const handleSearch = () => {
 
   clearTimeout(searchTimeout)
 
+  // 如果搜索框为空，清除搜索结果并恢复初始状态
+  if (searchQuery.value.trim() === '') {
+    store.clearResults()
+    currentSearchLogId.value = null
+    store.setSearchState({
+      loading: false,
+      error: null,
+      query: '',
+      hasMore: false,
+      total: 0,
+      page: 1
+    })
+    return
+  }
+
   if (searchQuery.value.length >= minQueryLength.value) {
     searchTimeout = setTimeout(() => {
       performSearch()
@@ -617,6 +632,15 @@ const clearSearch = () => {
   searchQuery.value = ''
   store.clearResults()
   currentSearchLogId.value = null
+  // 清除搜索状态，恢复到初始页面
+  store.setSearchState({
+    loading: false,
+    error: null,
+    query: '',
+    hasMore: false,
+    total: 0,
+    page: 1
+  })
 }
 
 const retrySearch = () => {

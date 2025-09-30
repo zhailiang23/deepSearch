@@ -8,11 +8,7 @@ const routes = [
     children: [
       {
         path: '',
-        name: 'Dashboard',
-        component: () => import('@/pages/DashboardContent.vue'),
-        meta: {
-          title: '控制台'
-        }
+        redirect: '/search-spaces'
       },
       {
         path: 'search-spaces',

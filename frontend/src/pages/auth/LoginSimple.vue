@@ -81,10 +81,10 @@ const handleSubmit = async (formData: { username: string; password: string }) =>
       localStorage.setItem('user', JSON.stringify(response.data.user))
       localStorage.setItem('loginSuccess', 'true')
 
-      console.log('登录成功，准备跳转到Dashboard')
+      console.log('登录成功，准备跳转到搜索空间管理页面')
 
-      // 跳转到Dashboard
-      window.location.href = '/'
+      // 跳转到搜索空间管理页面
+      window.location.href = '/search-spaces'
     } else {
       error.value = '登录响应格式错误'
     }
