@@ -191,7 +191,49 @@
                 >
                   <Settings class="h-4 w-4" />
                 </button>
+                <button
+                  @click="confirmDelete(space)"
+                  class="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                  title="删除"
+                >
+                  <Trash2 class="h-4 w-4" />
+                </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 删除确认弹窗 -->
+      <div
+        v-if="deleteDialogOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        @click.self="deleteDialogOpen = false"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div class="p-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              确认删除搜索空间
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              确定要删除搜索空间 "<span class="font-medium text-gray-900 dark:text-white">{{ spaceToDelete?.name }}</span>" 吗？
+              <br><br>
+              <span class="text-red-600 dark:text-red-400">此操作将同时删除关联的ES索引及其所有数据，且无法恢复！</span>
+            </p>
+            <div class="flex justify-end space-x-3">
+              <button
+                @click="deleteDialogOpen = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                取消
+              </button>
+              <button
+                @click="handleDelete"
+                :disabled="deleting"
+                class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ deleting ? '删除中...' : '确认删除' }}
+              </button>
             </div>
           </div>
         </div>
@@ -238,7 +280,8 @@ import {
   Settings,
   PlayCircle,
   PauseCircle,
-  Upload
+  Upload,
+  Trash2
 } from 'lucide-vue-next'
 import { useSearchSpaceStore } from '@/stores/searchSpace'
 import SearchSpaceStatusBadge from './SearchSpaceStatusBadge.vue'
@@ -251,6 +294,7 @@ interface Emits {
   (e: 'enable', space: SearchSpace): void
   (e: 'disable', space: SearchSpace): void
   (e: 'import', space: SearchSpace): void
+  (e: 'delete', space: SearchSpace): void
 }
 
 const emit = defineEmits<Emits>()
@@ -264,6 +308,11 @@ const debounceTimer = ref<number | null>(null)
 // 文件上传相关状态
 const importDialogOpen = ref(false)
 const selectedSpace = ref<SearchSpace | null>(null)
+
+// 删除相关状态
+const deleteDialogOpen = ref(false)
+const spaceToDelete = ref<SearchSpace | null>(null)
+const deleting = ref(false)
 
 // 打开导入对话框
 const openImportDialog = (space: SearchSpace) => {
@@ -341,6 +390,30 @@ const changePage = (page: number) => {
   if (page >= 0 && page < pagination.value.totalPages) {
     searchSpaceStore.updateQueryParams({ page })
     loadSearchSpaces()
+  }
+}
+
+// 确认删除
+const confirmDelete = (space: SearchSpace) => {
+  spaceToDelete.value = space
+  deleteDialogOpen.value = true
+}
+
+// 处理删除
+const handleDelete = async () => {
+  if (!spaceToDelete.value) return
+
+  deleting.value = true
+  try {
+    await searchSpaceStore.deleteSearchSpace(spaceToDelete.value.id)
+    deleteDialogOpen.value = false
+    spaceToDelete.value = null
+    // 刷新列表
+    await refreshList()
+  } catch (error) {
+    console.error('删除搜索空间失败:', error)
+  } finally {
+    deleting.value = false
   }
 }
 

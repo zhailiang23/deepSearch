@@ -98,7 +98,7 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
             suggestions.addAll(esCompletionsFuture.getNow(Collections.emptyList()));
 
             // 去重、排序、限制数量
-            List<SearchSuggestionDTO> result = mergeSuggestions(suggestions, request.getSize());
+            List<SearchSuggestionDTO> result = mergeSuggestions(suggestions, request.getQuery(), request.getSize());
 
             logger.info("搜索建议生成成功: query={}, count={}", request.getQuery(), result.size());
             return result;
@@ -306,98 +306,95 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
 
             logger.debug("查询ES Completion建议: indices={}, query={}", indexNames, request.getQuery());
 
-            // 获取 completion 字段（固定返回 name）
-            List<String> completionFields = getCompletionFields(indexNames);
-            if (completionFields.isEmpty()) {
-                logger.debug("索引中没有找到 completion 字段");
-                return Collections.emptyList();
-            }
+            // 为每个索引单独查询，避免字段不一致问题
+            List<SearchSuggestionDTO> allSuggestions = new ArrayList<>();
 
-            logger.debug("使用 completion 字段: {}", completionFields);
-
-            // 构建 completion suggest 查询
-            SearchRequest searchRequest = SearchRequest.of(s -> {
-                var requestBuilder = s.index(indexNames).size(0);
-
-                // 为每个 completion 字段创建一个 suggester
-                requestBuilder.suggest(suggester -> {
-                    for (String field : completionFields) {
-                        suggester.suggesters(field.replace(".", "_"), suggest -> suggest
-                            .prefix(request.getQuery())
-                            .completion(completion -> {
-                                var builder = completion
-                                    .field(field)
-                                    .size(request.getSize())
-                                    .skipDuplicates(true);  // 跳过重复建议
-
-                                // 如果启用模糊匹配
-                                if (request.getEnableFuzzy() != null && request.getEnableFuzzy()) {
-                                    builder.fuzzy(f -> f
-                                        .fuzziness("AUTO")
-                                        .transpositions(true)
-                                        .minLength(3)
-                                    );
-                                }
-
-                                return builder;
-                            })
-                        );
+            for (String indexName : indexNames) {
+                try {
+                    // 获取该索引的 completion 字段
+                    List<String> completionFields = getCompletionFields(indexName);
+                    if (completionFields.isEmpty()) {
+                        logger.debug("索引 {} 中没有找到 completion 字段", indexName);
+                        continue;
                     }
-                    return suggester;
-                });
 
-                return requestBuilder;
-            });
+                    logger.debug("索引 {} 使用 completion 字段: {}", indexName, completionFields);
 
-            // 执行查询
-            SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
+                    // 构建该索引的 completion suggest 查询
+                    SearchRequest searchRequest = SearchRequest.of(s -> {
+                        var requestBuilder = s.index(indexName).size(0);
 
-            // 处理建议结果 - 遍历所有 suggester
-            List<SearchSuggestionDTO> suggestions = new ArrayList<>();
+                        // 为每个 completion 字段创建一个 suggester
+                        requestBuilder.suggest(suggester -> {
+                            for (String field : completionFields) {
+                                suggester.suggesters(field.replace(".", "_"), suggest -> suggest
+                                    .prefix(request.getQuery())
+                                    .completion(completion -> {
+                                        var builder = completion
+                                            .field(field)
+                                            .size(request.getSize())
+                                            .skipDuplicates(true);  // 跳过重复建议
 
-            if (response.suggest() != null) {
-                // 遍历所有字段的 suggester 结果
-                for (Map.Entry<String, List<Suggestion<Map>>> entry : response.suggest().entrySet()) {
-                    String suggesterName = entry.getKey();
-                    List<Suggestion<Map>> suggestionList = entry.getValue();
+                                        // 如果启用模糊匹配
+                                        if (request.getEnableFuzzy() != null && request.getEnableFuzzy()) {
+                                            builder.fuzzy(f -> f
+                                                .fuzziness("AUTO")
+                                                .transpositions(true)
+                                                .minLength(3)
+                                            );
+                                        }
 
-                    logger.debug("处理 suggester: {}", suggesterName);
-
-                    for (Suggestion<Map> suggestion : suggestionList) {
-                        if (suggestion.isCompletion() && suggestion.completion() != null) {
-                            for (CompletionSuggestOption<Map> option : suggestion.completion().options()) {
-                                // ES Completion 得分: score * 40.0
-                                // ES的score通常是0-1之间的浮点数，需要归一化
-                                Double optionScore = option.score();
-                                double score = (optionScore != null ? optionScore.doubleValue() : 1.0) * 40.0;
-
-                                SearchSuggestionDTO dto = new SearchSuggestionDTO(
-                                    option.text(),
-                                    score,
-                                    SuggestionType.ES_COMPLETION
+                                        return builder;
+                                    })
                                 );
-                                dto.addMetadata("esScore", optionScore);
-                                dto.addMetadata("field", suggesterName);
-                                dto.addMetadata("indices", indexNames);
-                                suggestions.add(dto);
+                            }
+                            return suggester;
+                        });
 
-                                logger.debug("找到建议: text={}, score={}, field={}",
-                                    option.text(), score, suggesterName);
+                        return requestBuilder;
+                    });
+
+                    // 执行查询
+                    SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
+
+                    // 处理该索引的建议结果
+                    if (response.suggest() != null) {
+                        for (Map.Entry<String, List<Suggestion<Map>>> entry : response.suggest().entrySet()) {
+                            String suggesterName = entry.getKey();
+                            List<Suggestion<Map>> suggestionList = entry.getValue();
+
+                            for (Suggestion<Map> suggestion : suggestionList) {
+                                if (suggestion.isCompletion() && suggestion.completion() != null) {
+                                    for (CompletionSuggestOption<Map> option : suggestion.completion().options()) {
+                                        Double optionScore = option.score();
+                                        double score = (optionScore != null ? optionScore.doubleValue() : 1.0) * 40.0;
+
+                                        SearchSuggestionDTO dto = new SearchSuggestionDTO(
+                                            option.text(),
+                                            score,
+                                            SuggestionType.ES_COMPLETION
+                                        );
+                                        dto.addMetadata("esScore", optionScore);
+                                        dto.addMetadata("field", suggesterName);
+                                        dto.addMetadata("index", indexName);
+                                        allSuggestions.add(dto);
+
+                                        logger.debug("找到建议: text={}, score={}, field={}, index={}",
+                                            option.text(), score, suggesterName, indexName);
+                                    }
+                                }
                             }
                         }
                     }
+
+                } catch (Exception e) {
+                    logger.warn("索引 {} 的 ES Completion 查询失败: {}", indexName, e.getMessage());
                 }
             }
 
-            logger.debug("ES Completion建议查询完成: indices={}, count={}", indexNames, suggestions.size());
-            return suggestions;
+            logger.debug("ES Completion建议查询完成: indices={}, count={}", indexNames, allSuggestions.size());
+            return allSuggestions;
 
-        } catch (ElasticsearchException e) {
-            logger.warn("ES Completion建议查询失败（ES异常）: {}", e.getMessage());
-            return Collections.emptyList();
-        } catch (IOException e) {
-            logger.error("ES Completion建议查询失败（IO异常）", e);
-            return Collections.emptyList();
         } catch (Exception e) {
             logger.error("ES Completion建议查询失败（未知异常）", e);
             return Collections.emptyList();
@@ -438,15 +435,12 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
      * 动态获取索引中的 completion 字段
      * 使用 Caffeine 本地缓存避免频繁查询 ES mapping
      *
-     * @param indexNames 索引名称列表
+     * @param indexName 索引名称
      * @return completion 字段路径列表
      */
-    private List<String> getCompletionFields(List<String> indexNames) {
-        // 生成缓存key
-        String cacheKey = String.join(",", indexNames);
-
+    private List<String> getCompletionFields(String indexName) {
         // 尝试从缓存获取
-        List<String> cached = completionFieldsCache.getIfPresent(cacheKey);
+        List<String> cached = completionFieldsCache.getIfPresent(indexName);
         if (cached != null) {
             logger.debug("从缓存获取 completion 字段: {}", cached);
             return cached;
@@ -456,38 +450,31 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
         Set<String> completionFields = new HashSet<>();
 
         try {
-            for (String indexName : indexNames) {
-                try {
-                    // 获取索引的 mapping
-                    var getMappingRequest = co.elastic.clients.elasticsearch.indices.GetMappingRequest.of(r -> r
-                        .index(indexName)
-                    );
+            // 获取索引的 mapping
+            var getMappingRequest = co.elastic.clients.elasticsearch.indices.GetMappingRequest.of(r -> r
+                .index(indexName)
+            );
 
-                    var mappingResponse = elasticsearchClient.indices().getMapping(getMappingRequest);
+            var mappingResponse = elasticsearchClient.indices().getMapping(getMappingRequest);
 
-                    // 遍历索引的 mapping
-                    mappingResponse.result().forEach((index, indexMappingRecord) -> {
-                        var properties = indexMappingRecord.mappings().properties();
+            // 遍历索引的 mapping
+            mappingResponse.result().forEach((index, indexMappingRecord) -> {
+                var properties = indexMappingRecord.mappings().properties();
 
-                        // 递归查找 completion 类型的字段
-                        findCompletionFields(properties, "", completionFields);
-                    });
+                // 递归查找 completion 类型的字段
+                findCompletionFields(properties, "", completionFields);
+            });
 
-                } catch (Exception e) {
-                    logger.warn("获取索引 {} 的 mapping 失败: {}", indexName, e.getMessage());
-                }
-            }
-
-            logger.debug("从索引 {} 中找到 completion 字段: {}", indexNames, completionFields);
+            logger.debug("从索引 {} 中找到 completion 字段: {}", indexName, completionFields);
 
         } catch (Exception e) {
-            logger.error("获取 completion 字段失败", e);
+            logger.warn("获取索引 {} 的 mapping 失败: {}", indexName, e.getMessage());
         }
 
         List<String> result = new ArrayList<>(completionFields);
 
         // 存入缓存
-        completionFieldsCache.put(cacheKey, result);
+        completionFieldsCache.put(indexName, result);
 
         return result;
     }
@@ -532,10 +519,11 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
     }
 
     /**
-     * 合并建议列表：去重、按得分排序、限制数量
+     * 合并建议列表：去重、按前缀匹配和得分排序、限制数量
      */
     private List<SearchSuggestionDTO> mergeSuggestions(
             List<SearchSuggestionDTO> suggestions,
+            String query,
             int maxSize) {
 
         // 按文本去重，保留得分最高的
@@ -546,9 +534,18 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
                 (dto1, dto2) -> dto1.getScore() > dto2.getScore() ? dto1 : dto2
             ));
 
-        // 按得分降序排序并限制数量
+        // 排序逻辑：
+        // 1. 优先按是否以查询词开头排序（前缀匹配优先）
+        // 2. 相同前缀匹配状态下，按得分降序排序
+        String lowerQuery = query.toLowerCase();
         return uniqueSuggestions.values().stream()
-            .sorted(Comparator.comparing(SearchSuggestionDTO::getScore).reversed())
+            .sorted(Comparator
+                // 先按是否前缀匹配排序（true 排在前面）
+                .comparing((SearchSuggestionDTO dto) -> dto.getText().toLowerCase().startsWith(lowerQuery))
+                .reversed()
+                // 再按得分降序排序
+                .thenComparing(SearchSuggestionDTO::getScore, Comparator.reverseOrder())
+            )
             .limit(maxSize)
             .collect(Collectors.toList());
     }
