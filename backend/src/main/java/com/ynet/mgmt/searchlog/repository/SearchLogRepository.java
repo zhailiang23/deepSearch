@@ -504,4 +504,126 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long>, Jpa
            "WHERE s.createdAt BETWEEN :startTime AND :endTime")
     List<Object[]> findQueryAndResultsInTimeRange(@Param("startTime") LocalDateTime startTime,
                                                    @Param("endTime") LocalDateTime endTime);
+
+    // ========== 搜索建议专用方法 ==========
+
+    /**
+     * 根据用户ID和创建时间之后查询搜索日志
+     *
+     * @param userId       用户ID
+     * @param createdAfter 创建时间之后
+     * @return 搜索日志列表
+     */
+    List<SearchLog> findByUserIdAndCreatedAtAfter(Long userId, LocalDateTime createdAfter);
+
+    /**
+     * 根据用户ID、搜索空间ID和创建时间之后查询搜索日志
+     *
+     * @param userId        用户ID
+     * @param searchSpaceId 搜索空间ID
+     * @param createdAfter  创建时间之后
+     * @return 搜索日志列表
+     */
+    List<SearchLog> findByUserIdAndSearchSpaceIdAndCreatedAtAfter(Long userId, Long searchSpaceId, LocalDateTime createdAfter);
+
+    /**
+     * 根据搜索空间ID和创建时间之后查询搜索日志
+     *
+     * @param searchSpaceId 搜索空间ID
+     * @param createdAfter  创建时间之后
+     * @return 搜索日志列表
+     */
+    List<SearchLog> findBySearchSpaceIdAndCreatedAtAfter(Long searchSpaceId, LocalDateTime createdAfter);
+
+    /**
+     * 根据创建时间之后查询搜索日志
+     *
+     * @param createdAfter 创建时间之后
+     * @return 搜索日志列表
+     */
+    List<SearchLog> findByCreatedAtAfter(LocalDateTime createdAfter);
+
+    // ========== 轻量级查询方法（用于搜索建议，不加载大字段） ==========
+
+    /**
+     * 轻量级查询：根据用户ID和创建时间之后查询（只返回 searchQuery 和 createdAt）
+     *
+     * @param userId       用户ID
+     * @param query        搜索关键词（用于模糊匹配）
+     * @param createdAfter 创建时间之后
+     * @param pageable     分页参数
+     * @return 轻量级搜索日志列表
+     */
+    @Query("SELECT s.searchQuery as searchQuery, s.createdAt as createdAt " +
+           "FROM SearchLog s WHERE s.userId = :userId AND s.createdAt > :createdAfter " +
+           "AND LOWER(s.searchQuery) LIKE LOWER(CONCAT(:query, '%')) " +
+           "ORDER BY s.createdAt DESC")
+    List<Object[]> findMinimalByUserIdAndQueryAndCreatedAtAfter(
+        @Param("userId") Long userId,
+        @Param("query") String query,
+        @Param("createdAfter") LocalDateTime createdAfter,
+        Pageable pageable
+    );
+
+    /**
+     * 轻量级查询：根据用户ID、搜索空间ID和创建时间之后查询
+     *
+     * @param userId        用户ID
+     * @param searchSpaceId 搜索空间ID
+     * @param query         搜索关键词（用于模糊匹配）
+     * @param createdAfter  创建时间之后
+     * @param pageable      分页参数
+     * @return 轻量级搜索日志列表
+     */
+    @Query("SELECT s.searchQuery as searchQuery, s.createdAt as createdAt " +
+           "FROM SearchLog s WHERE s.userId = :userId AND s.searchSpaceId = :searchSpaceId " +
+           "AND s.createdAt > :createdAfter " +
+           "AND LOWER(s.searchQuery) LIKE LOWER(CONCAT(:query, '%')) " +
+           "ORDER BY s.createdAt DESC")
+    List<Object[]> findMinimalByUserIdAndSearchSpaceIdAndQueryAndCreatedAtAfter(
+        @Param("userId") Long userId,
+        @Param("searchSpaceId") Long searchSpaceId,
+        @Param("query") String query,
+        @Param("createdAfter") LocalDateTime createdAfter,
+        Pageable pageable
+    );
+
+    /**
+     * 轻量级查询：根据搜索空间ID和创建时间之后查询
+     *
+     * @param searchSpaceId 搜索空间ID
+     * @param query         搜索关键词（用于模糊匹配）
+     * @param createdAfter  创建时间之后
+     * @param pageable      分页参数
+     * @return 轻量级搜索日志列表
+     */
+    @Query("SELECT s.searchQuery as searchQuery, s.createdAt as createdAt " +
+           "FROM SearchLog s WHERE s.searchSpaceId = :searchSpaceId " +
+           "AND s.createdAt > :createdAfter " +
+           "AND LOWER(s.searchQuery) LIKE LOWER(CONCAT(:query, '%')) " +
+           "ORDER BY s.createdAt DESC")
+    List<Object[]> findMinimalBySearchSpaceIdAndQueryAndCreatedAtAfter(
+        @Param("searchSpaceId") Long searchSpaceId,
+        @Param("query") String query,
+        @Param("createdAfter") LocalDateTime createdAfter,
+        Pageable pageable
+    );
+
+    /**
+     * 轻量级查询：根据创建时间之后查询（全局）
+     *
+     * @param query        搜索关键词（用于模糊匹配）
+     * @param createdAfter 创建时间之后
+     * @param pageable     分页参数
+     * @return 轻量级搜索日志列表
+     */
+    @Query("SELECT s.searchQuery as searchQuery, s.createdAt as createdAt " +
+           "FROM SearchLog s WHERE s.createdAt > :createdAfter " +
+           "AND LOWER(s.searchQuery) LIKE LOWER(CONCAT(:query, '%')) " +
+           "ORDER BY s.createdAt DESC")
+    List<Object[]> findMinimalByQueryAndCreatedAtAfter(
+        @Param("query") String query,
+        @Param("createdAfter") LocalDateTime createdAfter,
+        Pageable pageable
+    );
 }

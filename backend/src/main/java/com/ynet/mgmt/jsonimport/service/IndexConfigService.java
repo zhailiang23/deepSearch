@@ -291,6 +291,16 @@ public class IndexConfigService {
             }
         }
 
+        // 为适合的字段添加 completion 子字段支持，用于搜索建议
+        if (shouldAddCompletionField(fieldResult)) {
+            log.debug("为字段 {} 添加 completion 子字段支持", fieldResult.getFieldName());
+            fields.put("completion", IndexMappingConfig.FieldMapping.builder()
+                    .elasticsearchType("completion")
+                    .index(true)
+                    .docValues(false)
+                    .build());
+        }
+
         // 注意：dense_vector字段不能作为multifields，需要在主字段级别单独创建
 
         builder.fields(fields);
@@ -362,6 +372,54 @@ public class IndexConfigService {
         }
 
         return "standard";
+    }
+
+    /**
+     * 判断字段是否应该添加 completion 字段支持
+     * completion 字段用于提供搜索建议功能
+     *
+     * @param fieldResult 字段分析结果
+     * @return 是否需要 completion 支持
+     */
+    private boolean shouldAddCompletionField(FieldAnalysisResult fieldResult) {
+        // 只为字符串类型字段考虑 completion 支持
+        if (fieldResult.getInferredType() != FieldType.STRING) {
+            return false;
+        }
+
+        String fieldName = fieldResult.getFieldName().toLowerCase();
+
+        // 名称、标题类字段最适合作为搜索建议
+        if (fieldName.contains("name") || fieldName.contains("名称") ||
+            fieldName.contains("title") || fieldName.contains("标题")) {
+            log.debug("字段 {} 为名称/标题类字段，添加 completion 支持", fieldResult.getFieldName());
+            return true;
+        }
+
+        // 建议索引的字段
+        if (fieldResult.isSuggestIndex()) {
+            log.debug("字段 {} 被建议索引，添加 completion 支持", fieldResult.getFieldName());
+            return true;
+        }
+
+        // 高重要性字段
+        if (fieldResult.getImportance() >= 80) {
+            log.debug("字段 {} 重要性高（{}），添加 completion 支持",
+                     fieldResult.getFieldName(), fieldResult.getImportance());
+            return true;
+        }
+
+        // 短文本字段适合作为建议（平均长度小于50个字符）
+        if (fieldResult.getStatistics() != null &&
+            fieldResult.getStatistics().getAvgLength() != null &&
+            fieldResult.getStatistics().getAvgLength() > 0 &&
+            fieldResult.getStatistics().getAvgLength() <= 50) {
+            log.debug("字段 {} 为短文本字段（平均长度: {}），添加 completion 支持",
+                     fieldResult.getFieldName(), fieldResult.getStatistics().getAvgLength());
+            return true;
+        }
+
+        return false;
     }
 
     /**

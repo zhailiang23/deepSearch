@@ -110,4 +110,10 @@ public interface HotTopicRepository extends JpaRepository<HotTopic, Long>,
      */
     @Query("SELECT AVG(h.popularity) FROM HotTopic h WHERE h.visible = true")
     Double getAveragePopularity();
+
+    /**
+     * 查找可见的热门话题，按热度降序排列（返回List）
+     * @return 话题列表
+     */
+    List<HotTopic> findByVisibleTrueOrderByPopularityDesc();
 }

@@ -187,23 +187,29 @@
                 </svg>
               </button>
             </div>
-
-            <!-- 搜索建议 -->
-            <div v-if="suggestions.length > 0 && showSuggestions" class="suggestions">
-              <div
-                v-for="suggestion in suggestions"
-                :key="suggestion"
-                class="suggestion-item"
-                @click="selectSuggestion(suggestion)"
-              >
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>{{ suggestion }}</span>
-              </div>
-            </div>
           </div>
 
+          <!-- 搜索建议 (移到搜索容器外面) -->
+          <div v-if="suggestions.length > 0 && showSuggestions" class="suggestions">
+            <div
+              v-for="(suggestion, index) in suggestions"
+              :key="index"
+              class="suggestion-item"
+              @click="selectSuggestion(suggestion)"
+            >
+              <!-- 根据类型显示不同图标 -->
+              <svg v-if="suggestion.icon === 'history'" class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <svg v-else-if="suggestion.icon === 'hot'" class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2c1.5 0 2.5 1.5 2.5 3 0 .5 0 1-.5 1.5.5.5 1 1.5 1 2.5 0 1.5-1 3-2.5 3s-2.5-1.5-2.5-3c0-1 .5-2 1-2.5-.5-.5-.5-1-.5-1.5 0-1.5 1-3 2.5-3zm0 18c-3.9 0-7-3.1-7-7 0-2.8 1.6-5.2 4-6.4V8c-1.3 1-2 2.4-2 4 0 2.8 2.2 5 5 5s5-2.2 5-5c0-1.6-.7-3-2-4v-1.4c2.4 1.2 4 3.6 4 6.4 0 3.9-3.1 7-7 7z"></path>
+              </svg>
+              <svg v-else class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <span class="flex-1">{{ suggestion.text }}</span>
+            </div>
+          </div>
 
           <!-- 搜索结果区域 -->
           <div class="results-container">
@@ -341,6 +347,7 @@ import { useInfiniteScroll } from '@vueuse/core'
 import { SearchDataService, transformSearchResponse } from '@/api/searchData'
 import { searchLogApi } from '@/api/searchLog'
 import { HotTopicApi } from '@/services/hotTopicApi'
+import { searchSuggestionApi, type SearchSuggestionDTO, SuggestionType } from '@/api/searchSuggestion'
 import type { SearchResult, SearchResponse } from '@/types/demo'
 import type { ClickRecordRequest } from '@/types/searchLog'
 import type { HotTopic } from '@/types/hotTopic'
@@ -361,7 +368,7 @@ const store = useMobileSearchDemoStore()
 // 本地状态
 const searchQuery = ref('')
 const showSuggestions = ref(false)
-const suggestions = ref<string[]>([])
+const suggestions = ref<SearchSuggestionDTO[]>([])
 const showSettings = ref(false)
 const currentTime = ref('')
 const activeSpace = ref('')
@@ -497,13 +504,13 @@ const handleFocus = () => {
   }
 }
 
-const handleSearch = () => {
-  if (!autoSearch.value) return
-
+const handleSearch = async () => {
   clearTimeout(searchTimeout)
 
-  // 如果搜索框为空，清除搜索结果并恢复初始状态
+  // 如果搜索框为空，清除建议和搜索结果
   if (searchQuery.value.trim() === '') {
+    suggestions.value = []
+    showSuggestions.value = false
     store.clearResults()
     currentSearchLogId.value = null
     store.setSearchState({
@@ -517,10 +524,43 @@ const handleSearch = () => {
     return
   }
 
+  // 满足最小查询长度时，获取搜索建议
   if (searchQuery.value.length >= minQueryLength.value) {
-    searchTimeout = setTimeout(() => {
-      performSearch()
+    searchTimeout = setTimeout(async () => {
+      await getSuggestions()
     }, debounceMs.value)
+  }
+}
+
+/**
+ * 获取搜索建议
+ */
+const getSuggestions = async () => {
+  try {
+    // 获取所有选中空间的ID列表
+    const searchSpaceIds = selectedSpaces.value
+      .map(space => space.id ? Number(space.id) : null)
+      .filter((id): id is number => id !== null)
+
+    const response = await searchSuggestionApi.getSuggestions({
+      query: searchQuery.value,
+      searchSpaceIds: searchSpaceIds.length > 0 ? searchSpaceIds : undefined,
+      userId: undefined, // TODO: 从用户状态获取
+      size: 10,
+      enableFuzzy: true
+    })
+
+    if (response.success && response.data) {
+      suggestions.value = response.data
+      showSuggestions.value = suggestions.value.length > 0
+    } else {
+      suggestions.value = []
+      showSuggestions.value = false
+    }
+  } catch (error) {
+    console.error('获取搜索建议失败:', error)
+    suggestions.value = []
+    showSuggestions.value = false
   }
 }
 
@@ -655,6 +695,8 @@ const realSearch = async () => {
 
 const clearSearch = () => {
   searchQuery.value = ''
+  suggestions.value = []
+  showSuggestions.value = false
   store.clearResults()
   currentSearchLogId.value = null
   // 清除搜索状态，恢复到初始页面
@@ -674,8 +716,13 @@ const retrySearch = () => {
   }
 }
 
-const selectSuggestion = (suggestion: string) => {
-  searchQuery.value = suggestion
+const selectSuggestion = (suggestion: SearchSuggestionDTO | string) => {
+  // 兼容处理字符串和DTO两种类型
+  if (typeof suggestion === 'string') {
+    searchQuery.value = suggestion
+  } else {
+    searchQuery.value = suggestion.text
+  }
   showSuggestions.value = false
   performSearch()
 }
@@ -830,11 +877,24 @@ const highlightText = (text: string, result?: any, fieldName?: string): string =
   console.log('使用前端匹配')
   const query = searchQuery.value.trim()
 
+  // 如果查询为空，直接返回原文本
+  if (!query) {
+    return text
+  }
+
+  // 转义正则表达式特殊字符的辅助函数
+  const escapeRegExp = (str: string): string => {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
   // 为中文搜索优化：分别匹配每个字符
   let highlightedText = text
   for (const char of query) {
-    const regex = new RegExp(`(${char})`, 'gi')
-    highlightedText = highlightedText.replace(regex, '<mark class="search-highlight">$1</mark>')
+    if (char) {  // 跳过空字符
+      const escapedChar = escapeRegExp(char)
+      const regex = new RegExp(`(${escapedChar})`, 'gi')
+      highlightedText = highlightedText.replace(regex, '<mark class="search-highlight">$1</mark>')
+    }
   }
 
   console.log('前端匹配结果:', highlightedText)
@@ -1035,7 +1095,7 @@ watch(() => availableTabs.value, (newTabs) => {
 }
 
 .search-container-wrapper {
-  @apply flex-1 flex flex-col;
+  @apply flex-1 flex flex-col relative;
   min-height: 0; /* 确保flex子容器可以正确计算高度 */
   height: 100%; /* 占满可用空间 */
 }
@@ -1056,8 +1116,8 @@ watch(() => availableTabs.value, (newTabs) => {
 .search-container {
   @apply relative px-4 py-3;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.9) 100%);
-  backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+  isolation: isolate;
 }
 
 .search-input-wrapper {
@@ -1107,11 +1167,13 @@ watch(() => availableTabs.value, (newTabs) => {
 }
 
 .suggestions {
-  @apply absolute top-full left-4 right-4 rounded-2xl shadow-2xl z-10 max-h-60 overflow-y-auto;
+  @apply absolute left-4 right-4 rounded-2xl shadow-2xl max-h-60 overflow-y-auto;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.9) 100%);
   backdrop-filter: blur(20px);
+  z-index: 9999 !important;
   border: 1px solid rgba(34, 197, 94, 0.2);
-  margin-top: 8px;
+  top: 68px; /* 搜索容器的高度 */
+  position: absolute !important;
 }
 
 .suggestion-item {
@@ -1206,7 +1268,8 @@ watch(() => availableTabs.value, (newTabs) => {
 
 /* Tab导航样式 */
 .tab-navigation {
-  @apply border-b border-gray-200 bg-white sticky top-0 z-10;
+  @apply border-b border-gray-200 bg-white sticky top-0;
+  z-index: 1;
 }
 
 .tab-list {

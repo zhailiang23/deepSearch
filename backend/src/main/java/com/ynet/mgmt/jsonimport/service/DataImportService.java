@@ -586,6 +586,9 @@ public class DataImportService {
             case "object" -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
                     .object(o -> o.enabled(true))
             );
+            case "completion" -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
+                    .completion(c -> c)
+            );
             case "dense_vector" -> co.elastic.clients.elasticsearch._types.mapping.Property.of(p -> p
                     .denseVector(dv -> {
                         if (mapping.getVectorConfig() != null) {
