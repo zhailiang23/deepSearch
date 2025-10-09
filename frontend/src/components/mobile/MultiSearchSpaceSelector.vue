@@ -6,7 +6,7 @@
     <div class="multi-select-wrapper">
       <div
         class="multi-select-control"
-        :class="{ 'disabled': loading || !displayOptions.length, 'focused': isFocused }"
+        :class="{ 'disabled': loading || !availableOptions.length }"
         @click="toggleDropdown"
       >
         <!-- 选中的标签 -->
@@ -46,7 +46,7 @@
       <!-- 下拉选项列表 -->
       <div v-if="isOpen && !loading" class="dropdown-menu">
         <div
-          v-for="option in displayOptions"
+          v-for="option in availableOptions"
           :key="option.id"
           class="dropdown-item"
           :class="{
@@ -63,7 +63,7 @@
           />
           <span class="option-label">{{ option.name }}</span>
         </div>
-        <div v-if="displayOptions.length === 0" class="dropdown-empty">
+        <div v-if="availableOptions.length === 0" class="dropdown-empty">
           暂无可用的搜索空间
         </div>
       </div>
@@ -77,37 +77,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import http from '@/utils/http'
 import { useMobileSearchDemoStore } from '@/stores/mobileSearchDemo'
+import type { SearchSpaceOption } from '@/types/demo'
 
 // Types
-interface SearchSpaceOption {
-  id: string
-  name: string
-  description?: string
-  fields?: string[]
-  enabled?: boolean
-  indexStatus?: 'healthy' | 'warning' | 'error' | 'unknown'
-  docCount?: number
-}
-
 interface BackendSearchSpace {
   id: number
   name: string
-  description?: string
 }
 
 interface Props {
   modelValue: string[]
-  options?: SearchSpaceOption[]
   disabled?: boolean
 }
 
 // Props & Emits
 const props = withDefaults(defineProps<Props>(), {
-  disabled: false,
-  options: () => []
+  disabled: false
 })
 
 const emits = defineEmits<{
@@ -125,71 +113,27 @@ const availableOptions = ref<SearchSpaceOption[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const isOpen = ref(false)
-const isFocused = ref(false)
 
-// Computed - 使用本地加载的选项或传入的选项
-const displayOptions = computed(() => {
-  return props.options?.length ? props.options : availableOptions.value
-})
-
-// 选中的选项对象列表
+// Computed
 const selectedOptions = computed(() => {
-  return displayOptions.value.filter(opt => selectedValues.value.includes(opt.id))
-})
-
-// Watch for prop changes
-watch(() => props.modelValue, (newValue) => {
-  selectedValues.value = [...newValue]
-}, { deep: true })
-
-// Watch for local changes and emit
-watch(selectedValues, (newValue) => {
-  emits('update:modelValue', newValue)
-
-  // 同步到 store - 使用 selectSearchSpaces 方法
-  store.selectSearchSpaces(newValue)
-}, { deep: true })
-
-// Watch loading state and emit
-watch(loading, (newValue) => {
-  emits('loading', newValue)
-})
-
-// Watch error state and emit
-watch(error, (newValue) => {
-  emits('error', newValue)
+  return availableOptions.value.filter(opt => selectedValues.value.includes(opt.id))
 })
 
 // Methods
 async function loadAvailableSearchSpaces() {
-  // 如果已经有 props.options，不需要加载
-  if (props.options?.length) {
-    return
-  }
-
   try {
     loading.value = true
+    emits('loading', true)
     error.value = null
 
-    console.log('MultiSearchSpaceSelector: 开始加载搜索空间列表...')
-
-    // 使用与 SearchDataManagePage 相同的API调用
-    // 注意:http拦截器已经返回了response.data,所以result就是ApiResponse对象
     const result = await http.get('/search-spaces', {
-      params: {
-        page: 0,
-        size: 100
-      }
+      params: { page: 0, size: 100 }
     }) as any
 
-    console.log('MultiSearchSpaceSelector: 搜索空间API响应:', result)
-
-    // 处理后端返回的ApiResponse格式
     if (result.success && result.data && result.data.content) {
-      const spaces = result.data.content.map((space: BackendSearchSpace) => ({
+      const spaces: SearchSpaceOption[] = result.data.content.map((space: BackendSearchSpace) => ({
         id: space.id.toString(),
         name: space.name,
-        description: space.description,
         fields: [],
         enabled: true,
         indexStatus: 'healthy' as const,
@@ -197,58 +141,33 @@ async function loadAvailableSearchSpaces() {
       }))
 
       availableOptions.value = spaces
-
-      // 重要：将搜索空间列表同步到store中
       store.setSearchSpaces(spaces)
-
-      console.log('MultiSearchSpaceSelector: 搜索空间列表加载成功:', availableOptions.value)
     } else {
-      console.warn('MultiSearchSpaceSelector: 搜索空间API返回格式异常:', result)
       throw new Error(result.message || '获取搜索空间列表失败')
     }
   } catch (err: any) {
-    console.error('MultiSearchSpaceSelector: 加载搜索空间列表时发生错误:', err)
-
     const errorMessage = err.response?.data?.message || err.message || '加载搜索空间失败'
     error.value = errorMessage
+    emits('error', errorMessage)
 
-    // 使用备用数据
-    const fallbackSpaces = [
-      {
-        id: '1',
-        name: '示例搜索空间1',
-        description: '这是第一个示例搜索空间',
-        fields: [],
-        enabled: true,
-        indexStatus: 'healthy' as const,
-        docCount: 0
-      },
-      {
-        id: '2',
-        name: '示例搜索空间2',
-        description: '这是第二个示例搜索空间',
-        fields: [],
-        enabled: true,
-        indexStatus: 'healthy' as const,
-        docCount: 0
-      }
+    // 备用数据
+    const fallbackSpaces: SearchSpaceOption[] = [
+      { id: '1', name: '示例搜索空间1', fields: [], enabled: true, indexStatus: 'healthy' as const, docCount: 0 },
+      { id: '2', name: '示例搜索空间2', fields: [], enabled: true, indexStatus: 'healthy' as const, docCount: 0 }
     ]
-
     availableOptions.value = fallbackSpaces
-
-    // 同时更新store
     store.setSearchSpaces(fallbackSpaces)
   } finally {
     loading.value = false
+    emits('loading', false)
   }
 }
 
 function toggleDropdown() {
-  if (loading.value || !displayOptions.value.length || props.disabled) {
+  if (loading.value || !availableOptions.value.length || props.disabled) {
     return
   }
   isOpen.value = !isOpen.value
-  isFocused.value = isOpen.value
 }
 
 function toggleOption(option: SearchSpaceOption) {
@@ -262,12 +181,22 @@ function toggleOption(option: SearchSpaceOption) {
   } else {
     selectedValues.value.push(option.id)
   }
+
+  // 立即同步到 store 和 parent
+  const newValue = [...selectedValues.value]
+  emits('update:modelValue', newValue)
+  store.selectSearchSpaces(newValue)
 }
 
 function removeOption(optionId: string) {
   const index = selectedValues.value.indexOf(optionId)
   if (index > -1) {
     selectedValues.value.splice(index, 1)
+
+    // 立即同步到 store 和 parent
+    const newValue = [...selectedValues.value]
+    emits('update:modelValue', newValue)
+    store.selectSearchSpaces(newValue)
   }
 }
 
@@ -279,7 +208,6 @@ function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
   if (!target.closest('.multi-select-wrapper')) {
     isOpen.value = false
-    isFocused.value = false
   }
 }
 
@@ -309,10 +237,6 @@ onUnmounted(() => {
 
 .multi-select-control.disabled {
   @apply opacity-50 cursor-not-allowed bg-gray-50;
-}
-
-.multi-select-control.focused {
-  @apply ring-2 ring-emerald-500 border-emerald-500;
 }
 
 .multi-select-control:hover:not(.disabled) {

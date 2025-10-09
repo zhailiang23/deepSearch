@@ -62,7 +62,7 @@ const handleSubmit = async (formData: { username: string; password: string }) =>
     console.log('开始登录:', formData.username)
 
     // 调用登录API
-    const response = await axios.post('http://localhost:8080/api/auth/login', {
+    const response = await axios.post('/api/auth/login', {
       username: formData.username.trim(),
       password: formData.password,
       rememberMe: false

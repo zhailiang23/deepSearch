@@ -158,7 +158,7 @@
             <div class="setting-group">
               <h4 class="setting-group-title">布局设置</h4>
               <div class="setting-options">
-                <!-- 紧凑模式 */
+                <!-- 紧凑模式 -->
                 <label class="setting-option">
                   <input
                     v-model="layoutSettings.compact"
@@ -230,7 +230,7 @@
               </div>
             </div>
 
-            <!-- 显示设置 */
+            <!-- 显示设置 -->
             <div class="setting-group">
               <h4 class="setting-group-title">显示设置</h4>
               <div class="setting-options">

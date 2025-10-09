@@ -10,12 +10,6 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# 安装系统依赖（编译某些 Python 包需要）
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
 # 复制依赖文件
 COPY requirements.txt .
 
@@ -30,7 +24,7 @@ EXPOSE 5001
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5001/health')"
+    CMD python -c "import requests; requests.get('http://localhost:5001/health')" || exit 1
 
 # 启动服务
 CMD ["uvicorn", "cluster_api:app", "--host", "0.0.0.0", "--port", "5001", "--log-level", "info"]

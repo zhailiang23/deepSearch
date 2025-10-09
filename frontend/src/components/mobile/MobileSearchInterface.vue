@@ -389,6 +389,8 @@ const currentSearchLogId = ref<number | null>(null)
 
 // 搜索防抖
 let searchTimeout: number
+// 搜索空间变更防抖
+let spaceChangeTimeout: number
 
 // 计算属性
 const selectedSpaces = computed(() => store.selectedSpaces)
@@ -965,6 +967,7 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(timeInterval)
   clearTimeout(searchTimeout)
+  clearTimeout(spaceChangeTimeout)
 })
 
 // 监听配置变更
@@ -981,15 +984,24 @@ watch(() => selectedSpaces.value, (newSpaces, oldSpaces) => {
     activeSpace.value = selectedSpaces.value[0].id
   }
 
-  // 如果已经有搜索词，且搜索空间发生变化，则自动触发搜索
+  // 清除之前的定时器
+  if (spaceChangeTimeout) {
+    clearTimeout(spaceChangeTimeout)
+  }
+
+  // 如果已经有搜索词，且搜索空间发生变化，则延迟触发搜索（防抖）
   if (searchQuery.value && searchQuery.value.trim().length >= minQueryLength.value) {
     // 检查搜索空间是否真的变化了
     const oldIds = oldSpaces?.map(s => s.id).sort().join(',') || ''
     const newIds = newSpaces?.map(s => s.id).sort().join(',') || ''
 
     if (oldIds !== newIds && newSpaces && newSpaces.length > 0) {
-      console.log('搜索空间变化，重新搜索:', { oldIds, newIds })
-      performSearch()
+      console.log('搜索空间变化，将在 500ms 后重新搜索:', { oldIds, newIds })
+      // 延迟 500ms 触发搜索，给用户时间继续选择
+      spaceChangeTimeout = window.setTimeout(() => {
+        console.log('执行延迟搜索')
+        performSearch()
+      }, 500)
     }
   }
 }, { deep: true })
