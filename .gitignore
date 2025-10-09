@@ -298,7 +298,7 @@ $RECYCLE.BIN/
 # Project Specific
 # =============================================================================
 # Claude AI local settings (keep structure but ignore sensitive configs)
-.claude/settings.local.json
+.claude/
 
 # Serena local files
 .serena/
