@@ -25,6 +25,13 @@ public interface HotTopicService {
     HotTopicDTO createHotTopic(CreateHotTopicRequest request);
 
     /**
+     * 批量创建热门话题
+     * @param request 批量创建请求
+     * @return 批量创建响应
+     */
+    BatchCreateHotTopicResponse batchCreateHotTopics(BatchCreateHotTopicRequest request);
+
+    /**
      * 删除热门话题
      * @param id 话题ID
      */

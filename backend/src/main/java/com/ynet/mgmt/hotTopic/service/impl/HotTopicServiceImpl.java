@@ -60,6 +60,54 @@ public class HotTopicServiceImpl implements HotTopicService {
     }
 
     @Override
+    public BatchCreateHotTopicResponse batchCreateHotTopics(BatchCreateHotTopicRequest request) {
+        log.info("Batch creating hot topics: count={}", request.getTopics().size());
+
+        BatchCreateHotTopicResponse response = new BatchCreateHotTopicResponse();
+        response.setCreatedTopics(new java.util.ArrayList<>());
+        response.setSkippedTopics(new java.util.ArrayList<>());
+        response.setFailedTopics(new java.util.ArrayList<>());
+
+        for (BatchCreateHotTopicRequest.TopicItem item : request.getTopics()) {
+            try {
+                // 检查名称是否已存在
+                if (!isNameAvailable(item.getName())) {
+                    if (Boolean.TRUE.equals(request.getSkipExisting())) {
+                        log.info("Skipping existing topic: {}", item.getName());
+                        response.getSkippedTopics().add(item.getName());
+                        continue;
+                    } else {
+                        throw new DuplicateHotTopicException("名称", item.getName());
+                    }
+                }
+
+                // 创建话题
+                HotTopic hotTopic = new HotTopic();
+                hotTopic.setName(item.getName());
+                hotTopic.setPopularity(item.getPopularity());
+                hotTopic.setVisible(item.getVisible() != null ? item.getVisible() : true);
+
+                hotTopic = hotTopicRepository.save(hotTopic);
+                response.getCreatedTopics().add(hotTopicMapper.toDTO(hotTopic));
+
+                log.info("Hot topic created in batch: {} (ID: {})", hotTopic.getName(), hotTopic.getId());
+            } catch (Exception e) {
+                log.error("Failed to create hot topic: {}", item.getName(), e);
+                response.getFailedTopics().add(item.getName());
+            }
+        }
+
+        response.setSuccessCount(response.getCreatedTopics().size());
+        response.setSkippedCount(response.getSkippedTopics().size());
+        response.setFailedCount(response.getFailedTopics().size());
+
+        log.info("Batch creation completed: success={}, skipped={}, failed={}",
+                response.getSuccessCount(), response.getSkippedCount(), response.getFailedCount());
+
+        return response;
+    }
+
+    @Override
     public void deleteHotTopic(Long id) {
         log.info("Deleting hot topic: {}", id);
 

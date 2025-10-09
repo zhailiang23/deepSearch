@@ -1,22 +1,22 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mgmt-mysql-dev
+  postgres:
+    image: postgres:15-alpine
+    container_name: mgmt-postgres-dev
     environment:
-      MYSQL_DATABASE: mgmt_db
-      MYSQL_USER: mgmt_user
-      MYSQL_PASSWORD: mgmt_password
-      MYSQL_ROOT_PASSWORD: root_password
-      TZ: Asia/Shanghai
+      POSTGRES_DB: mgmt_db
+      POSTGRES_USER: mgmt_user
+      POSTGRES_PASSWORD: mgmt_password
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
     ports:
-      - "3306:3306"
+      - "5432:5432"
     networks:
       - mgmt-network
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mgmt_user", "-pmgmt_password"]
+      test: ["CMD-SHELL", "pg_isready -U mgmt_user -d mgmt_db"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -102,32 +102,6 @@ services:
         reservations:
           memory: 1G
 
-  python-cluster:
-    build:
-      context: ./python
-      dockerfile: Dockerfile
-    container_name: mgmt-python-cluster-dev
-    environment:
-      - PYTHONUNBUFFERED=1
-      - LOG_LEVEL=INFO
-    ports:
-      - "5001:5001"
-    networks:
-      - mgmt-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
-
   backend:
     build:
       context: ./backend
@@ -135,8 +109,8 @@ services:
     container_name: mgmt-backend-dev
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      DB_HOST: mysql
-      DB_PORT: 3306
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_NAME: mgmt_db
       DB_USERNAME: mgmt_user
       DB_PASSWORD: mgmt_password
@@ -149,19 +123,16 @@ services:
       SEMANTIC_EMBEDDING_SERVICE_URL: http://semantic-embedding:8001
       SEMANTIC_EMBEDDING_ENABLED: true
       SEMANTIC_SEARCH_WEIGHT: 0.3
-      PYTHON_CLUSTER_URL: http://python-cluster:5001
     ports:
       - "8080:8080"
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
       semantic-embedding:
-        condition: service_healthy
-      python-cluster:
         condition: service_healthy
     networks:
       - mgmt-network
@@ -189,7 +160,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  mysql_data:
+  postgres_data:
     driver: local
   redis_data:
     driver: local

@@ -68,6 +68,8 @@ public class SecurityConfig {
                 .requestMatchers("/search-spaces").permitAll()
                 // 允许搜索日志点击记录接口不需要认证（用于移动搜索演示）
                 .requestMatchers("/search-logs/click").permitAll()
+                // 允许聚类分析接口不需要认证（用于测试）
+                .requestMatchers("/clustering/**").permitAll()
 
                 // 其他所有请求都需要认证
                 .anyRequest().authenticated()

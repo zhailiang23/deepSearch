@@ -161,6 +161,15 @@ const routes = [
           requiresAuth: false,
           title: '智能活动识别'
         }
+      },
+      {
+        path: 'cluster-analysis',
+        name: 'ClusterAnalysis',
+        component: () => import('@/views/cluster-analysis/Index.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '查询聚类分析'
+        }
       }
     ]
   },

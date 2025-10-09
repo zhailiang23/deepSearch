@@ -1,12 +1,11 @@
 # clustering.py
 import umap
-import plotly.graph_objects as go
 from sklearn.cluster import DBSCAN
 import numpy as np
 
 def perform_clustering(embeddings, texts, eps=0.35, min_samples=3, metric='cosine'):
     """
-    执行 DBSCAN 聚类 + UMAP 降维可视化
+    执行 DBSCAN 聚类 + UMAP 降维
     参数：
         embeddings: 句向量列表
         texts: 原始文本列表
@@ -14,24 +13,21 @@ def perform_clustering(embeddings, texts, eps=0.35, min_samples=3, metric='cosin
         min_samples: 核心点最小样本数
         metric: 距离度量方式 ('cosine', 'euclidean')
     返回：
-        labels: 聚类标签数组
-        fig: Plotly 可视化图
+        labels: 聚类标签数组 (numpy array)
+        embedding_2d: UMAP 降维后的 2D 坐标 (numpy array, shape: (n_samples, 2))
     """
     # 确保输入是 numpy 数组
     embeddings = np.array(embeddings)
-    
+
     # DBSCAN 聚类
     clustering = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
     labels = clustering.fit_predict(embeddings)
-    
+
     # UMAP 降维（使用相同 metric）
     reducer = umap.UMAP(n_components=2, metric=metric, random_state=42)
     embedding_2d = reducer.fit_transform(embeddings)
-    
-    # 生成可视化图
-    fig = create_umap_plot(embedding_2d, labels, texts)
-    
-    return labels, fig
+
+    return labels, embedding_2d
 
 
 def create_umap_plot(embedding_2d, labels, texts):

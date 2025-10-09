@@ -164,10 +164,10 @@ app:
 
   # 缓存配置
   cache:
-    default-ttl: ${CACHE_DEFAULT_TTL:PT30M}  # 默认缓存30分钟
-    hot-words-ttl: ${CACHE_HOT_WORDS_TTL:PT1H}  # 热词缓存1小时
-    statistics-ttl: ${CACHE_STATISTICS_TTL:PT15M}  # 统计数据缓存15分钟
-    search-spaces-ttl: ${CACHE_SEARCH_SPACES_TTL:PT2H}  # 搜索空间缓存2小时
+    default-ttl: ${CACHE_DEFAULT_TTL:PT1M}  # 默认缓存1分钟
+    hot-words-ttl: ${CACHE_HOT_WORDS_TTL:PT1M}  # 热词缓存1分钟
+    statistics-ttl: ${CACHE_STATISTICS_TTL:PT1M}  # 统计数据缓存1分钟
+    search-spaces-ttl: ${CACHE_SEARCH_SPACES_TTL:PT1M}  # 搜索空间缓存1分钟
 
 # 搜索日志配置
 search:
@@ -252,3 +252,29 @@ sensitive-word:
   cache:
     # 缓存刷新间隔（毫秒），默认5分钟
     refresh-interval: ${SENSITIVE_WORD_CACHE_REFRESH_INTERVAL:300000}
+
+# 聚类分析配置
+cluster:
+  # Python 聚类服务配置
+  python:
+    service-url: ${PYTHON_CLUSTER_URL:http://localhost:5001}
+    timeout: ${PYTHON_CLUSTER_TIMEOUT:300000}  # 5分钟超时
+    max-texts: ${PYTHON_CLUSTER_MAX_TEXTS:10000}  # 最大处理文本数
+
+  # 硅基流动聚类分析配置
+  siliconflow:
+    # Embedding API 配置
+    embedding:
+      api-key: ${SILICONFLOW_CLUSTER_EMBEDDING_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+      api-url: ${SILICONFLOW_CLUSTER_EMBEDDING_API_URL:https://api.siliconflow.cn/v1/embeddings}
+      model: ${SILICONFLOW_CLUSTER_EMBEDDING_MODEL:BAAI/bge-large-zh-v1.5}
+      timeout: ${SILICONFLOW_CLUSTER_EMBEDDING_TIMEOUT:60000}
+
+    # LLM API 配置
+    llm:
+      api-key: ${SILICONFLOW_CLUSTER_LLM_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+      api-url: ${SILICONFLOW_CLUSTER_LLM_API_URL:https://api.siliconflow.cn/v1/chat/completions}
+      model: ${SILICONFLOW_CLUSTER_LLM_MODEL:Qwen/Qwen2.5-7B-Instruct}
+      temperature: ${SILICONFLOW_CLUSTER_LLM_TEMPERATURE:0.3}
+      max-tokens: ${SILICONFLOW_CLUSTER_LLM_MAX_TOKENS:500}
+      timeout: ${SILICONFLOW_CLUSTER_LLM_TIMEOUT:30000}

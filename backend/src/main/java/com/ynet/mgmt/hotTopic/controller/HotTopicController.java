@@ -73,6 +73,31 @@ public class HotTopicController {
     }
 
     /**
+     * 批量创建热门话题
+     */
+    @Operation(summary = "批量创建热门话题", description = "批量创建多个热门话题")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "批量创建成功",
+                    content = @Content(schema = @Schema(implementation = BatchCreateHotTopicResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "参数验证失败",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @PostMapping("/batch")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<ApiResponse<BatchCreateHotTopicResponse>> batchCreateHotTopics(
+            @Parameter(description = "批量创建热门话题请求", required = true)
+            @Valid @RequestBody BatchCreateHotTopicRequest request) {
+        logger.info("批量创建热门话题: count={}", request.getTopics().size());
+
+        BatchCreateHotTopicResponse result = hotTopicService.batchCreateHotTopics(request);
+
+        logger.info("批量创建完成: success={}, skipped={}, failed={}",
+                result.getSuccessCount(), result.getSkippedCount(), result.getFailedCount());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result));
+    }
+
+    /**
      * 更新热门话题
      */
     @Operation(summary = "更新热门话题", description = "更新指定ID的热门话题信息")
