@@ -70,7 +70,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -103,7 +103,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -125,7 +125,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -150,7 +150,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -177,7 +177,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -204,7 +204,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -234,7 +234,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -253,7 +253,7 @@ class ElasticsearchDataServiceTest {
 
         // 执行测试并验证异常
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            elasticsearchDataService.searchData(searchRequest, searchSpace);
+            elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
         });
 
         // 验证异常信息
@@ -273,7 +273,7 @@ class ElasticsearchDataServiceTest {
 
         // 执行测试并验证异常
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            elasticsearchDataService.searchData(searchRequest, searchSpace);
+            elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
         });
 
         // 验证异常信息
@@ -297,7 +297,7 @@ class ElasticsearchDataServiceTest {
             .thenReturn(mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(searchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");

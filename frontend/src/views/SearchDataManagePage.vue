@@ -313,7 +313,7 @@ watch(currentIndex, async (newIndex) => {
 async function loadAvailableSearchSpaces() {
   try {
     console.log('开始加载搜索空间列表...')
-    
+
     // 使用统一的http工具类，自动处理token认证
     const result = await http.get('/search-spaces', {
       params: {
@@ -321,12 +321,16 @@ async function loadAvailableSearchSpaces() {
         size: 100
       }
     })
-    
+
     console.log('搜索空间API响应:', result)
 
-    // http.get 已返回解包后的数据
-    if (result && result.content) {
-      availableSearchSpaces.value = result.content.map((space: any) => ({
+    // http.get 返回的是response.data，即ApiResponse对象
+    // ApiResponse结构: {success, message, data: PageResult}
+    // PageResult结构: {content, totalElements, ...}
+    const pageResult = result.data || result  // 兼容两种格式
+
+    if (pageResult && pageResult.content) {
+      availableSearchSpaces.value = pageResult.content.map((space: any) => ({
         id: space.id,
         name: space.name,
         description: space.description
@@ -334,27 +338,23 @@ async function loadAvailableSearchSpaces() {
       console.log('搜索空间列表加载成功:', availableSearchSpaces.value)
     } else {
       console.warn('搜索空间API返回格式异常:', result)
+      console.warn('  - result.data:', result.data)
+      console.warn('  - result.content:', result.content)
       // 使用备用数据
-      availableSearchSpaces.value = [
-        { id: 1, name: '示例搜索空间1', description: '这是第一个示例搜索空间' },
-        { id: 2, name: '示例搜索空间2', description: '这是第二个示例搜索空间' }
-      ]
+      availableSearchSpaces.value = []
     }
   } catch (error) {
     console.error('加载搜索空间列表时发生错误:', error)
-    
+
     // 显示错误提示
     toast({
       title: '加载搜索空间失败',
-      description: '无法获取搜索空间列表，已使用默认数据',
+      description: '无法获取搜索空间列表，请检查网络连接',
       variant: 'destructive'
     })
-    
-    // 使用备用数据
-    availableSearchSpaces.value = [
-      { id: 1, name: '示例搜索空间1', description: '这是第一个示例搜索空间' },
-      { id: 2, name: '示例搜索空间2', description: '这是第二个示例搜索空间' }
-    ]
+
+    // 清空列表
+    availableSearchSpaces.value = []
   }
 }
 
@@ -372,19 +372,26 @@ async function loadIndexMapping() {
 
     console.log('索引映射API响应:', response)
 
-    // http.get 已返回解包后的数据
-    if (response) {
+    // http.get 已返回解包后的数据 (ApiResponse对象)
+    // ApiResponse结构: {success, message, data: {index, mapping}, code}
+    if (response && response.data) {
+      const mappingData = response.data
+
       // 保存真实的索引名称
-      realIndexName.value = response.index || ''
+      realIndexName.value = mappingData.index || ''
 
       // 直接使用后端返回的映射数据
-      indexMapping.value = response.mapping || response
+      indexMapping.value = mappingData.mapping
+
+      console.log('索引映射API原始响应:', response)
+      console.log('mappingData:', mappingData)
+      console.log('真实索引名称:', realIndexName.value)
+      console.log('indexMapping:', indexMapping.value)
 
       // 生成初始可见列
       visibleColumns.value = generateInitialColumns()
 
-      console.log('索引映射加载成功:', indexMapping.value)
-      console.log('真实索引名称:', realIndexName.value)
+      console.log('生成的可见列数量:', visibleColumns.value.length)
       console.log('生成的可见列:', visibleColumns.value)
     } else {
       throw new Error('获取索引映射失败')
@@ -542,19 +549,41 @@ async function handleSearch() {
 
     console.log('搜索API响应:', response)
 
-    // http.post 已返回解包后的数据
-    if (response) {
+    // http.post 已返回解包后的数据 (ApiResponse对象)
+    // ApiResponse结构: {success, message, data: SearchDataResponse, code}
+    // SearchDataResponse结构: {results, total, page}
+    if (response && response.data) {
+      const searchData = response.data
+      console.log('====== 开始转换搜索结果 ======')
+      console.log('原始response:', response)
+      console.log('searchData:', searchData)
+      console.log('searchData.results:', searchData.results)
+      console.log('searchData.results类型:', Array.isArray(searchData.results))
+      console.log('searchData.results长度:', searchData.results?.length)
+
       // 转换简化响应数据格式以匹配前端期望的格式
-      searchResults.value = {
-        hits: (response.results || []).map((item: any) => ({
+      const mappedHits = (searchData.results || []).map((item: any) => {
+        console.log('转换item:', item)
+        return {
           _id: item.id,
           _score: item.score,
           _index: item.index,
           _source: item.source
-        })),
-        total: response.total || 0,
+        }
+      })
+
+      console.log('转换后的hits:', mappedHits)
+      console.log('转换后的hits长度:', mappedHits.length)
+
+      searchResults.value = {
+        hits: mappedHits,
+        total: searchData.total || 0,
         took: 0
       }
+
+      console.log('searchResults.value:', searchResults.value)
+      console.log('searchResults.value.hits长度:', searchResults.value.hits.length)
+      console.log('====== 搜索结果转换完成 ======')
 
       // 更新URL
       router.replace({

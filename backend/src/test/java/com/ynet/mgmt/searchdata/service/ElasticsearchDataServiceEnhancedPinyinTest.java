@@ -105,7 +105,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -137,7 +137,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -162,7 +162,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -186,7 +186,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -210,7 +210,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -233,7 +233,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -257,7 +257,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果（应该降级到AUTO模式）
         assertThat(response).isNotNull();
@@ -288,7 +288,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();
@@ -316,7 +316,7 @@ public class ElasticsearchDataServiceEnhancedPinyinTest {
                 .willReturn(mockSearchResponse);
 
         // 执行搜索
-        SearchDataResponse response = elasticsearchDataService.searchData(request, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(request,  searchSpace, null);
 
         // 验证结果
         assertThat(response).isNotNull();

@@ -93,7 +93,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -140,7 +140,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -168,7 +168,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertNotNull(response, "响应不应为空");
@@ -199,7 +199,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertEquals("keyword", response.getSearchMetadata().getActualQueryType(), "短查询应该使用关键词搜索");
@@ -228,7 +228,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertEquals("hybrid", response.getSearchMetadata().getActualQueryType(), "长查询应该使用混合搜索");
@@ -252,7 +252,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertEquals("KEYWORD_FIRST", response.getSearchMetadata().getSearchMode(), "搜索模式应该是关键词优先");
@@ -276,7 +276,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertEquals("keyword", response.getSearchMetadata().getActualQueryType(), "向量生成失败应该降级为关键词搜索");
@@ -300,7 +300,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证性能指标
         SearchDataResponse.SearchMetadata metadata = response.getSearchMetadata();
@@ -328,7 +328,7 @@ class ElasticsearchDataServiceSemanticTest {
             .thenReturn((SearchResponse) mockResponse);
 
         // 执行测试
-        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest, searchSpace);
+        SearchDataResponse response = elasticsearchDataService.searchData(semanticSearchRequest,  searchSpace, null);
 
         // 验证结果
         assertFalse(response.getSearchMetadata().getSemanticEnabled(), "语义搜索应该被禁用");

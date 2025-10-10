@@ -94,7 +94,7 @@ class SemanticSearchIntegrationTest {
 
         try {
             // 执行搜索
-            SearchDataResponse response = elasticsearchDataService.searchData(semanticRequest, testSearchSpace);
+            SearchDataResponse response = elasticsearchDataService.searchData(semanticRequest,  testSearchSpace, null);
 
             // 验证基本响应结构
             assertNotNull(response, "搜索响应不应为空");
@@ -157,7 +157,7 @@ class SemanticSearchIntegrationTest {
             request.setSemanticWeight(0.3);
 
             try {
-                SearchDataResponse response = elasticsearchDataService.searchData(request, testSearchSpace);
+                SearchDataResponse response = elasticsearchDataService.searchData(request,  testSearchSpace, null);
                 assertNotNull(response, "搜索响应不应为空");
 
                 SearchDataResponse.SearchMetadata metadata = response.getSearchMetadata();
@@ -188,7 +188,7 @@ class SemanticSearchIntegrationTest {
         request.setSemanticMode("AUTO");
 
         try {
-            SearchDataResponse response = elasticsearchDataService.searchData(request, testSearchSpace);
+            SearchDataResponse response = elasticsearchDataService.searchData(request,  testSearchSpace, null);
             assertNotNull(response, "搜索响应不应为空");
 
             SearchDataResponse.SearchMetadata metadata = response.getSearchMetadata();
@@ -228,7 +228,7 @@ class SemanticSearchIntegrationTest {
             request.setSemanticMode("AUTO");
 
             try {
-                SearchDataResponse response = elasticsearchDataService.searchData(request, testSearchSpace);
+                SearchDataResponse response = elasticsearchDataService.searchData(request,  testSearchSpace, null);
                 assertNotNull(response, "搜索响应不应为空");
 
                 SearchDataResponse.SearchMetadata metadata = response.getSearchMetadata();
@@ -280,7 +280,7 @@ class SemanticSearchIntegrationTest {
 
             try {
                 long startTime = System.currentTimeMillis();
-                SearchDataResponse response = elasticsearchDataService.searchData(request, testSearchSpace);
+                SearchDataResponse response = elasticsearchDataService.searchData(request,  testSearchSpace, null);
                 long endTime = System.currentTimeMillis();
 
                 assertNotNull(response, "搜索响应不应为空");

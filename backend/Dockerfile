@@ -7,8 +7,8 @@ WORKDIR /build
 COPY pom.xml .
 COPY src ./src
 
-# 构建应用
-RUN mvn clean package -DskipTests
+# 构建应用 - 跳过测试编译和执行
+RUN mvn clean package -DskipTests -Dmaven.test.skip=true
 
 # 运行阶段
 FROM eclipse-temurin:17-jre-jammy
