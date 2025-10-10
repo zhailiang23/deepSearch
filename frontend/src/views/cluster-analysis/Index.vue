@@ -131,32 +131,14 @@ const handleStartAnalysis = async (newParams: ClusterAnalysisRequest) => {
   try {
     const response = await analyzeCluster(params.value)
     console.log('API完整响应:', response)
-    console.log('API响应数据:', response.data)
 
-    // 处理响应 - 兼容不同的响应格式
-    let responseData = response.data
-
-    // 如果response.data本身就包含success字段，直接使用
-    if (responseData && typeof responseData === 'object') {
-      if (responseData.success === true && responseData.data) {
-        // 格式: { success: true, data: ClusterAnalysisResponse }
-        result.value = responseData.data
-        console.log('聚类分析完成!', result.value)
-      } else if (responseData.success === true) {
-        // 格式: { success: true, ...其他字段直接在顶层 }
-        result.value = responseData
-        console.log('聚类分析完成!', result.value)
-      } else if (responseData.clusters) {
-        // 直接就是ClusterAnalysisResponse
-        result.value = responseData
-        console.log('聚类分析完成!', result.value)
-      } else {
-        console.error('响应格式错误:', responseData)
-        alert('聚类分析失败: ' + (responseData.message || '响应格式错误'))
-      }
+    // analyzeCluster 已返回解包后的数据(ClusterAnalysisResponse)
+    if (response && response.clusters) {
+      result.value = response
+      console.log('聚类分析完成!', result.value)
     } else {
-      console.error('响应数据为空或格式错误')
-      alert('聚类分析失败: 响应数据为空')
+      console.error('响应格式错误:', response)
+      alert('聚类分析失败: 响应数据格式错误')
     }
   } catch (error: any) {
     console.error('聚类分析失败:', error)

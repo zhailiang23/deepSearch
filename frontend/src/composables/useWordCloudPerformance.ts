@@ -573,8 +573,8 @@ export function useWordCloudPerformance(options: Partial<WordCloudPerformanceCon
    */
   const shouldReprocessData = (dimensions: any, wordCount: number) => {
     const currentDimensions = {
-      width: config.width || 800,
-      height: config.height || 600
+      width: 800,
+      height: 600
     }
 
     const sizeChangeRatio = Math.abs(
@@ -616,7 +616,7 @@ export function useWordCloudPerformance(options: Partial<WordCloudPerformanceCon
   const adjustRenderQuality = () => {
     const { renderTime, fps, memoryUsage } = metrics
 
-    let qualityLevel = 'high'
+    let qualityLevel: 'low' | 'medium' | 'high' = 'high'
 
     if (renderTime > 1000 || fps < 20 || memoryUsage > 100 * 1024 * 1024) {
       qualityLevel = 'low'

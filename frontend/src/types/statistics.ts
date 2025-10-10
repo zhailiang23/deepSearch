@@ -15,6 +15,16 @@ export interface HotWordItem {
   weight: number
   /** 额外数据 */
   extraData?: Record<string, any>
+  /** 关键词 (兼容旧代码) */
+  keyword?: string
+  /** 排名 */
+  rank?: number
+  /** 搜索次数 */
+  count?: number
+  /** 趋势 */
+  trend?: 'up' | 'down' | 'stable' | 'rising' | 'falling' | 'new'
+  /** 百分比 */
+  percentage?: number
 }
 
 /**
@@ -219,9 +229,17 @@ export interface RankingItem extends HotWordItem {
   /** 排名 */
   rank: number
   /** 变化趋势 */
-  trend?: 'up' | 'down' | 'stable'
+  trend?: 'up' | 'down' | 'stable' | 'rising' | 'falling' | 'new'
   /** 变化值 */
   change?: number
+  /** 排名变化 */
+  rankChange?: number
+  /** 增长率 */
+  growthRate?: number
+  /** 分类 */
+  category?: string
+  /** 标签 */
+  tags?: string[]
 }
 
 /**
@@ -257,21 +275,27 @@ export interface StatisticsPageState {
 }
 
 /**
- * 热词统计数据结构
+ * 热词统计数据结构(HotWordStatisticsPage.vue 中使用的格式)
  */
 export interface HotWordStatisticsItem {
   /** 关键词 */
   keyword: string
-  /** 搜索次数 */
-  searchCount: number
+  /** 搜索次数/计数 */
+  count: number
+  /** 排名 */
+  rank: number
   /** 趋势 */
-  trend?: 'rising' | 'falling' | 'stable' | 'new'
-  /** 最后搜索时间 */
+  trend?: 'up' | 'down' | 'rising' | 'falling' | 'stable' | 'new'
+  /** 百分比 */
+  percentage?: number
+  /** 最后搜索时间 (可选,兼容旧代码) */
   lastSearchTime?: string
-  /** 相关渠道 */
+  /** 相关渠道 (可选,兼容旧代码) */
   channels?: string[]
-  /** 增长率 */
+  /** 增长率 (可选,兼容旧代码) */
   growthRate?: number
+  /** 搜索次数 (可选,兼容旧代码) */
+  searchCount?: number
 }
 
 /**
@@ -305,4 +329,68 @@ export interface StatisticsQueryParams {
   limit?: number
   /** 渠道列表 */
   channels?: string[]
+}
+// ============= 其他缺失的导出类型 =============
+
+/** 热词查询参数 */
+export interface HotWordQueryParams {
+  keyword?: string
+  startTime?: string
+  endTime?: string
+  limit?: number
+  offset?: number
+}
+
+/** 热词统计响应 */
+export interface HotWordStatisticsResponse {
+  data: HotWordStatistics[]
+  total: number
+}
+
+/** 排序配置 */
+export interface SortConfig {
+  field: string
+  order: 'asc' | 'desc'
+}
+
+/** 分页配置 */
+export interface PaginationConfig {
+  page: number
+  pageSize: number
+  total: number
+  totalPages?: number
+}
+
+/** 筛选状态 */
+export interface FilterState {
+  keyword: string
+  dateRange: [Date, Date] | null
+  channels: string[]
+}
+
+/** 组件状态 */
+export interface ComponentState {
+  loading: boolean
+  error: string | null
+  data: any
+}
+
+/** 词云配置 */
+export interface WordCloudConfig {
+  width: number
+  height: number
+  options: Partial<WordCloudOptions>
+}
+
+/** 词云项目 (别名) */
+export type WordCloudItem = HotWordItem
+
+/** 词云尺寸 (别名) */
+export type WordCloudDimension = WordCloudDimensions
+
+/** 词云统计信息 */
+export interface WordCloudStats {
+  totalWords: number
+  renderedWords: number
+  renderTime: number
 }

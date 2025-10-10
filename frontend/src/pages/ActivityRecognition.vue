@@ -355,16 +355,17 @@ const recognizeText = async () => {
       timeout: 300000 // 5分钟超时
     })
 
-    if (response.success) {
-      activityData.value = response.data
+    // http.post 已返回解包后的数据
+    if (response) {
+      activityData.value = response
       // 显示识别到的所有文字
-      recognizedText.value = response.data.all || '未识别到文字内容'
+      recognizedText.value = response.all || '未识别到文字内容'
       recognitionTime.value = new Date().toLocaleString()
 
       // 自动填充表单
       autoFillForm()
     } else {
-      recognitionError.value = response.message || '图片识别失败'
+      recognitionError.value = '图片识别失败'
       recognizedText.value = ''
     }
   } catch (error: any) {
@@ -449,7 +450,8 @@ const saveActivity = async () => {
     // 调用导入API
     const response = await http.post(`/search-spaces/${activityForm.value.searchSpaceId}/import-json-content`, activityData)
 
-    if (response.success) {
+    // http.post 已返回解包后的数据
+    if (response) {
       // 显示成功通知
       showSuccessNotification.value = true
       setTimeout(() => {
@@ -458,9 +460,9 @@ const saveActivity = async () => {
 
       // 重置表单
       resetForm()
-      console.log('活动保存成功:', response.data)
+      console.log('活动保存成功:', response)
     } else {
-      saveError.value = response.message || '保存失败'
+      saveError.value = '保存失败'
     }
   } catch (error: any) {
     console.error('保存活动失败:', error)
@@ -480,8 +482,9 @@ const loadSearchSpaces = async () => {
       }
     })
 
-    if (result && result.success && result.data && result.data.content && Array.isArray(result.data.content)) {
-      searchSpaces.value = result.data.content.map((space: any) => ({
+    // http.get 已返回解包后的数据
+    if (result && result.content && Array.isArray(result.content)) {
+      searchSpaces.value = result.content.map((space: any) => ({
         id: space.id.toString(),
         name: space.name
       }))

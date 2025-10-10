@@ -334,8 +334,8 @@
                         </span>
                       </div>
                     </td>
-                    <td class="table-cell">{{ formatNumber(item.searchCount) }}</td>
-                    <td class="table-cell">{{ getPercentage(item.searchCount) }}%</td>
+                    <td class="table-cell">{{ formatNumber(item.count) }}</td>
+                    <td class="table-cell">{{ getPercentage(item.count) }}%</td>
                     <td class="table-cell">
                       <span class="trend-badge" :class="getTrendClass(item.trend)">
                         {{ getTrendLabel(item.trend) }}
@@ -367,11 +367,11 @@
                   <div class="grid-stats">
                     <div class="grid-stat">
                       <span class="grid-stat-label">搜索次数</span>
-                      <span class="grid-stat-value">{{ formatNumber(item.searchCount) }}</span>
+                      <span class="grid-stat-value">{{ formatNumber(item.count) }}</span>
                     </div>
                     <div class="grid-stat">
                       <span class="grid-stat-label">占比</span>
-                      <span class="grid-stat-value">{{ getPercentage(item.searchCount) }}%</span>
+                      <span class="grid-stat-value">{{ getPercentage(item.count) }}%</span>
                     </div>
                   </div>
                   <div class="grid-meta">
@@ -434,6 +434,7 @@ import HotWordCloudChart from '@/components/statistics/HotWordCloudChart.vue'
 import type {
   HotWordItem,
   HotWordStatistics,
+  HotWordStatisticsItem,
   FilterConfig,
   WordCloudOptions,
   StatisticsQueryParams
@@ -462,7 +463,7 @@ const wordCloudConfig = reactive({
   layout: 'random' as string
 })
 
-const statistics = ref<HotWordStatistics[]>([])
+const statistics = ref<HotWordStatisticsItem[]>([])
 const searchKeyword = ref('')
 const currentPage = ref(1)
 const pageSize = ref(20)
@@ -480,9 +481,9 @@ const wordCloudData = computed((): HotWordItem[] => {
     .slice(0, wordCloudConfig.maxWords)
     .map(stat => ({
       text: stat.keyword,
-      weight: stat.searchCount,
+      weight: stat.count,
       trend: stat.trend,
-      lastSearchTime: stat.lastSearchTime
+      percentage: stat.percentage
     }))
 })
 
@@ -497,7 +498,7 @@ const wordCloudOptions = computed((): Partial<WordCloudOptions> => ({
 }))
 
 const summary = computed(() => {
-  const totalSearches = statistics.value.reduce((sum, stat) => sum + stat.searchCount, 0)
+  const totalSearches = statistics.value.reduce((sum, stat) => sum + stat.count, 0)
   const uniqueKeywords = statistics.value.length
   const averageFrequency = uniqueKeywords > 0 ? totalSearches / uniqueKeywords : 0
 
@@ -518,7 +519,7 @@ const topWords = computed(() => {
 
   if (rankingSortMode.value === 'trend') {
     sorted.sort((a, b) => {
-      const trendOrder = { rising: 3, new: 2, stable: 1, falling: 0 }
+      const trendOrder = { rising: 3, up: 3, new: 2, stable: 1, down: 0, falling: 0 }
       const aTrend = trendOrder[a.trend as keyof typeof trendOrder] || 0
       const bTrend = trendOrder[b.trend as keyof typeof trendOrder] || 0
       return bTrend - aTrend
@@ -527,14 +528,14 @@ const topWords = computed(() => {
 
   return sorted.slice(0, 10).map(stat => ({
     text: stat.keyword,
-    weight: stat.searchCount,
+    weight: stat.count,
     trend: stat.trend
   }))
 })
 
 const trendInfo = computed(() => {
-  const risingWords = statistics.value.filter(s => s.trend === 'rising')
-  const fallingWords = statistics.value.filter(s => s.trend === 'falling')
+  const risingWords = statistics.value.filter(s => s.trend === 'rising' || s.trend === 'up')
+  const fallingWords = statistics.value.filter(s => s.trend === 'falling' || s.trend === 'down')
   const newWords = statistics.value.filter(s => s.trend === 'new')
 
   return {
@@ -604,7 +605,7 @@ const hotWordFilterData = computed<HotWordFilterData>({
     if (value.searchCondition) {
       pageState.filter.searchCondition = value.searchCondition.keywords?.[0] || ''
     }
-    if (value.limitConfig) {
+    if (value.limitConfig && value.limitConfig.limit !== undefined) {
       pageState.filter.hotWordLimit = value.limitConfig.limit
     }
   }
@@ -631,7 +632,14 @@ const loadStatistics = async () => {
       channels: pageState.filter.channels
     })
 
-    statistics.value = response.data
+    // 将 HotWordItem[] 转换为 HotWordStatisticsItem[]
+    statistics.value = response.data.words.map((word, index) => ({
+      keyword: word.text,
+      count: word.weight,
+      rank: index + 1,
+      trend: word.trend,
+      percentage: word.percentage
+    }))
     lastUpdateTime.value = new Date()
     renderTime.value = Date.now() - startTime
 
@@ -732,7 +740,7 @@ const handleRankingItemClick = (item: any) => {
   searchKeyword.value = item.text
 }
 
-const handleTableRowClick = (item: HotWordStatistics) => {
+const handleTableRowClick = (item: HotWordStatisticsItem) => {
   selectedWord.value = item.keyword
 }
 
@@ -818,8 +826,8 @@ const getStatusText = (): string => {
 }
 
 const calculateVolatility = (): string => {
-  const risingCount = statistics.value.filter(s => s.trend === 'rising').length
-  const fallingCount = statistics.value.filter(s => s.trend === 'falling').length
+  const risingCount = statistics.value.filter(s => s.trend === 'rising' || s.trend === 'up').length
+  const fallingCount = statistics.value.filter(s => s.trend === 'falling' || s.trend === 'down').length
   const totalCount = statistics.value.length
 
   if (totalCount === 0) return '无数据'

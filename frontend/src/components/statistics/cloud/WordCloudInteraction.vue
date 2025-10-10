@@ -378,7 +378,7 @@ const tooltipStyle = computed(() => ({
   left: tooltipPosition.value.x + 'px',
   top: tooltipPosition.value.y + 'px',
   opacity: hoveredWordInfo.value ? 1 : 0,
-  pointerEvents: 'none'
+  pointerEvents: 'none' as 'none'
 }))
 
 // 方法
@@ -420,9 +420,8 @@ const resetInteraction = () => {
 }
 
 const resetViewport = () => {
-  // 重置缩放和位移
-  interactionState.currentScale = 1
-  interactionState.canvasOffset = { x: 0, y: 0 }
+  // 使用resetInteractionState来重置状态，因为interactionState是readonly
+  resetInteractionState()
 
   // 重置画布变换
   if (canvasRef.value) {

@@ -89,14 +89,16 @@ export const authGuard: NavigationGuard = async (to, from) => {
 
   // 检查角色权限
   if (to.meta.requiredRole && authStore.user) {
-    if (!hasRole(authStore.user.role, to.meta.requiredRole)) {
+    const userRole = authStore.user.roleCode
+    if (!hasRole(userRole, to.meta.requiredRole)) {
       return { name: 'Dashboard' } // 或者跳转到403页面
     }
   }
 
   // 检查具体权限
   if (to.meta.permissions && authStore.user) {
-    if (!hasPermissions(authStore.user.role, to.meta.permissions)) {
+    const userRole = authStore.user.roleCode
+    if (!hasPermissions(userRole, to.meta.permissions)) {
       return { name: 'Dashboard' } // 或者跳转到403页面
     }
   }
@@ -127,7 +129,8 @@ export const adminGuard: NavigationGuard = (to, from) => {
     }
   }
 
-  if (!authStore.user || authStore.user.role !== 'ADMIN') {
+  const userRole = authStore.user?.roleCode
+  if (!authStore.user || userRole !== 'ADMIN') {
     return { name: 'Dashboard' }
   }
 
@@ -161,7 +164,8 @@ export function createPermissionGuard(permissions: string[]): NavigationGuard {
       }
     }
 
-    if (!authStore.user || !hasPermissions(authStore.user.role, permissions)) {
+    const userRole = authStore.user?.roleCode || ''
+    if (!authStore.user || !hasPermissions(userRole, permissions)) {
       return { name: 'Dashboard' }
     }
 
@@ -183,7 +187,8 @@ export function createRoleGuard(requiredRole: string): NavigationGuard {
       }
     }
 
-    if (!authStore.user || !hasRole(authStore.user.role, requiredRole)) {
+    const userRole = authStore.user?.roleCode || ''
+    if (!authStore.user || !hasRole(userRole, requiredRole)) {
       return { name: 'Dashboard' }
     }
 

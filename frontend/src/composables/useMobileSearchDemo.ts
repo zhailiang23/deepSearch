@@ -186,7 +186,7 @@ const DEFAULT_OPTIONS: Required<UseMobileSearchDemoOptions> = {
  */
 export function useMobileSearchDemo(
   options: UseMobileSearchDemoOptions = {}
-): UseMobileSearchDemoReturn {
+) {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   // ==================== 核心依赖 ====================
@@ -227,11 +227,11 @@ export function useMobileSearchDemo(
 
   // ==================== 状态引用 ====================
 
-  const config = store.config
-  const searchState = store.searchState
-  const results = store.results
-  const availableSpaces = store.availableSpaces
-  const performance = store.performance
+  const config: Ref<SearchDemoConfig> = store.config as any
+  const searchState: Ref<SearchState> = store.searchState as any
+  const results: Ref<SearchResult[]> = store.results as any
+  const availableSpaces: Ref<SearchSpaceOption[]> = store.availableSpaces as any
+  const performance: Ref<SearchPerformanceMetrics> = store.performance as any
 
   // ==================== 持久化配置 ====================
 

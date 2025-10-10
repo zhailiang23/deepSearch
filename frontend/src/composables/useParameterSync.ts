@@ -1,4 +1,5 @@
 import { ref, watch, computed, onUnmounted } from 'vue'
+import type { Ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type {
   SearchDemoConfig,

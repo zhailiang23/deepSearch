@@ -201,7 +201,7 @@ const jumpPage = ref<number>()
 const currentPage = computed(() => props.pagination.page + 1) // 转换为1-based
 const pageSize = computed(() => props.pagination.pageSize)
 const total = computed(() => props.pagination.total)
-const totalPages = computed(() => props.pagination.totalPages)
+const totalPages = computed(() => props.pagination.totalPages ?? Math.ceil(props.pagination.total / props.pagination.pageSize))
 
 const startRecord = computed(() => {
   return props.pagination.total > 0 ? props.pagination.page * props.pagination.pageSize + 1 : 0

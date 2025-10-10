@@ -299,7 +299,7 @@ const emit = defineEmits<{
 
 // ============= 模板引用 =============
 
-const containerRef = ref<HTMLDivElement>()
+const containerRef = ref<HTMLElement | null>(null)
 
 // ============= 响应式状态 =============
 
@@ -469,7 +469,7 @@ const containerClasses = computed(() => [
   'border border-gray-200 rounded-lg bg-white shadow-sm',
   {
     'overflow-hidden': true,
-    'opacity-75': loading.value
+    'opacity-75': props.loading
   }
 ])
 

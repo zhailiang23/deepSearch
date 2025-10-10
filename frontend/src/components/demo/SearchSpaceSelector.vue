@@ -29,6 +29,7 @@
 import { computed, ref, watch, onMounted } from 'vue'
 import http from '@/utils/http'
 import { useMobileSearchDemoStore } from '@/stores/mobileSearchDemo'
+import type { ApiResponse } from '@/types/api'
 
 // Types
 interface SearchSpaceOption {
@@ -117,12 +118,12 @@ async function loadAvailableSearchSpaces() {
     console.log('SearchSpaceSelector: 开始加载搜索空间列表...')
 
     // 使用与 SearchDataManagePage 相同的API调用
-    const result = await http.get('/search-spaces', {
+    const result = await http.get<any>('/search-spaces', {
       params: {
         page: 0,
         size: 100
       }
-    })
+    }) as unknown as ApiResponse<any>
 
     console.log('SearchSpaceSelector: 搜索空间API响应:', result)
 

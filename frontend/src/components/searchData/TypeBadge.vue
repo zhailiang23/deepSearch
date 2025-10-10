@@ -2,7 +2,7 @@
   <span
     :class="[
       'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-      badgeClasses[type] || badgeClasses.default
+      badgeClass
     ]"
     :title="typeDescription"
   >
@@ -82,6 +82,11 @@ const typeDescriptions = {
 }
 
 // 计算属性
+const badgeClass = computed(() => {
+  const key = props.type as keyof typeof badgeClasses
+  return badgeClasses[key] || badgeClasses.default
+})
+
 const typeLabel = computed(() => {
   return typeLabels[props.type as keyof typeof typeLabels] || typeLabels.default
 })

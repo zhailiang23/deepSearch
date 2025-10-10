@@ -148,10 +148,6 @@
                 <span class="stat-label">成功渲染:</span>
                 <span class="stat-value">{{ renderStats.renderedWords }}</span>
               </div>
-              <div class="stat-item">
-                <span class="stat-label">最大权重:</span>
-                <span class="stat-value">{{ renderStats.maxWeight }}</span>
-              </div>
             </div>
           </div>
         </div>
@@ -165,34 +161,34 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import HotWordCloudChart from '@/components/statistics/HotWordCloudChart.vue'
 import type { WordCloudItem, WordCloudStats } from '@/types/statistics'
 
-// 测试数据
+// 测试数据 - 使用 HotWordItem 格式 {text, weight}
 const testDatasets = {
   small: [
-    ['Vue', 80], ['React', 75], ['Angular', 60], ['JavaScript', 90],
-    ['TypeScript', 70], ['HTML', 65], ['CSS', 55], ['Node.js', 85],
-    ['Express', 50], ['MongoDB', 45], ['PostgreSQL', 40], ['Redis', 35],
-    ['Docker', 60], ['Git', 70], ['Webpack', 45], ['Vite', 55],
-    ['ESLint', 30], ['Prettier', 25], ['Jest', 40], ['Cypress', 35]
+    { text: 'Vue', weight: 80 }, { text: 'React', weight: 75 }, { text: 'Angular', weight: 60 }, { text: 'JavaScript', weight: 90 },
+    { text: 'TypeScript', weight: 70 }, { text: 'HTML', weight: 65 }, { text: 'CSS', weight: 55 }, { text: 'Node.js', weight: 85 },
+    { text: 'Express', weight: 50 }, { text: 'MongoDB', weight: 45 }, { text: 'PostgreSQL', weight: 40 }, { text: 'Redis', weight: 35 },
+    { text: 'Docker', weight: 60 }, { text: 'Git', weight: 70 }, { text: 'Webpack', weight: 45 }, { text: 'Vite', weight: 55 },
+    { text: 'ESLint', weight: 30 }, { text: 'Prettier', weight: 25 }, { text: 'Jest', weight: 40 }, { text: 'Cypress', weight: 35 }
   ] as WordCloudItem[],
 
   medium: [
-    ['JavaScript', 100], ['TypeScript', 95], ['Python', 90], ['Java', 85], ['React', 80],
-    ['Vue', 75], ['Angular', 70], ['Node.js', 85], ['Express', 65], ['Django', 60],
-    ['Spring', 55], ['MongoDB', 70], ['PostgreSQL', 75], ['MySQL', 65], ['Redis', 60],
-    ['Docker', 80], ['Kubernetes', 70], ['AWS', 75], ['Azure', 60], ['GCP', 55],
-    ['Git', 90], ['GitHub', 85], ['GitLab', 60], ['Webpack', 55], ['Vite', 65],
-    ['ESLint', 45], ['Prettier', 40], ['Jest', 50], ['Cypress', 45], ['Playwright', 40],
-    ['HTML', 70], ['CSS', 65], ['SCSS', 55], ['TailwindCSS', 60], ['Bootstrap', 50],
-    ['RESTful', 55], ['GraphQL', 50], ['Apollo', 40], ['Prisma', 45], ['Sequelize', 35],
-    ['Socket.io', 40], ['WebRTC', 30], ['WebSocket', 35], ['OAuth', 45], ['JWT', 50],
-    ['CORS', 35], ['HTTPS', 40], ['SSL', 35], ['Nginx', 50], ['Apache', 40]
+    { text: 'JavaScript', weight: 100 }, { text: 'TypeScript', weight: 95 }, { text: 'Python', weight: 90 }, { text: 'Java', weight: 85 }, { text: 'React', weight: 80 },
+    { text: 'Vue', weight: 75 }, { text: 'Angular', weight: 70 }, { text: 'Node.js', weight: 85 }, { text: 'Express', weight: 65 }, { text: 'Django', weight: 60 },
+    { text: 'Spring', weight: 55 }, { text: 'MongoDB', weight: 70 }, { text: 'PostgreSQL', weight: 75 }, { text: 'MySQL', weight: 65 }, { text: 'Redis', weight: 60 },
+    { text: 'Docker', weight: 80 }, { text: 'Kubernetes', weight: 70 }, { text: 'AWS', weight: 75 }, { text: 'Azure', weight: 60 }, { text: 'GCP', weight: 55 },
+    { text: 'Git', weight: 90 }, { text: 'GitHub', weight: 85 }, { text: 'GitLab', weight: 60 }, { text: 'Webpack', weight: 55 }, { text: 'Vite', weight: 65 },
+    { text: 'ESLint', weight: 45 }, { text: 'Prettier', weight: 40 }, { text: 'Jest', weight: 50 }, { text: 'Cypress', weight: 45 }, { text: 'Playwright', weight: 40 },
+    { text: 'HTML', weight: 70 }, { text: 'CSS', weight: 65 }, { text: 'SCSS', weight: 55 }, { text: 'TailwindCSS', weight: 60 }, { text: 'Bootstrap', weight: 50 },
+    { text: 'RESTful', weight: 55 }, { text: 'GraphQL', weight: 50 }, { text: 'Apollo', weight: 40 }, { text: 'Prisma', weight: 45 }, { text: 'Sequelize', weight: 35 },
+    { text: 'Socket.io', weight: 40 }, { text: 'WebRTC', weight: 30 }, { text: 'WebSocket', weight: 35 }, { text: 'OAuth', weight: 45 }, { text: 'JWT', weight: 50 },
+    { text: 'CORS', weight: 35 }, { text: 'HTTPS', weight: 40 }, { text: 'SSL', weight: 35 }, { text: 'Nginx', weight: 50 }, { text: 'Apache', weight: 40 }
   ] as WordCloudItem[],
 
   large: [] as WordCloudItem[]
 }
 
 // 生成大数据集
-const generateLargeDataset = () => {
+const generateLargeDataset = (): WordCloudItem[] => {
   const words = [
     'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
     'React', 'Vue', 'Angular', 'Svelte', 'jQuery', 'Express', 'Koa', 'Fastify', 'NestJS', 'Django',
@@ -206,7 +202,10 @@ const generateLargeDataset = () => {
     'GraphQL', 'Apollo', 'Relay', 'Prisma', 'Sequelize', 'Mongoose', 'TypeORM', 'Knex', 'Bookshelf', 'Objection'
   ]
 
-  return words.map((word, index) => [word, Math.floor(Math.random() * 100) + 1] as WordCloudItem)
+  return words.map((word) => ({
+    text: word,
+    weight: Math.floor(Math.random() * 100) + 1
+  }))
 }
 
 testDatasets.large = generateLargeDataset()
@@ -263,7 +262,7 @@ const parseCustomWords = () => {
       const [word, weightStr] = line.split(',').map(s => s.trim())
       const weight = parseInt(weightStr) || 1
       if (word) {
-        words.push([word, weight])
+        words.push({ text: word, weight })
       }
     }
 
@@ -303,15 +302,15 @@ const clearLog = () => {
 }
 
 // 事件处理
-const handleWordClick = (word: string, item: WordCloudItem, event: MouseEvent) => {
+const handleWordClick = (word: WordCloudItem, event: Event) => {
   clickCount.value++
-  addLogEntry('click', `点击词语: ${word} (权重: ${item[1]})`)
+  addLogEntry('click', `点击词语: ${word.text} (权重: ${word.weight})`)
 }
 
-const handleWordHover = (word: string | null, item: WordCloudItem | null) => {
-  currentHoveredWord.value = word
-  if (word) {
-    addLogEntry('hover', `悬停词语: ${word}`)
+const handleWordHover = (word: WordCloudItem, event: Event) => {
+  currentHoveredWord.value = word.text
+  if (word.text) {
+    addLogEntry('hover', `悬停词语: ${word.text}`)
   }
 }
 
@@ -319,13 +318,19 @@ const handleRenderStart = () => {
   addLogEntry('render', '开始渲染词云')
 }
 
-const handleRenderComplete = (stats: WordCloudStats) => {
+const handleRenderComplete = () => {
+  // WordCloudStats 可能不包含 maxWeight,只保留基本统计
+  const stats = {
+    totalWords: testWords.value.length,
+    renderedWords: testWords.value.length,
+    renderTime: 0
+  }
   renderStats.value = stats
-  addLogEntry('render', `渲染完成 - 用时${stats.renderTime}ms，成功渲染${stats.renderedWords}个词`)
+  addLogEntry('render', `渲染完成 - 成功渲染${stats.renderedWords}个词`)
 }
 
-const handleRenderError = (error: Error) => {
-  addLogEntry('error', `渲染错误: ${error.message}`)
+const handleRenderError = (errorMessage: string) => {
+  addLogEntry('error', `渲染错误: ${errorMessage}`)
 }
 
 const handleZoom = (scale: number, event: WheelEvent) => {

@@ -93,7 +93,8 @@ const emit = defineEmits<Emits>()
 /**
  * 格式化数字显示
  */
-const formatCount = (count: number): string => {
+const formatCount = (count: number | undefined): string => {
+  if (!count) return '0'
   if (count >= 1000000) {
     return (count / 1000000).toFixed(1) + 'M'
   } else if (count >= 1000) {
@@ -105,14 +106,16 @@ const formatCount = (count: number): string => {
 /**
  * 格式化百分比显示
  */
-const formatPercentage = (percentage: number): string => {
+const formatPercentage = (percentage: number | undefined): string => {
+  if (percentage === undefined) return '0%'
   return percentage.toFixed(2) + '%'
 }
 
 /**
  * 获取排名徽章样式
  */
-const getRankBadgeClass = (rank: number): string => {
+const getRankBadgeClass = (rank: number | undefined): string => {
+  if (!rank) return 'rank-normal'
   if (rank <= 3) {
     return 'rank-top'
   } else if (rank <= 10) {

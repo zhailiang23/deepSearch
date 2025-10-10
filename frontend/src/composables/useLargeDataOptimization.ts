@@ -293,7 +293,7 @@ export function useLargeDataOptimization(config: Partial<LargeDataConfig> = {}) 
 
     for (const chunk of chunks) {
       processingState.currentBatch = chunk.index + 1
-      processingState.progress = (chunk.index / chunks.total) * 100
+      processingState.progress = ((chunk.index + 1) / chunks.length) * 100
 
       // 处理当前批次
       const processed = await processChunk(chunk)

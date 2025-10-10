@@ -64,7 +64,8 @@ export interface ClusterAnalysisResponse {
 
 /**
  * 执行聚类分析
+ * http.post 的响应拦截器已经解包了 response.data,所以直接返回 ClusterAnalysisResponse
  */
 export function analyzeCluster(data: ClusterAnalysisRequest) {
-  return http.post<{code: number | string, data: ClusterAnalysisResponse, message: string, success: boolean}>('/clustering/analyze', data)
+  return http.post<ClusterAnalysisResponse>('/clustering/analyze', data)
 }

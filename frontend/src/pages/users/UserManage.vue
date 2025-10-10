@@ -184,7 +184,7 @@
             </label>
             <input
               id="username"
-              v-model="formData.username"
+              v-model="(formData as CreateUserRequest).username"
               type="text"
               required
               :disabled="isEdit"
@@ -215,7 +215,7 @@
             </label>
             <input
               id="password"
-              v-model="formData.password"
+              v-model="(formData as CreateUserRequest).password"
               type="password"
               required
               minlength="6"

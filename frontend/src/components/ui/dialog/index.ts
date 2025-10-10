@@ -80,7 +80,7 @@ export const DialogOverlay = defineComponent({
 export const DialogPortal = defineComponent({
   name: 'DialogPortal',
   setup(props, { slots }) {
-    return () => h(Teleport, { to: 'body' }, slots.default?.())
+    return () => h(Teleport as any, { to: 'body' }, slots.default)
   }
 })
 

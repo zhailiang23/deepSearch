@@ -28,7 +28,7 @@
 import { computed } from 'vue'
 
 interface Props {
-  trend?: 'up' | 'down' | 'stable'
+  trend?: 'up' | 'down' | 'stable' | 'rising' | 'falling' | 'new'
   size?: 'sm' | 'md' | 'lg'
 }
 
@@ -50,11 +50,15 @@ const iconClass = computed(() => {
   }[props.size]
 
   // 趋势颜色样式
+  const trendType = props.trend || 'stable'
   const colorClass = {
     up: 'text-green-500',
     down: 'text-red-500',
-    stable: 'text-gray-400'
-  }[props.trend || 'stable']
+    stable: 'text-gray-400',
+    rising: 'text-green-500',
+    falling: 'text-red-500',
+    new: 'text-blue-500'
+  }[trendType]
 
   return `${baseClass} ${sizeClass} ${colorClass}`
 })
@@ -63,11 +67,15 @@ const iconClass = computed(() => {
  * 趋势提示文本
  */
 const trendTitle = computed(() => {
+  const trendType = props.trend || 'stable'
   const trendText = {
     up: '上升趋势',
     down: '下降趋势',
-    stable: '稳定趋势'
-  }[props.trend || 'stable']
+    stable: '稳定趋势',
+    rising: '快速上升',
+    falling: '快速下降',
+    new: '新词'
+  }[trendType]
 
   return trendText
 })

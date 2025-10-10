@@ -142,11 +142,13 @@ export class ImportService {
       }
     )
 
-    if (!response.data.success) {
-      throw new Error(response.data.message)
+    // http 拦截器已经解包了 response.data
+    const apiResponse = response as any as ApiResponse<FileUploadResponse>
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.message)
     }
 
-    return response.data.data
+    return apiResponse.data
   }
 
   /**
@@ -161,11 +163,13 @@ export class ImportService {
       }
     )
 
-    if (!response.data.success) {
-      throw new Error(response.data.message)
+    // http 拦截器已经解包了 response.data
+    const apiResponse = response as any as ApiResponse<ImportTaskStatus>
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.message)
     }
 
-    return response.data.data
+    return apiResponse.data
   }
 
   /**
@@ -176,11 +180,13 @@ export class ImportService {
       `/search-spaces/${searchSpaceId}/import/status/${taskId}`
     )
 
-    if (!response.data.success) {
-      throw new Error(response.data.message)
+    // http 拦截器已经解包了 response.data
+    const apiResponse = response as any as ApiResponse<ImportTaskStatus>
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.message)
     }
 
-    return response.data.data
+    return apiResponse.data
   }
 
   /**
@@ -191,8 +197,10 @@ export class ImportService {
       `/search-spaces/${searchSpaceId}/import/cancel/${taskId}`
     )
 
-    if (!response.data.success) {
-      throw new Error(response.data.message)
+    // http 拦截器已经解包了 response.data
+    const apiResponse = response as any as ApiResponse<void>
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.message)
     }
   }
 

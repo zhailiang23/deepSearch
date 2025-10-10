@@ -1,4 +1,5 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
+import type { Ref } from 'vue'
 import type { SearchCacheEntry, SearchResult, SearchDemoConfig } from '@/types/demo'
 import { LRUCache, generateCacheKey, isExpired } from '@/utils/searchOptimization'
 

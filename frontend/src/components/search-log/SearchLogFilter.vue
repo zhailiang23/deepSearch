@@ -201,11 +201,10 @@ async function loadAvailableSearchSpaces() {
 
     console.log('搜索空间API响应:', result)
     console.log('响应数据类型:', typeof result)
-    console.log('result.data:', result.data)
 
-    // 响应拦截器已自动解包，直接访问result.data.content
-    if (result && result.success && result.data && result.data.content && Array.isArray(result.data.content)) {
-      searchSpaces.value = result.data.content.map((space: any) => ({
+    // http.get 已返回解包后的数据,直接访问 result.content
+    if (result && result.content && Array.isArray(result.content)) {
+      searchSpaces.value = result.content.map((space: any) => ({
         id: space.id.toString(),
         name: space.name
       }))

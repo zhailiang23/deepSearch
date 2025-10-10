@@ -85,7 +85,7 @@ const hotTopicStore = useHotTopicStore()
 // 状态管理
 const showForm = ref(false)
 const showDeleteConfirm = ref(false)
-const currentHotTopic = ref<HotTopic | null>(null)
+const currentHotTopic = ref<HotTopic | undefined>(undefined)
 const statistics = ref<HotTopicStatistics | null>(null)
 
 // 通知状态
@@ -122,7 +122,7 @@ const loadStatistics = async () => {
 
 // 事件处理函数
 const handleCreate = () => {
-  currentHotTopic.value = null
+  currentHotTopic.value = undefined
   showForm.value = true
 }
 
@@ -143,11 +143,11 @@ const handleDelete = (hotTopic: HotTopic) => {
 
 const handleCloseForm = () => {
   showForm.value = false
-  currentHotTopic.value = null
+  currentHotTopic.value = undefined
 }
 
 const handleFormSuccess = async (hotTopic: HotTopic) => {
-  const isEdit = currentHotTopic.value !== null
+  const isEdit = currentHotTopic.value !== undefined
   showNotification(
     'success',
     isEdit ? '更新成功' : '创建成功',
@@ -182,13 +182,13 @@ const handleConfirmDelete = async () => {
     )
   } finally {
     showDeleteConfirm.value = false
-    currentHotTopic.value = null
+    currentHotTopic.value = undefined
   }
 }
 
 const handleCancelDelete = () => {
   showDeleteConfirm.value = false
-  currentHotTopic.value = null
+  currentHotTopic.value = undefined
 }
 
 // 初始化

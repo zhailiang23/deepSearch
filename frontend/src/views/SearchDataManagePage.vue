@@ -323,10 +323,10 @@ async function loadAvailableSearchSpaces() {
     })
     
     console.log('搜索空间API响应:', result)
-    
-    // 处理后端返回的ApiResponse格式
-    if (result.success && result.data && result.data.content) {
-      availableSearchSpaces.value = result.data.content.map((space: any) => ({
+
+    // http.get 已返回解包后的数据
+    if (result && result.content) {
+      availableSearchSpaces.value = result.content.map((space: any) => ({
         id: space.id,
         name: space.name,
         description: space.description
@@ -372,12 +372,13 @@ async function loadIndexMapping() {
 
     console.log('索引映射API响应:', response)
 
-    if (response.success && response.data) {
+    // http.get 已返回解包后的数据
+    if (response) {
       // 保存真实的索引名称
-      realIndexName.value = response.data.index || ''
+      realIndexName.value = response.index || ''
 
       // 直接使用后端返回的映射数据
-      indexMapping.value = response.data.mapping || response.data
+      indexMapping.value = response.mapping || response
 
       // 生成初始可见列
       visibleColumns.value = generateInitialColumns()
@@ -386,7 +387,7 @@ async function loadIndexMapping() {
       console.log('真实索引名称:', realIndexName.value)
       console.log('生成的可见列:', visibleColumns.value)
     } else {
-      throw new Error(response.message || '获取索引映射失败')
+      throw new Error('获取索引映射失败')
     }
   } catch (error: any) {
     console.error('加载字段映射失败:', error)
@@ -541,18 +542,17 @@ async function handleSearch() {
 
     console.log('搜索API响应:', response)
 
-    if (response.success && response.data) {
-      const responseData = response.data
-
+    // http.post 已返回解包后的数据
+    if (response) {
       // 转换简化响应数据格式以匹配前端期望的格式
       searchResults.value = {
-        hits: (responseData.results || []).map((item: any) => ({
+        hits: (response.results || []).map((item: any) => ({
           _id: item.id,
           _score: item.score,
           _index: item.index,
           _source: item.source
         })),
-        total: responseData.total || 0,
+        total: response.total || 0,
         took: 0
       }
 
@@ -570,7 +570,7 @@ async function handleSearch() {
         variant: 'default'
       })
     } else {
-      throw new Error(response.message || '搜索请求失败')
+      throw new Error('搜索请求失败')
     }
   } catch (error: any) {
     console.error('搜索失败:', error)
@@ -599,6 +599,7 @@ function generateMockData(): TableRow[] {
   for (let i = 0; i < pageSize.value; i++) {
     data.push({
       _id: `doc_${Date.now()}_${i}`,
+      _index: currentIndex.value || 'mock_index',
       _score: Math.random(),
       _source: {
         title: `示例标题 ${i + 1}`,
@@ -796,11 +797,10 @@ async function handleDeleteDocument(document: TableRow) {
     })
 
     console.log('删除响应:', response)
-    console.log('响应数据:', response.data)
-    console.log('删除结果:', response.data?.result)
+    console.log('删除结果:', response?.result)
 
-    // 删除成功的判断条件：检查ApiResponse的data.result
-    if (response.success && response.data?.result === 'deleted') {
+    // http.delete 已返回解包后的数据(DeleteDocumentResponse)
+    if (response?.result === 'deleted') {
       console.log('删除成功，准备通知子组件:', tableRef.value)
 
       // 移除本地数据
@@ -810,7 +810,7 @@ async function handleDeleteDocument(document: TableRow) {
         searchResults.value.total = Math.max(0, searchResults.value.total - 1)
       }
 
-      // 先显示删除成功提示（在对话框关闭前显示，确保不被遮挡）
+      // 先显示删除成功提示（在对话框关闭前显示,确保不被遮挡)
       showSuccessToast('数据删除成功')
 
       // 然后通知表格组件删除成功（关闭弹窗）
@@ -820,7 +820,7 @@ async function handleDeleteDocument(document: TableRow) {
       } else {
         console.error('子组件方法不存在:', tableRef.value)
       }
-    } else if (response.success && response.data?.result === 'not_found') {
+    } else if (response?.result === 'not_found') {
       showWarningToast('文档不存在或已被删除')
       // 刷新数据
       await executeSearch()

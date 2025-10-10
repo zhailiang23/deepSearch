@@ -282,18 +282,18 @@ const {
 /** 优化后的词语数据 */
 const optimizedWords = computed(() => {
   if (!props.autoOptimize) {
-    return props.words
+    return [...props.words]
   }
 
   if (processedWords.value.length > 0) {
     return virtualizeWordRendering(
-      processedWords.value,
+      [...processedWords.value],
       dimensions.width,
       dimensions.height
     )
   }
 
-  return props.words
+  return [...props.words]
 })
 
 /** 优化后的配置选项 */

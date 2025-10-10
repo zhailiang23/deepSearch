@@ -386,7 +386,7 @@ export function useSearchPerformance(
     statsCollector.recordSearchSuccess(duration)
 
     // 检查性能警告
-    checkPerformanceWarnings(duration, 'response_time')
+    checkPerformanceWarnings(duration, 'responseTime')
 
     // 清理会话
     searchSessions.value.delete(searchId)
@@ -424,7 +424,7 @@ export function useSearchPerformance(
     statsCollector.recordSearchFailure(error)
 
     // 检查错误率警告
-    checkPerformanceWarnings(metrics.value.errorRate, 'error_rate')
+    checkPerformanceWarnings(metrics.value.errorRate, 'errorRate')
 
     // 清理会话
     searchSessions.value.delete(searchId)
@@ -494,7 +494,7 @@ export function useSearchPerformance(
     }
 
     // 检查内存使用警告
-    checkPerformanceWarnings(usage, 'memory_usage')
+    checkPerformanceWarnings(usage, 'memoryUsage')
   }
 
   // ==================== 性能分析方法 ====================

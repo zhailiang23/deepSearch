@@ -3,7 +3,7 @@
  * 提供词云交互事件的统一管理，包括点击、悬停、缩放等功能
  */
 
-import { ref, reactive, computed, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, readonly, type Ref } from 'vue'
 import type {
   WordCloudItem,
   WordCloudDimension,
@@ -334,8 +334,8 @@ export function useWordCloudEvents(
 
     // 基础交互事件
     if (isInteractive.value) {
-      const clickListener = handleCanvasClick
-      const mouseMoveListener = handleCanvasMouseMove
+      const clickListener = handleCanvasClick as EventListener
+      const mouseMoveListener = handleCanvasMouseMove as EventListener
 
       canvas.addEventListener('click', clickListener)
       canvas.addEventListener('mousemove', mouseMoveListener)
@@ -346,14 +346,14 @@ export function useWordCloudEvents(
 
     // 缩放事件
     if (canZoom.value) {
-      const wheelListener = handleWheel
+      const wheelListener = handleWheel as EventListener
       canvas.addEventListener('wheel', wheelListener, { passive: false })
       eventListeners.set('wheel', wheelListener)
     }
 
     // 拖拽事件
     if (canDrag.value) {
-      const mouseDownListener = handleMouseDown
+      const mouseDownListener = handleMouseDown as EventListener
       canvas.addEventListener('mousedown', mouseDownListener)
       eventListeners.set('mousedown', mouseDownListener)
     }

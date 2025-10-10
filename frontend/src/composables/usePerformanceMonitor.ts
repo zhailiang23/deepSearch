@@ -394,13 +394,13 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       /** HTTP请求响应时间 */
       httpRequest: navigation.responseEnd - navigation.requestStart,
       /** DOM解析时间 */
-      domParsing: navigation.domInteractive - navigation.domLoading,
+      domParsing: navigation.domInteractive - navigation.fetchStart,
       /** 资源加载时间 */
       resourceLoading: navigation.loadEventStart - navigation.domContentLoadedEventEnd,
       /** 总加载时间 */
-      totalLoad: navigation.loadEventEnd - navigation.navigationStart,
+      totalLoad: navigation.loadEventEnd - navigation.fetchStart,
       /** 首次内容绘制时间 */
-      firstContentfulPaint: navigation.domContentLoadedEventEnd - navigation.navigationStart
+      firstContentfulPaint: navigation.domContentLoadedEventEnd - navigation.fetchStart
     }
   }
 

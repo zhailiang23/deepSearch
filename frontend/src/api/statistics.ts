@@ -34,7 +34,7 @@ export const statisticsApi = {
       const mockData: HotWordStatistics = {
         words: mockItems.map(item => ({
           text: item.keyword,
-          weight: item.searchCount,
+          weight: item.count || 0,
           extraData: {
             trend: item.trend,
             lastSearchTime: item.lastSearchTime,
@@ -83,9 +83,10 @@ export const statisticsApi = {
       // 实际项目中这里应该调用后端API获取报告文件
       const data = await this.getHotWordStatistics(params)
       // 将HotWordStatistics转换为HotWordStatisticsItem[]以供报告生成使用
-      const items: HotWordStatisticsItem[] = data.data.words.map(word => ({
+      const items: HotWordStatisticsItem[] = data.data.words.map((word, index) => ({
         keyword: word.text,
-        searchCount: word.weight,
+        count: word.weight,
+        rank: index + 1,
         trend: word.extraData?.trend,
         lastSearchTime: word.extraData?.lastSearchTime,
         channels: word.extraData?.channels,
@@ -141,7 +142,8 @@ function generateMockStatistics(limit: number): HotWordStatisticsItem[] {
 
     statistics.push({
       keyword,
-      searchCount: baseCount,
+      count: baseCount,
+      rank: i + 1,
       trend,
       lastSearchTime: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
       channels: generateRandomChannels(),
@@ -150,7 +152,7 @@ function generateMockStatistics(limit: number): HotWordStatisticsItem[] {
   }
 
   // 按搜索次数排序
-  return statistics.sort((a, b) => b.searchCount - a.searchCount)
+  return statistics.sort((a, b) => (b.count || 0) - (a.count || 0))
 }
 
 /**
@@ -203,14 +205,17 @@ function generateReportContent(data: HotWordStatisticsItem[]): string {
   content += '----\t------\t--------\t----\t------------\n'
 
   data.forEach((item, index) => {
-    const trendMap = {
+    const trendMap: Record<string, string> = {
       'rising': '上升',
+      'up': '上升',
       'falling': '下降',
+      'down': '下降',
       'stable': '稳定',
       'new': '新词'
     }
 
-    content += `${index + 1}\t${item.keyword}\t${item.searchCount}\t${trendMap[item.trend || 'stable']}\t${item.lastSearchTime ? new Date(item.lastSearchTime).toLocaleString('zh-CN') : '-'}\n`
+    const trendText = item.trend ? trendMap[item.trend] || '稳定' : '稳定'
+    content += `${index + 1}\t${item.keyword}\t${item.count || 0}\t${trendText}\t${item.lastSearchTime ? new Date(item.lastSearchTime).toLocaleString('zh-CN') : '-'}\n`
   })
 
   return content

@@ -476,8 +476,8 @@ const runStressTest = async () => {
       await runTestIteration(`压力测试 ${config.wordCount}词 #${i + 1}`, config.wordCount)
 
       // 强制垃圾回收
-      if (window.gc) {
-        window.gc()
+      if ((window as any).gc) {
+        (window as any).gc()
       }
 
       await new Promise(resolve => setTimeout(resolve, 500))

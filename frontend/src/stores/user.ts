@@ -37,7 +37,7 @@ export const useUserStore = defineStore('user', () => {
       const result = await userApi.list(params || queryParams.value)
       users.value = result.content
       pagination.value = {
-        page: result.number,
+        page: result.page,
         size: result.size,
         totalElements: result.totalElements,
         totalPages: result.totalPages,
@@ -59,7 +59,7 @@ export const useUserStore = defineStore('user', () => {
       const result = await userApi.search(keyword, params)
       users.value = result.content
       pagination.value = {
-        page: result.number,
+        page: result.page,
         size: result.size,
         totalElements: result.totalElements,
         totalPages: result.totalPages,

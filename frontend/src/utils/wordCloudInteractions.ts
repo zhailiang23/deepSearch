@@ -10,6 +10,12 @@ import type {
   WordCloudInteractionConfig
 } from '@/types/wordCloudTypes'
 
+// 自定义动画接口
+export interface CustomAnimation {
+  animate: (timestamp: number) => void
+  stop: () => void
+}
+
 // 动画配置接口
 export interface AnimationConfig {
   duration: number
@@ -113,14 +119,14 @@ export class WordCloudDataManager {
 // 动画管理器
 export class InteractionAnimationManager {
   private animationFrameId: number | null = null
-  private activeAnimations: Map<string, Animation> = new Map()
+  private activeAnimations: Map<string, CustomAnimation> = new Map()
 
   // 创建高亮动画
   createHighlightAnimation(
     canvas: HTMLCanvasElement,
     position: PositionInfo,
     config: AnimationConfig
-  ): Animation {
+  ): CustomAnimation {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas context not available')
 
@@ -156,7 +162,7 @@ export class InteractionAnimationManager {
     position: PositionInfo,
     targetScale: number,
     config: AnimationConfig
-  ): Animation {
+  ): CustomAnimation {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas context not available')
 
@@ -197,7 +203,7 @@ export class InteractionAnimationManager {
     position: PositionInfo,
     shadowColor: string,
     config: AnimationConfig
-  ): Animation {
+  ): CustomAnimation {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas context not available')
 
@@ -443,9 +449,9 @@ export function createWordCloudInteractionCallbacks(
 
         dataManager.storeWordPosition(word, position)
 
-        // 应用悬停效果
-        if (event.target instanceof HTMLCanvasElement) {
-          createInteractionEffect(config.hoverEffect || 'highlight', event.target, position)
+        // 应用悬停效果 (过滤掉 'none')
+        if (event.target instanceof HTMLCanvasElement && config.hoverEffect && config.hoverEffect !== 'none') {
+          createInteractionEffect(config.hoverEffect, event.target, position)
         }
 
         onWordHover?.(word, item)

@@ -231,7 +231,7 @@ export const useAuthStore = defineStore('auth', () => {
       USER: ['USER']
     }
 
-    return roleHierarchy[user.value.role as keyof typeof roleHierarchy]?.includes(role) ?? false
+    return roleHierarchy[user.value.roleCode as keyof typeof roleHierarchy]?.includes(role) ?? false
   }
 
   /**
@@ -241,7 +241,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value) return false
 
     // 管理员拥有所有权限
-    if (user.value.role === 'ADMIN') {
+    if (user.value.roleCode === 'ADMIN') {
       return true
     }
 
@@ -251,7 +251,7 @@ export const useAuthStore = defineStore('auth', () => {
       ADMIN: ['*'] // 所有权限
     }
 
-    const permissions = userPermissions[user.value.role as keyof typeof userPermissions] || []
+    const permissions = userPermissions[user.value.roleCode as keyof typeof userPermissions] || []
     return permissions.includes('*') || permissions.includes(permission)
   }
 

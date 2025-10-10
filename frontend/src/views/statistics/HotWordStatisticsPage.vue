@@ -171,7 +171,7 @@ import SimpleWordCloudChart from '@/components/statistics/SimpleWordCloudChart.v
 import HotWordFilter from '@/components/statistics/HotWordFilter.vue'
 import { useHotWordData } from '@/composables/useHotWordData'
 import { useHotWordStatisticsStore } from '@/stores/hotWordStatistics'
-import type { HotWordItem } from '@/types/statistics'
+import type { HotWordItem, HotWordStatisticsItem } from '@/types/statistics'
 
 // ============= 响应式状态 =============
 
@@ -183,7 +183,7 @@ const filterRef = ref()
 
 // 从store中获取响应式数据
 const hotWords = computed(() => store.hotWords)
-const statistics = computed(() => {
+const statistics = computed<HotWordStatisticsItem[]>(() => {
   // 创建兼容格式的统计数据
   return store.hotWords.map((word, index) => ({
     keyword: word.word,

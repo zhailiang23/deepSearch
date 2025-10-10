@@ -5,8 +5,8 @@
     <!-- 字段管理面板 -->
     <div v-if="showFieldManager" class="field-manager mb-4">
       <FieldManager
-        v-model:columns="visibleColumns"
         :all-columns="allColumns"
+        :visible-columns="visibleColumns"
         @update:columns="handleColumnsUpdate"
       />
     </div>
@@ -565,13 +565,14 @@ async function trackResultClick(result: SearchResult, position: number, event: M
  * 将表格行转换为搜索结果格式
  */
 function convertRowToSearchResult(row: TableRow): SearchResult {
+  const source = row._source || {}
   return {
-    id: row._id || row.id || '',
-    title: row.title || row.name || '未知标题',
-    url: row.url || '',
-    summary: row.summary || row.description || '',
-    score: row._score || row.score || 0,
-    ...row
+    id: row._id || (source as any).id || '',
+    title: (source as any).title || (source as any).name || '未知标题',
+    url: (source as any).url || '',
+    summary: (source as any).summary || (source as any).description || '',
+    score: row._score || (source as any).score || 0,
+    ...source
   }
 }
 
@@ -699,7 +700,6 @@ function showSuccessMessage(message: string) {
   toast({
     title: "成功",
     description: message,
-    duration: 3000,
   })
 }
 
@@ -708,7 +708,6 @@ function showErrorMessage(message: string) {
     title: "错误",
     description: message,
     variant: "destructive",
-    duration: 5000,
   })
 }
 

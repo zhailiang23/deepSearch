@@ -20,6 +20,8 @@ export interface User {
   customRoleId: number
   customRoleName: string
   customRoleCode: string
+  roleCode: string  // 兼容旧代码
+  role?: string     // 兼容旧代码
   failedLoginAttempts?: number
   lastLoginAt?: string
   lastLoginIp?: string
@@ -54,6 +56,7 @@ export interface UserQueryParams {
   keyword?: string
   status?: UserStatus
   customRoleId?: number
+  role?: string  // 兼容旧代码
 }
 
 export interface RoleStatistics {

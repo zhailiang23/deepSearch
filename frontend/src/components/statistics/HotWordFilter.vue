@@ -74,6 +74,24 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 
+// 导出的类型定义
+export interface HotWordFilterData {
+  timeRange?: {
+    start: Date
+    end: Date
+    label?: string
+  }
+  searchCondition?: {
+    keywords?: string[]
+    userTypes?: string[]
+    sortOrder?: string
+  }
+  limitConfig?: {
+    limit?: number
+    displayMode?: string
+  }
+}
+
 // 组件属性
 interface Props {
   loading?: boolean

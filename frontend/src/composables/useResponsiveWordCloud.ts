@@ -3,7 +3,8 @@
  * 提供完整的响应式设计支持，包括断点管理、自适应布局、触摸支持等
  */
 
-import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, readonly } from 'vue'
+import type { Ref } from 'vue'
 import { useResizeObserver, useEventListener, useDeviceOrientation } from '@vueuse/core'
 import type { HotWordItem, WordCloudOptions } from '@/types/statistics'
 import {
@@ -154,7 +155,7 @@ export function useResponsiveWordCloud(
 
   // ============= 设备方向 =============
 
-  const { orientation, isSupported: orientationSupported } = useDeviceOrientation()
+  const { isSupported: orientationSupported } = useDeviceOrientation()
 
   // ============= 计算属性 =============
 
@@ -486,9 +487,8 @@ export function useResponsiveWordCloud(
     useEventListener(window, 'resize', debouncedUpdateViewport)
 
     // 监听方向变化
-    if (settings.enableOrientation && orientationSupported) {
-      watch(orientation, debouncedUpdateLayout)
-    }
+    // 注意: useDeviceOrientation 不提供 orientation 属性
+    // 如需监听方向变化,可以监听 window resize 事件或使用 matchMedia
 
     // 触摸事件监听
     if (settings.enableTouch && touch.supported && containerRef?.value) {
