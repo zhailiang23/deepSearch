@@ -191,7 +191,8 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 搜索多个搜索空间的数据
+     * 搜索多个搜索空间的数据 - 使用均衡分布策略
+     * 对每个索引分别搜索，确保结果分布均衡
      *
      * @param request 搜索请求
      * @param userRole 当前用户角色（可为空，为空时不进行角色过滤）
@@ -201,7 +202,7 @@ public class ElasticsearchDataService {
         long startTime = System.currentTimeMillis();
 
         try {
-            log.info("开始多空间搜索: searchSpaceIds={}, query={}, page={}, size={}",
+            log.info("开始多空间均衡搜索: searchSpaceIds={}, query={}, page={}, size={}",
                     request.getSearchSpaceIds(), request.getQuery(), request.getPage(), request.getSize());
 
             // 敏感词检测
@@ -230,91 +231,109 @@ public class ElasticsearchDataService {
 
             log.info("搜索索引列表: {}", indexNames);
 
-            // 构建查询（复用原有逻辑）
-            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(),
-                    request.getPinyinMode(), String.join(",", indexNames),
-                    request.getEnableSemanticSearch(), request.getSemanticWeight());
+            // 计算每个索引应该返回的结果数
+            int perIndexSize = Math.max(1, request.getSize() / indexNames.size());
+            log.info("每个索引返回结果数: {}", perIndexSize);
 
-            // 添加渠道过滤
-            if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
-                query = addChannelFilter(query, request.getChannel());
-            }
-
-            // 添加角色过滤
-            if (userRole != null && !userRole.trim().isEmpty()) {
-                query = addRoleFilter(query, userRole);
-            }
-
-            // 计算分页参数
-            int from = (request.getPage() - 1) * request.getSize();
-
-            // 构建搜索请求 - 搜索多个索引
-            SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
-                    .index(indexNames)  // 多个索引
-                    .query(query)
-                    .from(from)
-                    .size(request.getSize())
-                    .trackTotalHits(t -> t.enabled(true));
-
-            // 添加排序
-            if (request.getSort() != null) {
-                String sortField = request.getSort().getField();
-                String sortOrder = request.getSort().getOrder();
-                searchBuilder.sort(s -> s.field(f -> f
-                        .field(sortField)
-                        .order("desc".equalsIgnoreCase(sortOrder) ?
-                                co.elastic.clients.elasticsearch._types.SortOrder.Desc :
-                                co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
-                log.debug("添加排序: field={}, order={}", sortField, sortOrder);
-            }
-
-            // 添加高亮配置
-            if (StringUtils.hasText(request.getQuery())) {
-                searchBuilder.highlight(h -> h
-                    .type(HighlighterType.Unified)
-                    .fragmentSize(0)
-                    .numberOfFragments(0)
-                    .fields(buildHighlightFields(indexNames.get(0)))  // 使用第一个索引的字段配置
-                );
-                log.debug("添加高亮配置");
-            }
-
-            // 执行搜索
-            SearchResponse<Map> searchResponse = elasticsearchClient.search(searchBuilder.build(), Map.class);
-
-            // 转换结果
-            List<SearchDataResponse.DocumentData> documents = searchResponse.hits().hits().stream()
-                    .map(this::convertHitToDocument)
-                    .collect(Collectors.toList());
-
-            // 获取总数
+            // 存储所有索引的搜索结果
+            List<SearchDataResponse.DocumentData> allDocuments = new ArrayList<>();
             long totalHits = 0L;
-            if (searchResponse.hits().total() != null) {
-                totalHits = searchResponse.hits().total().value();
+
+            // 对每个索引分别搜索
+            for (String indexName : indexNames) {
+                try {
+                    // 构建查询
+                    Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(),
+                            request.getPinyinMode(), indexName,
+                            request.getEnableSemanticSearch(), request.getSemanticWeight());
+
+                    // 添加渠道过滤
+                    if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
+                        query = addChannelFilter(query, request.getChannel());
+                    }
+
+                    // 添加角色过滤
+                    if (userRole != null && !userRole.trim().isEmpty()) {
+                        query = addRoleFilter(query, userRole);
+                    }
+
+                    // 构建搜索请求 - 每个索引单独搜索
+                    SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
+                            .index(indexName)
+                            .query(query)
+                            .from(0)  // 总是从第一条开始，因为我们要按分数合并
+                            .size(perIndexSize)  // 每个索引返回固定数量
+                            .trackTotalHits(t -> t.enabled(true));
+
+                    // 添加排序
+                    if (request.getSort() != null) {
+                        String sortField = request.getSort().getField();
+                        String sortOrder = request.getSort().getOrder();
+                        searchBuilder.sort(s -> s.field(f -> f
+                                .field(sortField)
+                                .order("desc".equalsIgnoreCase(sortOrder) ?
+                                        co.elastic.clients.elasticsearch._types.SortOrder.Desc :
+                                        co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
+                    }
+
+                    // 添加高亮配置
+                    if (StringUtils.hasText(request.getQuery())) {
+                        searchBuilder.highlight(h -> h
+                            .type(HighlighterType.Unified)
+                            .fragmentSize(0)
+                            .numberOfFragments(0)
+                            .fields(buildHighlightFields(indexName))
+                        );
+                    }
+
+                    // 执行搜索
+                    SearchResponse<Map> searchResponse = elasticsearchClient.search(searchBuilder.build(), Map.class);
+
+                    // 转换并添加结果
+                    List<SearchDataResponse.DocumentData> indexDocuments = searchResponse.hits().hits().stream()
+                            .map(this::convertHitToDocument)
+                            .collect(Collectors.toList());
+
+                    allDocuments.addAll(indexDocuments);
+
+                    // 累加总数
+                    if (searchResponse.hits().total() != null) {
+                        totalHits += searchResponse.hits().total().value();
+                    }
+
+                    log.info("索引 {} 搜索完成: 返回 {} 条结果", indexName, indexDocuments.size());
+
+                } catch (Exception e) {
+                    log.warn("索引 {} 搜索失败: {}", indexName, e.getMessage(), e);
+                    // 继续搜索其他索引
+                }
             }
+
+            // 按分数排序合并结果
+            allDocuments.sort((d1, d2) -> Double.compare(
+                    d2.get_score() != null ? d2.get_score() : 0.0,
+                    d1.get_score() != null ? d1.get_score() : 0.0
+            ));
+
+            // 应用分页：跳过前面的页，只取当前页
+            int from = (request.getPage() - 1) * request.getSize();
+            int to = Math.min(from + request.getSize(), allDocuments.size());
+            List<SearchDataResponse.DocumentData> pagedDocuments = allDocuments.subList(
+                    Math.min(from, allDocuments.size()),
+                    to
+            );
 
             long duration = System.currentTimeMillis() - startTime;
-            log.info("多空间搜索完成: indices={}, total={}, returned={}, took={}ms",
-                    indexNames, totalHits, documents.size(), duration);
+            log.info("多空间均衡搜索完成: indices={}, total={}, returned={}, took={}ms",
+                    indexNames, totalHits, pagedDocuments.size(), duration);
 
             return SearchDataResponse.builder()
-                    .data(documents)
+                    .data(pagedDocuments)
                     .total(totalHits)
                     .page(request.getPage())
                     .size(request.getSize())
                     .build();
 
-        } catch (IOException e) {
-            long duration = System.currentTimeMillis() - startTime;
-            log.error("多空间搜索IO异常: searchSpaceIds={}, query={}, took={}ms",
-                    request.getSearchSpaceIds(), request.getQuery(), duration, e);
-            throw new RuntimeException("搜索IO异常: " + e.getMessage(), e);
-        } catch (ElasticsearchException e) {
-            long duration = System.currentTimeMillis() - startTime;
-            log.error("多空间ES查询异常: searchSpaceIds={}, query={}, status={}, took={}ms",
-                    request.getSearchSpaceIds(), request.getQuery(), e.status(), duration, e);
-            String errorMsg = getElasticsearchErrorMessage(e);
-            throw new RuntimeException("查询异常: " + errorMsg, e);
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - startTime;
             log.error("多空间搜索过程中出现未预期异常: searchSpaceIds={}, query={}, took={}ms",
@@ -1005,11 +1024,15 @@ public class ElasticsearchDataService {
     /**
      * 获取可搜索字段列表 - 动态从索引映射中获取
      * 根据索引的实际映射动态获取所有text和keyword类型的字段
+     * 支持单个索引或逗号分隔的多个索引
      */
     private List<String> getSearchableFields(String indexName) {
         try {
+            // 处理多索引情况：将逗号分隔的索引名转换为数组
+            String[] indexNames = indexName.split(",");
+
             // 获取索引映射
-            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(indexName));
+            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(Arrays.asList(indexNames)));
             GetMappingResponse response = elasticsearchClient.indices().getMapping(request);
 
             Map<String, IndexMappingRecord> mappings = response.result();
@@ -1018,13 +1041,17 @@ public class ElasticsearchDataService {
                 return getDefaultSearchableFields();
             }
 
-            IndexMappingRecord indexMapping = mappings.values().iterator().next();
-            List<String> searchableFields = new ArrayList<>();
+            // 合并所有索引的可搜索字段（去重）
+            Set<String> uniqueSearchableFields = new HashSet<>();
+            for (Map.Entry<String, IndexMappingRecord> entry : mappings.entrySet()) {
+                List<String> indexSearchableFields = new ArrayList<>();
+                extractSearchableFields(entry.getValue().mappings().properties(), "", indexSearchableFields);
+                uniqueSearchableFields.addAll(indexSearchableFields);
+                log.debug("从索引 {} 中获取到可搜索字段: {}", entry.getKey(), indexSearchableFields);
+            }
 
-            // 从映射中提取可搜索字段
-            extractSearchableFields(indexMapping.mappings().properties(), "", searchableFields);
-
-            log.debug("动态获取到可搜索字段: index={}, fields={}", indexName, searchableFields);
+            List<String> searchableFields = new ArrayList<>(uniqueSearchableFields);
+            log.debug("从所有索引 {} 中获取到可搜索字段（去重后）: {}", indexName, searchableFields);
 
             // 如果没有找到任何字段，使用默认配置
             if (searchableFields.isEmpty()) {
@@ -1179,11 +1206,15 @@ public class ElasticsearchDataService {
     /**
      * 获取向量字段列表
      * 使用通配符搜索所有向量子字段，用于语义搜索
+     * 支持单个索引或逗号分隔的多个索引
      */
     private List<String> getVectorFields(String indexName) {
         try {
+            // 处理多索引情况：将逗号分隔的索引名转换为数组
+            String[] indexNames = indexName.split(",");
+
             // 获取索引映射
-            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(indexName));
+            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(Arrays.asList(indexNames)));
             GetMappingResponse response = elasticsearchClient.indices().getMapping(request);
 
             List<String> vectorFields = new ArrayList<>();
@@ -1195,12 +1226,17 @@ public class ElasticsearchDataService {
                 return vectorFields;
             }
 
-            IndexMappingRecord indexMapping = mappings.values().iterator().next();
+            // 合并所有索引的向量字段（去重）
+            Set<String> uniqueVectorFields = new HashSet<>();
+            for (Map.Entry<String, IndexMappingRecord> entry : mappings.entrySet()) {
+                List<String> indexVectorFields = new ArrayList<>();
+                extractVectorFields(entry.getValue().mappings().properties(), "", indexVectorFields);
+                uniqueVectorFields.addAll(indexVectorFields);
+                log.debug("从索引 {} 中找到向量字段: {}", entry.getKey(), indexVectorFields);
+            }
 
-            // 遍历所有字段，查找 dense_vector 类型的字段
-            extractVectorFields(indexMapping.mappings().properties(), "", vectorFields);
-
-            log.debug("从索引 {} 中找到向量字段: {}", indexName, vectorFields);
+            vectorFields.addAll(uniqueVectorFields);
+            log.debug("从所有索引 {} 中找到的向量字段（去重后）: {}", indexName, vectorFields);
             return vectorFields;
 
         } catch (Exception e) {
