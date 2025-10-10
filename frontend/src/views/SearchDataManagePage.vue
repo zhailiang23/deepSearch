@@ -91,6 +91,8 @@
             @update:selectedRows="selectedRows = $event"
             @update:currentPage="currentPage = $event"
             @update:pageSize="handlePageSizeChange"
+            @config="handleRowConfig"
+            @recommend="handleRowRecommend"
             @edit="handleRowEdit"
             @view="handleRowView"
             @delete="handleRowDelete"
@@ -149,6 +151,13 @@
       @reset="handleColumnConfigReset"
       @clear="handleColumnConfigClear"
     />
+
+    <!-- 文档配置对话框(渠道和角色) -->
+    <DocumentConfigDialog
+      v-model:open="documentConfigDialogOpen"
+      :document="configuringDocument"
+      @success="handleConfigSuccess"
+    />
   </div>
 </template>
 
@@ -180,6 +189,7 @@ import {
 // 组件导入
 import DynamicResultsTable from '@/components/searchData/DynamicResultsTable.vue'
 import ColumnConfigDialog from '@/components/searchData/ColumnConfigDialog.vue'
+import DocumentConfigDialog from '@/components/searchData/DocumentConfigDialog.vue'
 
 // 服务导入
 import { searchDataService } from '@/services/searchDataService'
@@ -223,6 +233,10 @@ const sortOrder = ref<'asc' | 'desc'>('desc')
 // 字段管理对话框状态
 const columnConfigDialogOpen = ref(false)
 const allColumns = ref<TableColumn[]>([])
+
+// 文档配置对话框状态
+const documentConfigDialogOpen = ref(false)
+const configuringDocument = ref<TableRow | null>(null)
 
 // 列配置管理(根据当前搜索空间ID)
 const getColumnConfig = () => {
@@ -651,6 +665,84 @@ function handleFieldsChange(fields: TableColumn[]) {
 }
 
 // 行操作处理 (预留接口)
+function handleRowConfig(row: TableRow) {
+  configuringDocument.value = row
+  documentConfigDialogOpen.value = true
+}
+
+async function handleConfigSuccess() {
+  if (!configuringDocument.value) return
+
+  const documentId = configuringDocument.value._id
+  const documentIndex = configuringDocument.value._index
+
+  try {
+    // 重新获取文档最新数据
+    const updatedDocument = await searchDataService.getDocument(documentId, documentIndex)
+
+    // 更新本地数据
+    const index = searchResults.value.hits.findIndex(row => row._id === documentId)
+    if (index !== -1) {
+      searchResults.value.hits[index] = updatedDocument
+    }
+
+    // 显示成功提示
+    showSuccessToast('配置已更新')
+  } catch (error: any) {
+    console.error('刷新文档数据失败:', error)
+    showErrorToast('配置已保存,但刷新数据失败')
+  } finally {
+    // 关闭对话框
+    documentConfigDialogOpen.value = false
+    configuringDocument.value = null
+  }
+}
+
+async function handleRowRecommend(row: TableRow) {
+  if (!realIndexName.value) {
+    showErrorToast('请先选择搜索空间')
+    return
+  }
+
+  try {
+    const isCurrentlyRecommended = row._source?.recommend === 1
+
+    if (isCurrentlyRecommended) {
+      // 取消推荐
+      await searchDataService.unrecommendDocument(row._id, realIndexName.value)
+      showSuccessToast('已取消推荐')
+
+      // 更新本地数据
+      if (row._source) {
+        row._source.recommend = 0
+      }
+    } else {
+      // 推荐
+      await searchDataService.recommendDocument(row._id, realIndexName.value)
+      showSuccessToast('推荐成功')
+
+      // 更新本地数据
+      if (row._source) {
+        row._source.recommend = 1
+      }
+    }
+
+    // 触发文档更新
+    handleDocumentUpdate(row)
+  } catch (error: any) {
+    console.error('推荐操作失败:', error)
+    let errorMessage = '推荐操作失败'
+
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+
+    showErrorToast(errorMessage)
+  }
+}
+
 function handleRowEdit(row: TableRow) {
   // TODO: Issue #40 - 编辑功能
   toast({

@@ -484,4 +484,66 @@ public class ElasticsearchDataController {
                 .body(ApiResponse.badRequest("搜索失败: " + e.getMessage()));
         }
     }
+
+    /**
+     * 设置文档为推荐
+     *
+     * @param id 文档ID
+     * @param index 索引名称
+     * @return 操作结果
+     */
+    @Operation(summary = "设置文档为推荐", description = "将文档设置为推荐，推荐的文档会在搜索结果中排在最前面")
+    @PutMapping("/document/{id}/recommend")
+    public ResponseEntity<ApiResponse<UpdateDocumentResponse>> recommendDocument(
+            @Parameter(description = "文档ID", required = true) @PathVariable String id,
+            @Parameter(description = "索引名称", required = true) @RequestParam String index) {
+
+        logger.info("设置文档为推荐: id={}, index={}", id, index);
+
+        try {
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("recommend", 1);
+
+            UpdateDocumentResponse response = elasticsearchDataService.updateDocumentFields(id, index, fields);
+
+            logger.info("文档推荐设置成功: id={}, index={}", id, index);
+            return ResponseEntity.ok(ApiResponse.success("推荐设置成功", response));
+
+        } catch (RuntimeException e) {
+            logger.error("设置文档推荐失败: id={}, index={}", id, index, e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("推荐设置失败: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 取消文档推荐
+     *
+     * @param id 文档ID
+     * @param index 索引名称
+     * @return 操作结果
+     */
+    @Operation(summary = "取消文档推荐", description = "取消文档的推荐状态，文档将按正常相关性排序")
+    @DeleteMapping("/document/{id}/recommend")
+    public ResponseEntity<ApiResponse<UpdateDocumentResponse>> unrecommendDocument(
+            @Parameter(description = "文档ID", required = true) @PathVariable String id,
+            @Parameter(description = "索引名称", required = true) @RequestParam String index) {
+
+        logger.info("取消文档推荐: id={}, index={}", id, index);
+
+        try {
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("recommend", 0);
+
+            UpdateDocumentResponse response = elasticsearchDataService.updateDocumentFields(id, index, fields);
+
+            logger.info("取消文档推荐成功: id={}, index={}", id, index);
+            return ResponseEntity.ok(ApiResponse.success("取消推荐成功", response));
+
+        } catch (RuntimeException e) {
+            logger.error("取消文档推荐失败: id={}, index={}", id, index, e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("取消推荐失败: " + e.getMessage()));
+        }
+    }
 }

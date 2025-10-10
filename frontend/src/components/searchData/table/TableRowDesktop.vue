@@ -48,26 +48,29 @@
 
       <!-- 操作按钮 -->
       <div class="flex items-center gap-1">
-        <!-- 渠道配置按钮 -->
+        <!-- 配置按钮 -->
         <Button
           variant="ghost"
           size="sm"
-          @click="handleChannelConfig"
-          class="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-          title="渠道配置"
+          @click="handleConfig"
+          class="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+          title="配置"
         >
           <Settings class="w-4 h-4" />
         </Button>
 
-        <!-- 角色配置按钮 -->
+        <!-- 推荐按钮 -->
         <Button
           variant="ghost"
           size="sm"
-          @click="handleRoleConfig"
-          class="h-8 w-8 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-          title="角色配置"
+          @click="handleRecommend"
+          :class="[
+            'h-8 w-8 p-0',
+            isRecommended ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-50'
+          ]"
+          :title="isRecommended ? '取消推荐' : '推荐'"
         >
-          <Shield class="w-4 h-4" />
+          <Star :class="['w-4 h-4', isRecommended ? 'fill-current' : '']" />
         </Button>
 
         <!-- 编辑按钮 -->
@@ -104,7 +107,7 @@ import {
   Edit,
   Trash2,
   Settings,
-  Shield
+  Star
 } from 'lucide-vue-next'
 import CellRenderer from './CellRenderer.vue'
 import type { TableColumn, TableRow } from '@/types/tableData'
@@ -116,8 +119,8 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'channelConfig', row: TableRow): void
-  (e: 'roleConfig', row: TableRow): void
+  (e: 'config', row: TableRow): void
+  (e: 'recommend', row: TableRow): void
   (e: 'edit', row: TableRow): void
   (e: 'delete', row: TableRow): void
   (e: 'click', row: TableRow, index: number, event: MouseEvent | KeyboardEvent): void
@@ -128,6 +131,11 @@ const emit = defineEmits<Emits>()
 
 // 点击状态
 const isClicked = ref(false)
+
+// 计算是否已推荐
+const isRecommended = computed(() => {
+  return props.row._source?.recommend === 1
+})
 
 /**
  * 处理行点击事件
@@ -164,19 +172,19 @@ const handleKeyboardClick = (event: KeyboardEvent) => {
 }
 
 /**
- * 处理渠道配置按钮点击
+ * 处理配置按钮点击
  */
-const handleChannelConfig = (event: MouseEvent) => {
+const handleConfig = (event: MouseEvent) => {
   event.stopPropagation()
-  emit('channelConfig', props.row)
+  emit('config', props.row)
 }
 
 /**
- * 处理角色配置按钮点击
+ * 处理推荐按钮点击
  */
-const handleRoleConfig = (event: MouseEvent) => {
+const handleRecommend = (event: MouseEvent) => {
   event.stopPropagation()
-  emit('roleConfig', props.row)
+  emit('recommend', props.row)
 }
 
 /**

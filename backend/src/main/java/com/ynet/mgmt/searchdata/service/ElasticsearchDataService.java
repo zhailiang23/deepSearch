@@ -145,6 +145,19 @@ public class ElasticsearchDataService {
                     .map(this::convertHitToDocument)
                     .collect(Collectors.toList());
 
+            // 排序：推荐文档(recommend=1)永远排在最前面
+            documents.sort((d1, d2) -> {
+                Integer r1 = getRecommendValue(d1);
+                Integer r2 = getRecommendValue(d2);
+                if (!r1.equals(r2)) {
+                    return r2.compareTo(r1); // 推荐的(1)排在前面
+                }
+                // 推荐优先级相同时,按分数排序
+                Double score1 = d1.get_score() != null ? d1.get_score() : 0.0;
+                Double score2 = d2.get_score() != null ? d2.get_score() : 0.0;
+                return Double.compare(score2, score1);
+            });
+
             // 获取总数
             long totalHits = 0L;
             if (searchResponse.hits().total() != null) {
@@ -309,11 +322,18 @@ public class ElasticsearchDataService {
                 }
             }
 
-            // 按分数排序合并结果
-            allDocuments.sort((d1, d2) -> Double.compare(
-                    d2.get_score() != null ? d2.get_score() : 0.0,
-                    d1.get_score() != null ? d1.get_score() : 0.0
-            ));
+            // 排序：推荐文档(recommend=1)永远排在最前面
+            allDocuments.sort((d1, d2) -> {
+                Integer r1 = getRecommendValue(d1);
+                Integer r2 = getRecommendValue(d2);
+                if (!r1.equals(r2)) {
+                    return r2.compareTo(r1); // 推荐的(1)排在前面
+                }
+                // 推荐优先级相同时,按分数排序
+                Double score1 = d1.get_score() != null ? d1.get_score() : 0.0;
+                Double score2 = d2.get_score() != null ? d2.get_score() : 0.0;
+                return Double.compare(score2, score1);
+            });
 
             // 应用分页：跳过前面的页，只取当前页
             int from = (request.getPage() - 1) * request.getSize();
@@ -1334,6 +1354,23 @@ public class ElasticsearchDataService {
                 ._version(null) // Hit对象中通常不包含version信息
                 .highlight(highlight)
                 .build();
+    }
+
+    /**
+     * 获取文档的推荐值
+     * 从文档的_source中提取recommend字段的值
+     *
+     * @param document 文档数据
+     * @return 推荐值(1表示推荐,0表示不推荐)
+     */
+    private Integer getRecommendValue(SearchDataResponse.DocumentData document) {
+        if (document.get_source() != null && document.get_source().containsKey("recommend")) {
+            Object value = document.get_source().get("recommend");
+            if (value instanceof Number) {
+                return ((Number) value).intValue();
+            }
+        }
+        return 0; // 默认不推荐
     }
 
     /**

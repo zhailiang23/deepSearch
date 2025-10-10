@@ -142,5 +142,21 @@ export const searchDataService = {
   updateDocumentRoles: (id: string, index: string, roles: string[]): Promise<UpdateDocumentResponse> =>
     http.put(`/elasticsearch/document/${id}/roles`, roles, {
       params: { index }
+    }),
+
+  /**
+   * 推荐文档
+   */
+  recommendDocument: (id: string, index: string): Promise<UpdateDocumentResponse> =>
+    http.put(`/elasticsearch/document/${id}/recommend`, null, {
+      params: { index }
+    }),
+
+  /**
+   * 取消推荐文档
+   */
+  unrecommendDocument: (id: string, index: string): Promise<UpdateDocumentResponse> =>
+    http.delete(`/elasticsearch/document/${id}/recommend`, {
+      params: { index }
     })
 }
