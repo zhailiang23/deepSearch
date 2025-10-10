@@ -2,7 +2,6 @@ package com.ynet.mgmt.user.service;
 
 import com.ynet.mgmt.user.dto.*;
 import com.ynet.mgmt.common.dto.PageResult;
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import org.springframework.data.domain.Pageable;
 
@@ -85,16 +84,6 @@ public interface UserService {
      */
     UserDTO toggleStatus(Long id);
 
-    // ========== 角色相关操作 ==========
-
-    /**
-     * 根据角色分页查询用户
-     * @param role 用户角色
-     * @param pageable 分页参数
-     * @return 分页结果
-     */
-    PageResult<UserDTO> listUsersByRole(UserRole role, Pageable pageable);
-
     // ========== 验证方法 ==========
 
     /**
@@ -142,9 +131,8 @@ public interface UserService {
     Long countLockedUsers();
 
     /**
-     * 统计指定角色的用户数量
-     * @param role 用户角色
-     * @return 该角色的用户数量
+     * 获取按自定义角色和状态分组的用户统计
+     * @return 统计结果列表
      */
-    Long countByRole(UserRole role);
+    List<UserStatistics> getUserStatisticsByRole();
 }

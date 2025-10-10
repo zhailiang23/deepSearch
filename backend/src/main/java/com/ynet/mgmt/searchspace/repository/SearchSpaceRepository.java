@@ -2,6 +2,7 @@ package com.ynet.mgmt.searchspace.repository;
 
 import com.ynet.mgmt.searchspace.entity.SearchSpace;
 import com.ynet.mgmt.searchspace.entity.SearchSpaceStatus;
+import com.ynet.mgmt.role.entity.RoleSearchSpace;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -212,4 +213,24 @@ public interface SearchSpaceRepository extends JpaRepository<SearchSpace, Long> 
      */
     @Query("SELECT MAX(s.lastImportTime) FROM SearchSpace s WHERE s.lastImportTime IS NOT NULL")
     Optional<java.time.LocalDateTime> findLastImportTime();
+
+    // ========== 角色权限相关查询方法 ==========
+
+    /**
+     * 根据角色ID和关键词查询搜索空间
+     * 只返回该角色有权限访问的搜索空间
+     *
+     * @param roleId 角色ID
+     * @param keyword 搜索关键词
+     * @param pageable 分页参数
+     * @return 分页结果
+     */
+    @Query("SELECT s FROM SearchSpace s " +
+           "WHERE EXISTS (SELECT rss FROM RoleSearchSpace rss WHERE rss.searchSpaceId = s.id AND rss.roleId = :roleId) " +
+           "AND (:keyword IS NULL OR :keyword = '' OR " +
+           "LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(s.code) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<SearchSpace> findByRoleIdAndKeyword(@Param("roleId") Long roleId,
+                                             @Param("keyword") String keyword,
+                                             Pageable pageable);
 }

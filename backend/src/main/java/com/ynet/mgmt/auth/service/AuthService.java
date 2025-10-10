@@ -84,7 +84,7 @@ public class AuthService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole()
+                user.getCustomRole().getCode()
         );
 
         logger.info("用户登录成功: 用户={}, IP={}", user.getUsername(), ipAddress);
@@ -119,7 +119,7 @@ public class AuthService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole()
+                user.getCustomRole().getCode()
         );
 
         logger.debug("Token刷新成功: 用户={}", username);
@@ -163,7 +163,7 @@ public class AuthService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole()
+                user.getCustomRole().getCode()
         );
     }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <!-- 统计卡片 -->
-    <div v-if="statistics" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div v-if="statistics" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div class="bg-card rounded-lg border border-green-200 p-4">
         <div class="text-sm text-muted-foreground">总用户数</div>
         <div class="text-2xl font-bold text-foreground">{{ statistics.totalUsers }}</div>
@@ -9,10 +9,6 @@
       <div class="bg-card rounded-lg border border-green-200 p-4">
         <div class="text-sm text-muted-foreground">活跃用户</div>
         <div class="text-2xl font-bold text-green-600">{{ statistics.activeUsers }}</div>
-      </div>
-      <div class="bg-card rounded-lg border border-green-200 p-4">
-        <div class="text-sm text-muted-foreground">管理员</div>
-        <div class="text-2xl font-bold text-green-700">{{ statistics.adminUsers }}</div>
       </div>
       <div class="bg-card rounded-lg border border-green-200 p-4">
         <div class="text-sm text-muted-foreground">锁定用户</div>
@@ -45,17 +41,6 @@
           <option :value="UserStatus.DISABLED">禁用</option>
           <option :value="UserStatus.LOCKED">锁定</option>
           <option :value="UserStatus.PENDING">待处理</option>
-        </select>
-
-        <!-- 角色筛选 -->
-        <select
-          v-model="filterRole"
-          class="px-4 py-2 border border-green-300 rounded-md bg-background text-foreground focus:ring-2 focus:ring-green-500"
-          @change="handleFilter"
-        >
-          <option :value="undefined">全部角色</option>
-          <option :value="UserRole.ADMIN">管理员</option>
-          <option :value="UserRole.USER">普通用户</option>
         </select>
       </div>
 
@@ -99,10 +84,10 @@
               <td class="px-4 py-3 text-sm text-foreground">{{ user.fullName || '-' }}</td>
               <td class="px-4 py-3 text-sm">
                 <span
-                  :class="getRoleColor(user.role)"
+                  :class="getRoleColor(user.customRoleCode)"
                   class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                 >
-                  {{ getRoleLabel(user.role) }}
+                  {{ user.customRoleName }}
                 </span>
               </td>
               <td class="px-4 py-3 text-sm">
@@ -269,16 +254,17 @@
 
           <!-- 角色 -->
           <div>
-            <label for="role" class="block text-sm font-medium text-foreground mb-1">
+            <label for="customRole" class="block text-sm font-medium text-foreground mb-1">
               角色 <span class="text-red-500">*</span>
             </label>
             <select
-              id="role"
-              v-model="formData.role"
+              id="customRole"
+              v-model="formData.customRoleId"
               required
               class="w-full px-3 py-2 border border-green-300 rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
             >
-              <option v-for="role in roles" :key="role.id" :value="role.code">
+              <option :value="undefined" disabled>请选择角色</option>
+              <option v-for="role in roles" :key="role.id" :value="role.id">
                 {{ role.name }}
               </option>
             </select>
@@ -380,7 +366,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { UserRole, UserStatus } from '@/types/user'
+import { UserStatus } from '@/types/user'
 import type { User, CreateUserRequest, UpdateUserRequest, UserStatistics } from '@/types/user'
 import { roleApi } from '@/services/roleApi'
 import type { Role } from '@/types/role'
@@ -396,7 +382,7 @@ const roles = ref<Role[]>([])
 
 const searchKeyword = ref('')
 const filterStatus = ref<UserStatus | undefined>(undefined)
-const filterRole = ref<UserRole | undefined>(undefined)
+const filterCustomRoleId = ref<number | undefined>(undefined)
 
 // 表单数据
 const formData = ref<CreateUserRequest | UpdateUserRequest>({
@@ -405,8 +391,8 @@ const formData = ref<CreateUserRequest | UpdateUserRequest>({
   password: '',
   fullName: '',
   phone: '',
-  role: UserRole.USER,
-  status: UserStatus.ACTIVE
+  status: UserStatus.ACTIVE,
+  customRoleId: undefined
 })
 
 const submitting = ref(false)
@@ -433,11 +419,6 @@ const formatDate = (date: string): string => {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-const getRoleLabel = (roleCode: string): string => {
-  const role = roles.value.find(r => r.code === roleCode)
-  return role ? role.name : roleCode
 }
 
 const getRoleColor = (roleCode: string): string => {
@@ -510,7 +491,7 @@ const loadData = async () => {
     size: store.queryParams.size,
     keyword: searchKeyword.value || undefined,
     status: filterStatus.value,
-    role: filterRole.value
+    customRoleId: filterCustomRoleId.value
   })
 }
 
@@ -523,7 +504,7 @@ const handleSearch = () => {
       page: 0,
       size: store.queryParams.size,
       status: filterStatus.value,
-      role: filterRole.value
+      customRoleId: filterCustomRoleId.value
     })
   } else {
     loadData()
@@ -548,8 +529,8 @@ const handleCreate = () => {
     password: '',
     fullName: '',
     phone: '',
-    role: roles.value.length > 0 ? roles.value[0].code : '',
-    status: UserStatus.ACTIVE
+    status: UserStatus.ACTIVE,
+    customRoleId: undefined
   }
   showForm.value = true
 }
@@ -560,8 +541,8 @@ const handleEdit = (user: User) => {
     email: user.email,
     fullName: user.fullName || '',
     phone: user.phone || '',
-    role: user.role,
-    status: user.status
+    status: user.status,
+    customRoleId: user.customRoleId
   }
   showForm.value = true
 }

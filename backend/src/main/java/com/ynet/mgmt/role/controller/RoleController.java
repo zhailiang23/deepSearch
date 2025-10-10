@@ -5,7 +5,9 @@ import com.ynet.mgmt.common.dto.PageResult;
 import com.ynet.mgmt.role.dto.CreateRoleRequest;
 import com.ynet.mgmt.role.dto.RoleDTO;
 import com.ynet.mgmt.role.dto.UpdateRoleRequest;
+import com.ynet.mgmt.role.dto.RoleSearchSpaceConfigRequest;
 import com.ynet.mgmt.role.service.RoleService;
+import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 角色管理控制器
@@ -114,6 +118,33 @@ public class RoleController {
     @Operation(summary = "获取所有角色", description = "获取所有角色列表（不分页）")
     public ResponseEntity<ApiResponse<java.util.List<RoleDTO>>> getAllRoles() {
         java.util.List<RoleDTO> result = roleService.getAllRoles();
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    // ========== 搜索空间权限配置操作 ==========
+
+    @PostMapping("/{id}/search-spaces")
+    @Operation(summary = "配置角色的搜索空间权限", description = "设置角色可以访问的搜索空间列表")
+    public ResponseEntity<ApiResponse<Void>> configureSearchSpaces(
+            @Parameter(description = "角色ID") @PathVariable Long id,
+            @Valid @RequestBody RoleSearchSpaceConfigRequest request) {
+        roleService.configureSearchSpaces(id, request.getSearchSpaceIds());
+        return ResponseEntity.ok(ApiResponse.success("搜索空间权限配置成功", null));
+    }
+
+    @GetMapping("/{id}/search-spaces")
+    @Operation(summary = "获取角色关联的搜索空间", description = "获取角色可以访问的搜索空间列表")
+    public ResponseEntity<ApiResponse<List<SearchSpaceDTO>>> getRoleSearchSpaces(
+            @Parameter(description = "角色ID") @PathVariable Long id) {
+        List<SearchSpaceDTO> result = roleService.getRoleSearchSpaces(id);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    @GetMapping("/{id}/available-search-spaces")
+    @Operation(summary = "获取可配置的搜索空间", description = "获取所有可供角色配置的搜索空间列表")
+    public ResponseEntity<ApiResponse<List<SearchSpaceDTO>>> getAvailableSearchSpaces(
+            @Parameter(description = "角色ID") @PathVariable Long id) {
+        List<SearchSpaceDTO> result = roleService.getAvailableSearchSpaces(id);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

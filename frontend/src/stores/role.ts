@@ -6,8 +6,10 @@ import type {
   CreateRoleRequest,
   UpdateRoleRequest,
   RoleQueryRequest,
-  PageResult
+  PageResult,
+  RoleSearchSpaceConfigRequest
 } from '@/types/role'
+import type { SearchSpace } from '@/types/searchSpace'
 
 export const useRoleStore = defineStore('role', () => {
   // ========== 状态定义 ==========
@@ -243,6 +245,62 @@ export const useRoleStore = defineStore('role', () => {
     }
   }
 
+  // ========== 搜索空间权限配置 ==========
+
+  /**
+   * 配置角色的搜索空间权限
+   */
+  const configureSearchSpaces = async (roleId: number, searchSpaceIds: number[]) => {
+    try {
+      setLoading(true)
+      clearError()
+
+      const request: RoleSearchSpaceConfigRequest = { searchSpaceIds }
+      await roleApi.configureSearchSpaces(roleId, request)
+    } catch (err: any) {
+      setError(err.message || '配置搜索空间权限失败')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * 获取角色关联的搜索空间
+   */
+  const getRoleSearchSpaces = async (roleId: number): Promise<SearchSpace[]> => {
+    try {
+      setLoading(true)
+      clearError()
+
+      const response = await roleApi.getRoleSearchSpaces(roleId)
+      return response.data || []
+    } catch (err: any) {
+      setError(err.message || '获取角色搜索空间失败')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * 获取可配置的搜索空间列表
+   */
+  const getAvailableSearchSpaces = async (roleId: number): Promise<SearchSpace[]> => {
+    try {
+      setLoading(true)
+      clearError()
+
+      const response = await roleApi.getAvailableSearchSpaces(roleId)
+      return response.data || []
+    } catch (err: any) {
+      setError(err.message || '获取可配置搜索空间失败')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // ========== 重置操作 ==========
 
   /**
@@ -299,6 +357,11 @@ export const useRoleStore = defineStore('role', () => {
 
     // ========== 验证操作 ==========
     checkCodeAvailability,
-    checkNameAvailability
+    checkNameAvailability,
+
+    // ========== 搜索空间权限配置 ==========
+    configureSearchSpaces,
+    getRoleSearchSpaces,
+    getAvailableSearchSpaces
   }
 })

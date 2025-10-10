@@ -1,7 +1,6 @@
 package com.ynet.mgmt.user.controller;
 
 import com.ynet.mgmt.user.dto.*;
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import com.ynet.mgmt.user.service.UserService;
 import com.ynet.mgmt.common.dto.ApiResponse;
@@ -157,24 +156,22 @@ public class UserController {
     public ResponseEntity<ApiResponse<PageResult<UserDTO>>> listUsers(
             @Parameter(description = "搜索关键字") @RequestParam(required = false) String keyword,
             @Parameter(description = "状态过滤") @RequestParam(required = false) UserStatus status,
-            @Parameter(description = "角色过滤") @RequestParam(required = false) UserRole role,
+            @Parameter(description = "自定义角色ID过滤") @RequestParam(required = false) Long customRoleId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        logger.debug("分页查询用户列表: keyword={}, status={}, role={}, page={}, size={}",
-                keyword, status, role, pageable.getPageNumber(), pageable.getPageSize());
+        logger.debug("分页查询用户列表: keyword={}, status={}, customRoleId={}, page={}, size={}",
+                keyword, status, customRoleId, pageable.getPageNumber(), pageable.getPageSize());
 
         PageResult<UserDTO> result;
         if (keyword != null && !keyword.trim().isEmpty()) {
             result = userService.searchUsers(keyword.trim(), pageable);
         } else if (status != null) {
             result = userService.listUsersByStatus(status, pageable);
-        } else if (role != null) {
-            result = userService.listUsersByRole(role, pageable);
         } else {
             result = userService.listUsers(pageable);
         }
 
-        logger.debug("用户列表查询成功: keyword={}, status={}, role={}, totalElements={}, totalPages={}",
-                keyword, status, role, result.getTotalElements(), result.getTotalPages());
+        logger.debug("用户列表查询成功: keyword={}, status={}, customRoleId={}, totalElements={}, totalPages={}",
+                keyword, status, customRoleId, result.getTotalElements(), result.getTotalPages());
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
@@ -281,16 +278,14 @@ public class UserController {
 
         Long activeCount = userService.countActiveUsers();
         Long lockedCount = userService.countLockedUsers();
-        Long adminCount = userService.countByRole(UserRole.ADMIN);
-        Long userCount = userService.countByRole(UserRole.USER);
+        List<UserStatistics> roleStatistics = userService.getUserStatisticsByRole();
 
         // 构建统计结果
         Map<String, Object> statistics = new HashMap<>();
         statistics.put("activeUsers", activeCount);
         statistics.put("lockedUsers", lockedCount);
         statistics.put("totalUsers", activeCount + lockedCount);
-        statistics.put("adminUsers", adminCount);
-        statistics.put("normalUsers", userCount);
+        statistics.put("roleStatistics", roleStatistics);
 
         logger.debug("用户统计信息查询成功: active={}, locked={}, total={}",
                 activeCount, lockedCount, activeCount + lockedCount);

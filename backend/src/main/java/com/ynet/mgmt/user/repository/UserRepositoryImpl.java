@@ -65,8 +65,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
     @Override
     public List<UserStatistics> getUserStatisticsByRole() {
-        String jpql = "SELECT new com.ynet.mgmt.user.dto.UserStatistics(u.role, u.status, COUNT(u)) " +
-                     "FROM User u GROUP BY u.role, u.status ORDER BY u.role, u.status";
+        String jpql = "SELECT new com.ynet.mgmt.user.dto.UserStatistics(u.customRole.id, u.customRole.name, u.status, COUNT(u)) " +
+                     "FROM User u GROUP BY u.customRole.id, u.customRole.name, u.status ORDER BY u.customRole.id, u.status";
         return entityManager.createQuery(jpql, UserStatistics.class).getResultList();
     }
 
@@ -124,9 +124,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             predicates.add(cb.equal(user.get("status"), criteria.getStatus()));
         }
 
-        // 角色筛选
-        if (criteria.getRole() != null) {
-            predicates.add(cb.equal(user.get("role"), criteria.getRole()));
+        // 自定义角色筛选
+        if (criteria.getCustomRoleId() != null) {
+            predicates.add(cb.equal(user.get("customRole").get("id"), criteria.getCustomRoleId()));
         }
 
         // 创建时间范围

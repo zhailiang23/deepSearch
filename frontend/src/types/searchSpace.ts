@@ -37,6 +37,7 @@ export interface UpdateSearchSpaceRequest {
 
 export interface SearchSpaceQueryRequest {
   keyword?: string
+  roleId?: number  // 角色ID过滤（可选）
   page?: number
   size?: number
   sortBy?: string

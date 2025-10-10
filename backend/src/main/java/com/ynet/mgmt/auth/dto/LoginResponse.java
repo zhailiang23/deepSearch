@@ -1,7 +1,5 @@
 package com.ynet.mgmt.auth.dto;
 
-import com.ynet.mgmt.user.entity.UserRole;
-
 /**
  * 登录响应DTO
  */
@@ -53,17 +51,17 @@ public class LoginResponse {
         private String username;
         private String email;
         private String fullName;
-        private UserRole role;
+        private String roleCode;
 
         // 构造函数
         public UserInfo() {}
 
-        public UserInfo(Long id, String username, String email, String fullName, UserRole role) {
+        public UserInfo(Long id, String username, String email, String fullName, String roleCode) {
             this.id = id;
             this.username = username;
             this.email = email;
             this.fullName = fullName;
-            this.role = role;
+            this.roleCode = roleCode;
         }
 
         // Getters and Setters
@@ -99,12 +97,12 @@ public class LoginResponse {
             this.fullName = fullName;
         }
 
-        public UserRole getRole() {
-            return role;
+        public String getRoleCode() {
+            return roleCode;
         }
 
-        public void setRole(UserRole role) {
-            this.role = role;
+        public void setRoleCode(String roleCode) {
+            this.roleCode = roleCode;
         }
     }
 }

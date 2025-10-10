@@ -69,7 +69,7 @@ public class SearchLogServiceImpl implements SearchLogService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<SearchLog> getSearchLogs(SearchLogQueryRequest request, Pageable pageable) {
+    public Page<SearchLogListResponse> getSearchLogs(SearchLogQueryRequest request, Pageable pageable) {
         try {
             // 构建查询条件
             Specification<SearchLog> spec = buildSearchLogSpecification(request);
@@ -82,7 +82,8 @@ public class SearchLogServiceImpl implements SearchLogService {
             log.debug("查询搜索日志: page={}, size={}, total={}",
                     pageable.getPageNumber(), pageable.getPageSize(), result.getTotalElements());
 
-            return result;
+            // 转换为DTO，不包含responseData等大字段
+            return result.map(this::convertToListResponse);
 
         } catch (Exception e) {
             log.error("查询搜索日志失败: request={}", request, e);
@@ -98,7 +99,7 @@ public class SearchLogServiceImpl implements SearchLogService {
             SearchLog searchLog = searchLogRepository.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException("搜索日志不存在: " + id));
 
-            // 构建详情响应
+            // 构建详情响应(不包含responseData以优化性能)
             SearchLogDetailResponse response = SearchLogDetailResponse.builder()
                     .id(searchLog.getId())
                     .userId(searchLog.getUserId() != null ? searchLog.getUserId().toString() : null)
@@ -113,7 +114,6 @@ public class SearchLogServiceImpl implements SearchLogService {
                     .sessionId(searchLog.getSessionId())
                     .traceId(searchLog.getTraceId())
                     .requestParams(searchLog.getRequestParams())
-                    .responseData(searchLog.getResponseData())
                     .errorMessage(searchLog.getErrorMessage())
                     .userAgent(searchLog.getUserAgent())
                     .build();
@@ -689,6 +689,45 @@ public class SearchLogServiceImpl implements SearchLogService {
             return 0.0;
         }
         return Math.round(((double) count / total) * 10000.0) / 100.0; // 保留两位小数
+    }
+
+    /**
+     * 将SearchLog实体转换为SearchLogListResponse DTO
+     * 不包含responseData、requestParams、errorStackTrace等大字段
+     *
+     * @param searchLog 搜索日志实体
+     * @return 搜索日志列表响应DTO
+     */
+    private SearchLogListResponse convertToListResponse(SearchLog searchLog) {
+        return SearchLogListResponse.builder()
+                .id(searchLog.getId())
+                .traceId(searchLog.getTraceId())
+                .userId(searchLog.getUserId())
+                .sessionId(searchLog.getSessionId())
+                .ipAddress(searchLog.getIpAddress())
+                .userAgent(searchLog.getUserAgent())
+                .searchSpaceId(searchLog.getSearchSpaceId())
+                .searchSpaceCode(searchLog.getSearchSpaceCode())
+                .searchSpaceName(searchLog.getSearchSpaceName())
+                .searchQuery(searchLog.getSearchQuery())
+                .searchMode(searchLog.getSearchMode())
+                .enablePinyin(searchLog.getEnablePinyin())
+                .pageNumber(searchLog.getPageNumber())
+                .pageSize(searchLog.getPageSize())
+                .totalResults(searchLog.getTotalResults())
+                .returnedResults(searchLog.getReturnedResults())
+                .maxScore(searchLog.getMaxScore())
+                .elasticsearchTimeMs(searchLog.getElasticsearchTimeMs())
+                .totalTimeMs(searchLog.getTotalTimeMs())
+                .memoryUsedMb(searchLog.getMemoryUsedMb())
+                .status(searchLog.getStatus())
+                .errorType(searchLog.getErrorType())
+                .errorMessage(searchLog.getErrorMessage())
+                .createdAt(searchLog.getCreatedAt())
+                .updatedAt(searchLog.getUpdatedAt())
+                .createdBy(searchLog.getCreatedBy())
+                .updatedBy(searchLog.getUpdatedBy())
+                .build();
     }
 
     /**

@@ -5,8 +5,10 @@ import type {
   UpdateRoleRequest,
   RoleQueryRequest,
   PageResult,
-  ApiResponse
+  ApiResponse,
+  RoleSearchSpaceConfigRequest
 } from '@/types/role'
+import type { SearchSpace } from '@/types/searchSpace'
 
 const BASE_URL = '/roles'
 
@@ -80,5 +82,25 @@ export const roleApi = {
    * 获取所有角色（不分页）
    */
   getAll: (): Promise<ApiResponse<Role[]>> =>
-    http.get(`${BASE_URL}/all`)
+    http.get(`${BASE_URL}/all`),
+
+  // ========== 搜索空间权限配置 ==========
+
+  /**
+   * 配置角色的搜索空间权限
+   */
+  configureSearchSpaces: (roleId: number, request: RoleSearchSpaceConfigRequest): Promise<ApiResponse<void>> =>
+    http.post(`${BASE_URL}/${roleId}/search-spaces`, request),
+
+  /**
+   * 获取角色关联的搜索空间
+   */
+  getRoleSearchSpaces: (roleId: number): Promise<ApiResponse<SearchSpace[]>> =>
+    http.get(`${BASE_URL}/${roleId}/search-spaces`),
+
+  /**
+   * 获取可配置的搜索空间
+   */
+  getAvailableSearchSpaces: (roleId: number): Promise<ApiResponse<SearchSpace[]>> =>
+    http.get(`${BASE_URL}/${roleId}/available-search-spaces`)
 }

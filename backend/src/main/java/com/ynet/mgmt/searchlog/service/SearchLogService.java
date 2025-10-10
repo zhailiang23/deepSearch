@@ -23,12 +23,13 @@ public interface SearchLogService {
 
     /**
      * 分页查询搜索日志
+     * 返回轻量级DTO，不包含responseData等大字段以优化性能
      *
      * @param request 查询请求参数
      * @param pageable 分页参数
      * @return 分页结果
      */
-    Page<SearchLog> getSearchLogs(SearchLogQueryRequest request, Pageable pageable);
+    Page<SearchLogListResponse> getSearchLogs(SearchLogQueryRequest request, Pageable pageable);
 
     /**
      * 根据ID获取搜索日志详情

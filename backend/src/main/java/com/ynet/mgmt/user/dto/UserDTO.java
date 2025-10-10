@@ -1,6 +1,5 @@
 package com.ynet.mgmt.user.dto;
 
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 
 import java.time.LocalDateTime;
@@ -40,9 +39,19 @@ public class UserDTO {
     private String phone;
 
     /**
-     * 角色
+     * 自定义角色ID
      */
-    private UserRole role;
+    private Long customRoleId;
+
+    /**
+     * 自定义角色名称
+     */
+    private String customRoleName;
+
+    /**
+     * 自定义角色代码
+     */
+    private String customRoleCode;
 
     /**
      * 状态
@@ -92,11 +101,11 @@ public class UserDTO {
     // 构造函数
     public UserDTO() {}
 
-    public UserDTO(Long id, String username, String email, UserRole role, UserStatus status) {
+    public UserDTO(Long id, String username, String email, Long customRoleId, UserStatus status) {
         this.id = id;
         this.username = username;
         this.email = email;
-        this.role = role;
+        this.customRoleId = customRoleId;
         this.status = status;
     }
 
@@ -139,14 +148,6 @@ public class UserDTO {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
     }
 
     public UserStatus getStatus() {
@@ -221,13 +222,38 @@ public class UserDTO {
         this.updatedBy = updatedBy;
     }
 
+    public Long getCustomRoleId() {
+        return customRoleId;
+    }
+
+    public void setCustomRoleId(Long customRoleId) {
+        this.customRoleId = customRoleId;
+    }
+
+    public String getCustomRoleName() {
+        return customRoleName;
+    }
+
+    public void setCustomRoleName(String customRoleName) {
+        this.customRoleName = customRoleName;
+    }
+
+    public String getCustomRoleCode() {
+        return customRoleCode;
+    }
+
+    public void setCustomRoleCode(String customRoleCode) {
+        this.customRoleCode = customRoleCode;
+    }
+
     @Override
     public String toString() {
         return "UserDTO{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
-                ", role=" + role +
+                ", customRoleId=" + customRoleId +
+                ", customRoleName='" + customRoleName + '\'' +
                 ", status=" + status +
                 '}';
     }

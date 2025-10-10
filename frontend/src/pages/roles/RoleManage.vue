@@ -8,6 +8,7 @@
         @edit="handleEdit"
         @view="handleView"
         @delete="handleDelete"
+        @configure="handleConfigure"
       />
 
       <!-- 创建/编辑对话框 -->
@@ -146,6 +147,14 @@
           </div>
         </div>
       </div>
+
+      <!-- 搜索空间配置对话框 -->
+      <RoleSearchSpaceConfigDialog
+        :open="showConfigDialog"
+        :role="configTarget"
+        @update:open="showConfigDialog = $event"
+        @success="handleConfigSuccess"
+      />
     </div>
 
     <!-- 消息提示 -->
@@ -173,6 +182,7 @@ import { X, AlertTriangle, CheckCircle, XCircle } from 'lucide-vue-next'
 import { useRoleStore } from '@/stores/role'
 import RoleList from '@/components/role/RoleList.vue'
 import RoleForm from '@/components/role/RoleForm.vue'
+import RoleSearchSpaceConfigDialog from '@/components/role/RoleSearchSpaceConfigDialog.vue'
 import type { Role, CreateRoleRequest, UpdateRoleRequest } from '@/types/role'
 
 const roleStore = useRoleStore()
@@ -181,10 +191,12 @@ const roleStore = useRoleStore()
 const showFormDialog = ref(false)
 const showDetailDialog = ref(false)
 const showDeleteDialog = ref(false)
+const showConfigDialog = ref(false)
 
 // 当前操作的角色
 const currentRole = ref<Role | null>(null)
 const deleteTarget = ref<Role | null>(null)
+const configTarget = ref<Role | null>(null)
 
 // 加载状态
 const formLoading = ref(false)
@@ -242,6 +254,17 @@ const handleView = async (role: Role) => {
 const handleDelete = (role: Role) => {
   deleteTarget.value = role
   showDeleteDialog.value = true
+}
+
+// 配置搜索空间
+const handleConfigure = (role: Role) => {
+  configTarget.value = role
+  showConfigDialog.value = true
+}
+
+// 配置成功
+const handleConfigSuccess = () => {
+  showMessage('success', '搜索空间配置保存成功')
 }
 
 // 表单提交

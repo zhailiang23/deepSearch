@@ -31,6 +31,9 @@ import com.ynet.mgmt.searchspace.service.ElasticsearchManager;
 import com.ynet.mgmt.searchspace.service.SearchSpaceService;
 import com.ynet.mgmt.searchspace.validator.SearchSpaceValidator;
 import com.ynet.mgmt.searchspace.exception.SearchSpaceException;
+import com.ynet.mgmt.common.util.SecurityUtils;
+import com.ynet.mgmt.user.entity.User;
+import com.ynet.mgmt.user.repository.UserRepository;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
 import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
@@ -61,17 +64,20 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     private final SearchSpaceMapper mapper;
     private final SearchSpaceValidator validator;
     private final ElasticsearchClient elasticsearchClient;
+    private final UserRepository userRepository;
 
     public SearchSpaceServiceImpl(SearchSpaceRepository searchSpaceRepository,
                                  ElasticsearchManager elasticsearchManager,
                                  SearchSpaceMapper mapper,
                                  SearchSpaceValidator validator,
-                                 ElasticsearchClient elasticsearchClient) {
+                                 ElasticsearchClient elasticsearchClient,
+                                 UserRepository userRepository) {
         this.searchSpaceRepository = searchSpaceRepository;
         this.elasticsearchManager = elasticsearchManager;
         this.mapper = mapper;
         this.validator = validator;
         this.elasticsearchClient = elasticsearchClient;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -236,8 +242,36 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
             Sort.by(Sort.Direction.fromString(request.getSortDirection()), request.getSortBy())
         );
 
-        // 执行查询
-        Page<SearchSpace> page = searchSpaceRepository.findByKeyword(request.getKeyword(), pageable);
+        // 自动从认证上下文获取当前用户的角色ID
+        Long roleIdToUse = request.getRoleId();
+
+        // 如果请求中没有指定roleId，尝试从当前认证用户获取
+        if (roleIdToUse == null && SecurityUtils.isAuthenticated()) {
+            String username = SecurityUtils.getCurrentUsername();
+            if (username != null) {
+                User currentUser = userRepository.findByUsername(username).orElse(null);
+                if (currentUser != null && currentUser.getCustomRole() != null) {
+                    roleIdToUse = currentUser.getCustomRole().getId();
+                    log.debug("从当前用户获取角色ID: username={}, roleId={}", username, roleIdToUse);
+                }
+            }
+        }
+
+        // 执行查询 - 根据是否有roleId选择不同的查询方法
+        Page<SearchSpace> page;
+        if (roleIdToUse != null) {
+            // 使用角色权限过滤
+            log.debug("使用角色权限过滤查询: roleId={}", roleIdToUse);
+            page = searchSpaceRepository.findByRoleIdAndKeyword(
+                roleIdToUse,
+                request.getKeyword(),
+                pageable
+            );
+        } else {
+            // 不使用角色过滤,返回所有搜索空间
+            log.debug("未找到角色信息，返回所有搜索空间");
+            page = searchSpaceRepository.findByKeyword(request.getKeyword(), pageable);
+        }
 
         // 转换结果
         List<SearchSpaceDTO> dtos = page.getContent().stream()

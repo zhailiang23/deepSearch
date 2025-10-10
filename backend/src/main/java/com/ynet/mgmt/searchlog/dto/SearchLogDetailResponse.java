@@ -59,9 +59,6 @@ public class SearchLogDetailResponse {
     @Schema(description = "请求参数（JSON格式）")
     private String requestParams;
 
-    @Schema(description = "响应数据（JSON格式）")
-    private String responseData;
-
     @Schema(description = "错误信息")
     private String errorMessage;
 

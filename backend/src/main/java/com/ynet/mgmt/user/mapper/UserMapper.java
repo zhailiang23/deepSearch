@@ -36,7 +36,6 @@ public class UserMapper {
         dto.setEmail(entity.getEmail());
         dto.setFullName(entity.getFullName());
         dto.setPhone(entity.getPhone());
-        dto.setRole(entity.getRole());
         dto.setStatus(entity.getStatus());
         dto.setFailedLoginAttempts(entity.getFailedLoginAttempts());
         dto.setLastLoginAt(entity.getLastLoginAt());
@@ -46,6 +45,13 @@ public class UserMapper {
         dto.setUpdatedAt(entity.getUpdatedAt());
         dto.setCreatedBy(entity.getCreatedBy());
         dto.setUpdatedBy(entity.getUpdatedBy());
+
+        // 设置自定义角色信息
+        if (entity.getCustomRole() != null) {
+            dto.setCustomRoleId(entity.getCustomRole().getId());
+            dto.setCustomRoleName(entity.getCustomRole().getName());
+            dto.setCustomRoleCode(entity.getCustomRole().getCode());
+        }
 
         return dto;
     }
@@ -84,8 +90,8 @@ public class UserMapper {
         // 密码会在service层处理
         entity.setFullName(request.getFullName());
         entity.setPhone(request.getPhone());
-        entity.setRole(request.getRole());
         entity.setStatus(request.getStatus());
+        // customRole会在service层处理
 
         return entity;
     }
@@ -110,11 +116,9 @@ public class UserMapper {
         if (request.getPhone() != null) {
             target.setPhone(request.getPhone());
         }
-        if (request.getRole() != null) {
-            target.setRole(request.getRole());
-        }
         if (request.getStatus() != null) {
             target.setStatus(request.getStatus());
         }
+        // customRoleId会在service层处理
     }
 }

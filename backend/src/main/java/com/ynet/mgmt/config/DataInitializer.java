@@ -1,9 +1,10 @@
 package com.ynet.mgmt.config;
 
 import com.ynet.mgmt.user.entity.User;
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import com.ynet.mgmt.user.repository.UserRepository;
+import com.ynet.mgmt.role.entity.Role;
+import com.ynet.mgmt.role.repository.RoleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,13 @@ public class DataInitializer implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -59,12 +62,22 @@ public class DataInitializer implements CommandLineRunner {
      * 创建默认管理员用户
      */
     private void createDefaultAdmin() {
+        // 查找或创建管理员角色
+        Role adminRole = roleRepository.findByCode("ADMIN")
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setCode("ADMIN");
+                    role.setName("管理员");
+                    role.setDescription("系统管理员角色");
+                    return roleRepository.save(role);
+                });
+
         User admin = new User();
         admin.setUsername("admin");
         admin.setEmail("admin@example.com");
         admin.setPasswordHash(passwordEncoder.encode("admin"));
         admin.setFullName("系统管理员");
-        admin.setRole(UserRole.ADMIN);
+        admin.setCustomRole(adminRole);
         admin.setStatus(UserStatus.ACTIVE);
         admin.setEmailVerified(true);
 
@@ -76,12 +89,22 @@ public class DataInitializer implements CommandLineRunner {
      * 创建默认普通用户
      */
     private void createDefaultUser() {
+        // 查找或创建普通用户角色
+        Role userRole = roleRepository.findByCode("USER")
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setCode("USER");
+                    role.setName("普通用户");
+                    role.setDescription("普通用户角色");
+                    return roleRepository.save(role);
+                });
+
         User user = new User();
         user.setUsername("user");
         user.setEmail("user@example.com");
         user.setPasswordHash(passwordEncoder.encode("user"));
         user.setFullName("测试用户");
-        user.setRole(UserRole.USER);
+        user.setCustomRole(userRole);
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerified(true);
 

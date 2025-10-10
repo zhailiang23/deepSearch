@@ -1,6 +1,5 @@
 package com.ynet.mgmt.user.dto;
 
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import jakarta.validation.constraints.*;
 
@@ -31,9 +30,9 @@ public class UpdateUserRequest {
     private String phone;
 
     /**
-     * 角色
+     * 自定义角色ID
      */
-    private UserRole role;
+    private Long customRoleId;
 
     /**
      * 状态
@@ -43,9 +42,9 @@ public class UpdateUserRequest {
     // 构造函数
     public UpdateUserRequest() {}
 
-    public UpdateUserRequest(String email, UserRole role, UserStatus status) {
+    public UpdateUserRequest(String email, Long customRoleId, UserStatus status) {
         this.email = email;
-        this.role = role;
+        this.customRoleId = customRoleId;
         this.status = status;
     }
 
@@ -74,12 +73,12 @@ public class UpdateUserRequest {
         this.phone = phone;
     }
 
-    public UserRole getRole() {
-        return role;
+    public Long getCustomRoleId() {
+        return customRoleId;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setCustomRoleId(Long customRoleId) {
+        this.customRoleId = customRoleId;
     }
 
     public UserStatus getStatus() {
@@ -94,7 +93,7 @@ public class UpdateUserRequest {
     public String toString() {
         return "UpdateUserRequest{" +
                 "email='" + email + '\'' +
-                ", role=" + role +
+                ", customRoleId=" + customRoleId +
                 ", status=" + status +
                 '}';
     }

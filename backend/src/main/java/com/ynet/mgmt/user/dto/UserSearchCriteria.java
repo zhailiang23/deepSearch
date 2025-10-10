@@ -1,6 +1,5 @@
 package com.ynet.mgmt.user.dto;
 
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import java.time.LocalDateTime;
 
@@ -12,19 +11,19 @@ public class UserSearchCriteria {
 
     private String keyword;
     private UserStatus status;
-    private UserRole role;
+    private Long customRoleId;
     private LocalDateTime createdAfter;
     private LocalDateTime createdBefore;
     private Boolean emailVerified;
 
     public UserSearchCriteria() {}
 
-    public UserSearchCriteria(String keyword, UserStatus status, UserRole role,
+    public UserSearchCriteria(String keyword, UserStatus status, Long customRoleId,
                             LocalDateTime createdAfter, LocalDateTime createdBefore,
                             Boolean emailVerified) {
         this.keyword = keyword;
         this.status = status;
-        this.role = role;
+        this.customRoleId = customRoleId;
         this.createdAfter = createdAfter;
         this.createdBefore = createdBefore;
         this.emailVerified = emailVerified;
@@ -38,7 +37,7 @@ public class UserSearchCriteria {
     public static class Builder {
         private String keyword;
         private UserStatus status;
-        private UserRole role;
+        private Long customRoleId;
         private LocalDateTime createdAfter;
         private LocalDateTime createdBefore;
         private Boolean emailVerified;
@@ -53,8 +52,8 @@ public class UserSearchCriteria {
             return this;
         }
 
-        public Builder role(UserRole role) {
-            this.role = role;
+        public Builder customRoleId(Long customRoleId) {
+            this.customRoleId = customRoleId;
             return this;
         }
 
@@ -74,7 +73,7 @@ public class UserSearchCriteria {
         }
 
         public UserSearchCriteria build() {
-            return new UserSearchCriteria(keyword, status, role, createdAfter, createdBefore, emailVerified);
+            return new UserSearchCriteria(keyword, status, customRoleId, createdAfter, createdBefore, emailVerified);
         }
     }
 
@@ -95,12 +94,12 @@ public class UserSearchCriteria {
         this.status = status;
     }
 
-    public UserRole getRole() {
-        return role;
+    public Long getCustomRoleId() {
+        return customRoleId;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setCustomRoleId(Long customRoleId) {
+        this.customRoleId = customRoleId;
     }
 
     public LocalDateTime getCreatedAfter() {
@@ -132,7 +131,7 @@ public class UserSearchCriteria {
         return "UserSearchCriteria{" +
                 "keyword='" + keyword + '\'' +
                 ", status=" + status +
-                ", role=" + role +
+                ", customRoleId=" + customRoleId +
                 ", createdAfter=" + createdAfter +
                 ", createdBefore=" + createdBefore +
                 ", emailVerified=" + emailVerified +

@@ -14,6 +14,12 @@ public class SearchSpaceQueryRequest {
 
     private String keyword;
 
+    /**
+     * 角色ID过滤（可选）
+     * 用于查询特定角色有权限访问的搜索空间
+     */
+    private Long roleId;
+
     @Min(value = 0, message = "页码不能小于0")
     private int page = 0;
 
@@ -94,10 +100,19 @@ public class SearchSpaceQueryRequest {
         this.sortDirection = sortDirection;
     }
 
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
+    }
+
     @Override
     public String toString() {
         return "SearchSpaceQueryRequest{" +
                 "keyword='" + keyword + '\'' +
+                ", roleId=" + roleId +
                 ", page=" + page +
                 ", size=" + size +
                 ", sortBy='" + sortBy + '\'' +

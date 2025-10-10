@@ -1,6 +1,5 @@
 package com.ynet.mgmt.user.dto;
 
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import jakarta.validation.constraints.*;
 
@@ -46,10 +45,10 @@ public class CreateUserRequest {
     private String phone;
 
     /**
-     * 角色
+     * 自定义角色ID
      */
-    @NotNull(message = "角色不能为空")
-    private UserRole role;
+    @NotNull(message = "自定义角色不能为空")
+    private Long customRoleId;
 
     /**
      * 状态
@@ -60,11 +59,11 @@ public class CreateUserRequest {
     // 构造函数
     public CreateUserRequest() {}
 
-    public CreateUserRequest(String username, String email, String password, UserRole role, UserStatus status) {
+    public CreateUserRequest(String username, String email, String password, Long customRoleId, UserStatus status) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.customRoleId = customRoleId;
         this.status = status;
     }
 
@@ -109,12 +108,12 @@ public class CreateUserRequest {
         this.phone = phone;
     }
 
-    public UserRole getRole() {
-        return role;
+    public Long getCustomRoleId() {
+        return customRoleId;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setCustomRoleId(Long customRoleId) {
+        this.customRoleId = customRoleId;
     }
 
     public UserStatus getStatus() {
@@ -130,7 +129,7 @@ public class CreateUserRequest {
         return "CreateUserRequest{" +
                 "username='" + username + '\'' +
                 ", email='" + email + '\'' +
-                ", role=" + role +
+                ", customRoleId=" + customRoleId +
                 ", status=" + status +
                 '}';
     }

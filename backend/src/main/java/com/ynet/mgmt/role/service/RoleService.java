@@ -68,4 +68,30 @@ public interface RoleService {
      * 获取所有角色（不分页）
      */
     java.util.List<RoleDTO> getAllRoles();
+
+    // ========== 搜索空间配置操作 ==========
+
+    /**
+     * 配置角色的搜索空间权限
+     *
+     * @param roleId 角色ID
+     * @param searchSpaceIds 搜索空间ID列表
+     */
+    void configureSearchSpaces(Long roleId, java.util.List<Long> searchSpaceIds);
+
+    /**
+     * 获取角色关联的搜索空间列表
+     *
+     * @param roleId 角色ID
+     * @return 搜索空间DTO列表
+     */
+    java.util.List<com.ynet.mgmt.searchspace.dto.SearchSpaceDTO> getRoleSearchSpaces(Long roleId);
+
+    /**
+     * 获取角色可配置的所有搜索空间
+     *
+     * @param roleId 角色ID（可选，用于标识哪些已关联）
+     * @return 所有搜索空间DTO列表
+     */
+    java.util.List<com.ynet.mgmt.searchspace.dto.SearchSpaceDTO> getAvailableSearchSpaces(Long roleId);
 }

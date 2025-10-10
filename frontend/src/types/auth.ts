@@ -3,7 +3,7 @@ export interface User {
   username: string
   email: string
   fullName?: string
-  role: 'ADMIN' | 'USER'
+  roleCode: string
   status: 'ACTIVE' | 'DISABLED' | 'LOCKED'
   lastLoginAt?: string
   createdAt: string

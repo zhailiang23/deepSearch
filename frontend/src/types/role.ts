@@ -73,3 +73,25 @@ export const ROLE_SORT_OPTIONS = [
   { value: 'name', label: '角色名称' },
   { value: 'code', label: '角色代码' }
 ] as const
+
+/**
+ * 角色-搜索空间配置请求
+ */
+export interface RoleSearchSpaceConfigRequest {
+  searchSpaceIds: number[]
+}
+
+/**
+ * 角色-搜索空间关联信息
+ */
+export interface RoleSearchSpace {
+  id: number
+  roleId: number
+  roleName: string
+  roleCode: string
+  searchSpaceId: number
+  searchSpaceName: string
+  searchSpaceCode: string
+  createdAt: string
+  updatedAt?: string
+}

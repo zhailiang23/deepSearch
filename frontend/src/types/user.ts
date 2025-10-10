@@ -16,8 +16,10 @@ export interface User {
   email: string
   fullName?: string
   phone?: string
-  role: UserRole
   status: UserStatus
+  customRoleId: number
+  customRoleName: string
+  customRoleCode: string
   failedLoginAttempts?: number
   lastLoginAt?: string
   lastLoginIp?: string
@@ -34,16 +36,16 @@ export interface CreateUserRequest {
   password: string
   fullName?: string
   phone?: string
-  role: UserRole
   status: UserStatus
+  customRoleId: number
 }
 
 export interface UpdateUserRequest {
   email?: string
   fullName?: string
   phone?: string
-  role?: UserRole
   status?: UserStatus
+  customRoleId?: number
 }
 
 export interface UserQueryParams {
@@ -51,13 +53,19 @@ export interface UserQueryParams {
   size: number
   keyword?: string
   status?: UserStatus
-  role?: UserRole
+  customRoleId?: number
+}
+
+export interface RoleStatistics {
+  roleId: number
+  roleName: string
+  status: UserStatus
+  count: number
 }
 
 export interface UserStatistics {
   activeUsers: number
   lockedUsers: number
   totalUsers: number
-  adminUsers: number
-  normalUsers: number
+  roleStatistics: RoleStatistics[]
 }

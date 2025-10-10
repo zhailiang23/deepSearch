@@ -108,6 +108,13 @@
               </div>
               <div class="flex items-center space-x-1">
                 <button
+                  @click="$emit('configure', role)"
+                  class="p-2 text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md transition-colors"
+                  title="配置搜索空间"
+                >
+                  <Settings class="h-4 w-4" />
+                </button>
+                <button
                   @click="$emit('edit', role)"
                   class="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
                   title="编辑"
@@ -174,7 +181,8 @@ import {
   Users,
   Edit,
   Eye,
-  Trash2
+  Trash2,
+  Settings
 } from 'lucide-vue-next'
 import { useRoleStore } from '@/stores/role'
 import type { Role } from '@/types/role'
@@ -184,6 +192,7 @@ interface Emits {
   (e: 'edit', role: Role): void
   (e: 'view', role: Role): void
   (e: 'delete', role: Role): void
+  (e: 'configure', role: Role): void
 }
 
 const emit = defineEmits<Emits>()

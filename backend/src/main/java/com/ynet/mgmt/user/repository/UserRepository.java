@@ -1,7 +1,6 @@
 package com.ynet.mgmt.user.repository;
 
 import com.ynet.mgmt.user.entity.User;
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +48,7 @@ public interface UserRepository extends JpaRepository<User, Long>,
      */
     Optional<User> findByUsernameOrEmail(String username, String email);
 
-    // 状态和角色查询
+    // 状态查询
 
     /**
      * 根据用户状态查找用户列表
@@ -57,22 +56,6 @@ public interface UserRepository extends JpaRepository<User, Long>,
      * @return 用户列表
      */
     List<User> findByStatus(UserStatus status);
-
-    /**
-     * 根据用户角色查找用户列表
-     * @param role 用户角色
-     * @return 用户列表
-     */
-    List<User> findByRole(UserRole role);
-
-    /**
-     * 根据状态和角色查找用户分页列表
-     * @param status 用户状态
-     * @param role 用户角色
-     * @param pageable 分页参数
-     * @return 用户分页结果
-     */
-    Page<User> findByStatusAndRole(UserStatus status, UserRole role, Pageable pageable);
 
     // 关键字搜索查询
 
@@ -90,28 +73,6 @@ public interface UserRepository extends JpaRepository<User, Long>,
            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<User> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    /**
-     * 复合条件查询用户
-     * @param status 用户状态（可为空）
-     * @param role 用户角色（可为空）
-     * @param keyword 搜索关键字（可为空）
-     * @param pageable 分页参数
-     * @return 用户分页结果
-     */
-    @Query("SELECT u FROM User u WHERE " +
-           "(:status IS NULL OR u.status = :status) AND " +
-           "(:role IS NULL OR u.role = :role) AND " +
-           "(:keyword IS NULL OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<User> findByStatusAndRoleAndKeyword(
-        @Param("status") UserStatus status,
-        @Param("role") UserRole role,
-        @Param("keyword") String keyword,
-        Pageable pageable
-    );
-
     // 统计查询
 
     /**
@@ -120,21 +81,6 @@ public interface UserRepository extends JpaRepository<User, Long>,
      * @return 用户数量
      */
     long countByStatus(UserStatus status);
-
-    /**
-     * 统计指定角色的用户数量
-     * @param role 用户角色
-     * @return 用户数量
-     */
-    long countByRole(UserRole role);
-
-    /**
-     * 统计指定状态和角色的用户数量
-     * @param status 用户状态
-     * @param role 用户角色
-     * @return 用户数量
-     */
-    long countByStatusAndRole(UserStatus status, UserRole role);
 
     // 时间范围查询
 

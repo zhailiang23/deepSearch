@@ -2,7 +2,6 @@ package com.ynet.mgmt.user.service.impl;
 
 import com.ynet.mgmt.user.dto.*;
 import com.ynet.mgmt.user.entity.User;
-import com.ynet.mgmt.user.entity.UserRole;
 import com.ynet.mgmt.user.entity.UserStatus;
 import com.ynet.mgmt.user.exception.DuplicateUserException;
 import com.ynet.mgmt.user.exception.UserNotFoundException;
@@ -10,6 +9,8 @@ import com.ynet.mgmt.user.mapper.UserMapper;
 import com.ynet.mgmt.user.repository.UserRepository;
 import com.ynet.mgmt.user.service.UserService;
 import com.ynet.mgmt.common.dto.PageResult;
+import com.ynet.mgmt.role.repository.RoleRepository;
+import com.ynet.mgmt.role.entity.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -36,13 +37,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     public UserServiceImpl(UserRepository repository,
                           UserMapper mapper,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          RoleRepository roleRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     // ========== 基本CRUD操作 ==========
@@ -67,6 +71,12 @@ public class UserServiceImpl implements UserService {
         // 转换并设置加密密码
         User entity = mapper.toEntity(request);
         entity.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+
+        // 设置自定义角色(必须)
+        Role customRole = roleRepository.findById(request.getCustomRoleId())
+                .orElseThrow(() -> new IllegalArgumentException("角色不存在: id=" + request.getCustomRoleId()));
+        entity.setCustomRole(customRole);
+        logger.debug("设置用户自定义角色: roleId={}, roleName={}", customRole.getId(), customRole.getName());
 
         User saved = repository.save(entity);
 
@@ -108,6 +118,15 @@ public class UserServiceImpl implements UserService {
 
         // 更新字段
         mapper.updateEntity(request, entity);
+
+        // 更新自定义角色
+        if (request.getCustomRoleId() != null) {
+            Role customRole = roleRepository.findById(request.getCustomRoleId())
+                    .orElseThrow(() -> new IllegalArgumentException("角色不存在: id=" + request.getCustomRoleId()));
+            entity.setCustomRole(customRole);
+            logger.debug("更新用户自定义角色: roleId={}, roleName={}", customRole.getId(), customRole.getName());
+        }
+
         User updated = repository.save(entity);
 
         logger.info("用户更新成功: id={}, username={}", updated.getId(), updated.getUsername());
@@ -212,29 +231,6 @@ public class UserServiceImpl implements UserService {
         return mapper.toDTO(updated);
     }
 
-    // ========== 角色相关操作 ==========
-
-    @Override
-    public PageResult<UserDTO> listUsersByRole(UserRole role, Pageable pageable) {
-        logger.debug("根据角色查询用户: role={}, page={}, size={}",
-                role, pageable.getPageNumber(), pageable.getPageSize());
-
-        Page<User> page = repository.findAll(
-                (root, query, criteriaBuilder) ->
-                        criteriaBuilder.equal(root.get("role"), role),
-                pageable
-        );
-        List<UserDTO> content = mapper.toDTOList(page.getContent());
-
-        return new PageResult<UserDTO>(
-                content,
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages()
-        );
-    }
-
     // ========== 验证方法 ==========
 
     @Override
@@ -270,7 +266,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long countByRole(UserRole role) {
-        return repository.countByRole(role);
+    public List<UserStatistics> getUserStatisticsByRole() {
+        return repository.getUserStatisticsByRole();
     }
 }

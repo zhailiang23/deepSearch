@@ -54,7 +54,7 @@ public class SearchLogController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "请求参数错误"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
-    public ResponseEntity<ApiResponse<PageResult<SearchLog>>> getSearchLogs(
+    public ResponseEntity<ApiResponse<PageResult<SearchLogListResponse>>> getSearchLogs(
             @Parameter(description = "用户ID") @RequestParam(required = false) String userId,
             @Parameter(description = "搜索空间ID") @RequestParam(required = false) String searchSpaceId,
             @Parameter(description = "搜索空间代码") @RequestParam(required = false) String searchSpaceCode,
@@ -90,10 +90,10 @@ public class SearchLogController {
                     .traceId(traceId)
                     .build();
 
-            Page<SearchLog> pageResult = searchLogService.getSearchLogs(request, pageable);
+            Page<SearchLogListResponse> pageResult = searchLogService.getSearchLogs(request, pageable);
 
             // 转换为PageResult
-            PageResult<SearchLog> result = PageResult.<SearchLog>builder()
+            PageResult<SearchLogListResponse> result = PageResult.<SearchLogListResponse>builder()
                     .content(pageResult.getContent())
                     .page(pageResult.getNumber())
                     .size(pageResult.getSize())

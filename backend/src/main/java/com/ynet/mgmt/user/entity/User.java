@@ -45,9 +45,9 @@ public class User extends BaseEntity {
     @Pattern(regexp = "^[0-9+\\-\\s()]{0,20}$", message = "电话号码格式不正确")
     private String phone;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role = UserRole.USER;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "custom_role_id", nullable = false)
+    private com.ynet.mgmt.role.entity.Role customRole;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -80,10 +80,11 @@ public class User extends BaseEntity {
     // 构造函数
     public User() {}
 
-    public User(String username, String email, String passwordHash) {
+    public User(String username, String email, String passwordHash, com.ynet.mgmt.role.entity.Role customRole) {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
+        this.customRole = customRole;
     }
 
     // 业务方法
@@ -103,14 +104,6 @@ public class User extends BaseEntity {
     public boolean isLocked() {
         return UserStatus.LOCKED.equals(this.status) ||
                (accountLockedUntil != null && accountLockedUntil.isAfter(LocalDateTime.now()));
-    }
-
-    /**
-     * 检查用户是否为管理员
-     * @return true if 用户角色为ADMIN
-     */
-    public boolean isAdmin() {
-        return UserRole.ADMIN.equals(this.role);
     }
 
     /**
@@ -197,12 +190,12 @@ public class User extends BaseEntity {
         this.phone = phone;
     }
 
-    public UserRole getRole() {
-        return role;
+    public com.ynet.mgmt.role.entity.Role getCustomRole() {
+        return customRole;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setCustomRole(com.ynet.mgmt.role.entity.Role customRole) {
+        this.customRole = customRole;
     }
 
     public UserStatus getStatus() {
@@ -301,7 +294,7 @@ public class User extends BaseEntity {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
-                ", role=" + role +
+                ", customRole=" + (customRole != null ? customRole.getCode() : null) +
                 ", status=" + status +
                 '}';
     }
