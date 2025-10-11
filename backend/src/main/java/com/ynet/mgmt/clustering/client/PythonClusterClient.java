@@ -151,8 +151,8 @@ public class PythonClusterClient {
                 response.setClusters(clusters);
             }
 
-            // 解析散点图数据
-            List<Map<String, Object>> scatterData = (List<Map<String, Object>>) responseBody.get("scatter_data");
+            // 解析散点图数据（Python返回的是camelCase格式）
+            List<Map<String, Object>> scatterData = (List<Map<String, Object>>) responseBody.get("scatterData");
             if (scatterData != null) {
                 List<ScatterPointDTO> scatterPoints = scatterData.stream()
                         .map(this::parseScatterPoint)
@@ -160,10 +160,10 @@ public class PythonClusterClient {
                 response.setScatterData(scatterPoints);
             }
 
-            // 解析统计数据
-            response.setNoiseCount((Integer) responseBody.get("noise_count"));
-            response.setTotalTexts((Integer) responseBody.get("total_texts"));
-            response.setValidClusters((Integer) responseBody.get("valid_clusters"));
+            // 解析统计数据（Python返回的是camelCase格式）
+            response.setNoiseCount((Integer) responseBody.get("noiseCount"));
+            response.setTotalTexts((Integer) responseBody.get("totalTexts"));
+            response.setValidClusters((Integer) responseBody.get("validClusters"));
 
             return response;
         } catch (Exception e) {
@@ -173,12 +173,12 @@ public class PythonClusterClient {
     }
 
     /**
-     * 解析聚类话题
+     * 解析聚类话题（Python返回的是camelCase格式）
      */
     @SuppressWarnings("unchecked")
     private ClusterTopicDTO parseClusterTopic(Map<String, Object> data) {
         ClusterTopicDTO dto = new ClusterTopicDTO();
-        dto.setClusterId((Integer) data.get("cluster_id"));
+        dto.setClusterId((Integer) data.get("clusterId"));
         dto.setTopic((String) data.get("topic"));
         dto.setTags((List<String>) data.get("tags"));
         dto.setExamples((List<String>) data.get("examples"));

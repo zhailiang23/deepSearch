@@ -111,6 +111,7 @@
 import { reactive, watch } from 'vue'
 
 interface FormData {
+  searchSpaceId: number
   timeRange: string
   eps: number
   minSamples: number
@@ -138,6 +139,7 @@ const timeRangeOptions = [
 ]
 
 const form = reactive<FormData>({
+  searchSpaceId: 7,
   timeRange: '30d',
   eps: 0.4,
   minSamples: 3,

@@ -315,7 +315,7 @@ rerank:
 cluster:
   # Python 聚类服务配置
   python:
-    service-url: ${PYTHON_CLUSTER_URL:http://localhost:5001}
+    service-url: ${PYTHON_CLUSTER_URL:http://localhost:5001/cluster}
     timeout: ${PYTHON_CLUSTER_TIMEOUT:300000}  # 5分钟超时
     max-texts: ${PYTHON_CLUSTER_MAX_TEXTS:10000}  # 最大处理文本数
 

@@ -124,11 +124,17 @@ class ClusterRequest(BaseModel):
 
 class ClusterTopic(BaseModel):
     """聚类话题"""
-    cluster_id: int = Field(..., description="簇ID")
+    cluster_id: int = Field(..., description="簇ID", alias="clusterId")
     topic: str = Field(..., description="话题名称")
     tags: List[str] = Field(default_factory=list, description="业务标签")
     examples: List[str] = Field(default_factory=list, description="代表性问题")
     size: int = Field(..., description="簇大小")
+
+    class Config:
+        # 允许通过别名进行序列化
+        populate_by_name = True
+        # 使用别名进行序列化
+        by_alias = True
 
 
 class ScatterPoint(BaseModel):
@@ -138,14 +144,24 @@ class ScatterPoint(BaseModel):
     cluster: int = Field(..., description="簇ID (-1表示噪声点)")
     text: str = Field(..., description="文本内容")
 
+    class Config:
+        # 允许通过别名进行序列化
+        populate_by_name = True
+
 
 class ClusterResponse(BaseModel):
     """聚类响应"""
     clusters: List[ClusterTopic] = Field(..., description="聚类话题列表")
-    scatter_data: List[ScatterPoint] = Field(..., description="散点图数据")
-    noise_count: int = Field(..., description="噪声点数量")
-    total_texts: int = Field(..., description="总文本数")
-    valid_clusters: int = Field(..., description="有效簇数量")
+    scatter_data: List[ScatterPoint] = Field(..., description="散点图数据", alias="scatterData")
+    noise_count: int = Field(..., description="噪声点数量", alias="noiseCount")
+    total_texts: int = Field(..., description="总文本数", alias="totalTexts")
+    valid_clusters: int = Field(..., description="有效簇数量", alias="validClusters")
+
+    class Config:
+        # 允许通过别名进行序列化
+        populate_by_name = True
+        # 使用别名进行序列化
+        by_alias = True
 
 
 # ========== 模型管理 ==========
@@ -442,7 +458,7 @@ async def cluster_analysis(request: ClusterRequest):
         logger.info(f"发现 {len(clusters_map)} 个有效簇")
 
         # 生成话题描述
-        logger.info("步骤 4/4: 调用硅基流动 LLM API 生成话题描述...")
+        logger.info("步骤 4/4: 调用硅基流动 LLM API 生成话题名称和标签...")
         cluster_results = []
         for cluster_id, cluster_texts in sorted(clusters_map.items()):
             topic_info = client.generate_topic(cluster_texts)
@@ -451,15 +467,18 @@ async def cluster_analysis(request: ClusterRequest):
                 logger.warning(f"簇 {cluster_id} 的话题生成失败,使用默认值")
                 topic_info = {
                     "topic": f"用户反馈簇 {cluster_id}",
-                    "tags": ["待分析"],
-                    "examples": cluster_texts[:3]
+                    "tags": ["待分析"]
                 }
+
+            # 代表性问题: 直接使用原始用户输入,不使用 LLM 生成的内容
+            # 选择策略: 取前3个原始文本作为代表性问题
+            representative_examples = cluster_texts[:3]
 
             cluster_results.append(ClusterTopic(
                 cluster_id=int(cluster_id),
                 topic=topic_info.get("topic", f"簇{cluster_id}"),
                 tags=topic_info.get("tags", []),
-                examples=topic_info.get("examples", cluster_texts[:3]),
+                examples=representative_examples,  # 使用原始文本
                 size=len(cluster_texts)
             ))
 

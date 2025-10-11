@@ -42,13 +42,9 @@ public class ClusterAnalysisController {
         try {
             logger.info("收到聚类分析请求: {}", request);
 
-            // TODO: 临时返回测试数据，待修复后恢复真实调用
-            ClusterAnalysisResponse response = createMockResponse(request);
+            // 真实调用Python聚类服务
+            ClusterAnalysisResponse response = clusterAnalysisService.analyzeClusters(request);
             return ApiResponse.success(response);
-
-            // 真实调用（暂时注释）
-            // ClusterAnalysisResponse response = clusterAnalysisService.analyzeClusters(request);
-            // return ApiResponse.success(response);
         } catch (ClusterAnalysisException e) {
             logger.error("聚类分析失败: {}", e.getMessage());
             return ApiResponse.badRequest(e.getMessage());

@@ -35,13 +35,13 @@ class SiliconFlowClient:
         self.llm_config = llm_config
         logger.info(f"初始化硅基流动客户端 - Embedding模型: {embedding_config['model']}, LLM模型: {llm_config['model']}")
 
-    def get_embeddings(self, texts: List[str], batch_size: int = 100) -> List[List[float]]:
+    def get_embeddings(self, texts: List[str], batch_size: int = 20) -> List[List[float]]:
         """
         调用硅基流动 Embedding API 获取文本向量（支持分批处理）
 
         Args:
             texts: 文本列表
-            batch_size: 每批处理的文本数量，默认100
+            batch_size: 每批处理的文本数量，默认20（避免413错误）
 
         Returns:
             向量列表，每个向量是一个浮点数列表
@@ -120,7 +120,7 @@ class SiliconFlowClient:
         # 限制样本数量，避免 prompt 过长
         sample_texts = cluster_texts[:10]
 
-        prompt = f"""作为银行客户反馈分析专家，请精准提炼用户的核心问题：
+        prompt = f"""作为银行客户反馈分析专家，请精准提炼用户反馈的核心主题：
 
 【输入数据】
 以下是同一类别的用户反馈：
@@ -132,14 +132,11 @@ class SiliconFlowClient:
    - 用户的核心诉求或问题（如额度不足、无法使用、流程复杂等）
    示例："转账限额不足，希望提高"、"信用卡审批被拒，询问原因"
 
-2. 列出3个最具代表性的原始问题（保留用户表述特点）
-
-3. 提取2-3个业务标签（如"转账限额"、"信用卡审批"、"APP故障"）
+2. 提取2-3个业务标签（如"转账限额"、"信用卡审批"、"APP故障"）
 
 请用JSON格式回复，不要包含任何额外文本：
 {{
     "topic": "类别名称",
-    "examples": ["问题1", "问题2", "问题3"],
     "tags": ["标签1", "标签2"]
 }}"""
 
@@ -186,8 +183,8 @@ class SiliconFlowClient:
 
             topic_info = json.loads(content)
 
-            # 验证必要字段
-            if not all(key in topic_info for key in ['topic', 'examples', 'tags']):
+            # 验证必要字段 (只需要 topic 和 tags)
+            if not all(key in topic_info for key in ['topic', 'tags']):
                 logger.warning("LLM 响应缺少必要字段")
                 return None
 

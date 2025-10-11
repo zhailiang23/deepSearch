@@ -110,6 +110,7 @@ const result = ref<ClusterAnalysisResponse | null>(null)
 const showParamDialog = ref(false)
 
 const params = ref<ClusterAnalysisRequest>({
+  searchSpaceId: 7, // 默认搜索空间ID
   timeRange: '30d',
   eps: 0.4,
   minSamples: 3,

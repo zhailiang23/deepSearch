@@ -13,6 +13,13 @@ import lombok.Data;
 public class ClusterAnalysisRequest {
 
     /**
+     * 搜索空间ID
+     */
+    @NotNull(message = "搜索空间ID不能为空")
+    @Min(value = 1, message = "搜索空间ID必须大于0")
+    private Long searchSpaceId;
+
+    /**
      * 时间范围代码 (7d, 30d, 90d)
      */
     @NotBlank(message = "时间范围不能为空")

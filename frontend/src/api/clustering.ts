@@ -4,6 +4,8 @@ import http from '@/utils/http'
  * 聚类分析请求
  */
 export interface ClusterAnalysisRequest {
+  /** 搜索空间ID */
+  searchSpaceId: number
   /** 时间范围代码 (7d, 30d, 90d) */
   timeRange: string
   /** DBSCAN eps 参数 */
@@ -64,8 +66,15 @@ export interface ClusterAnalysisResponse {
 
 /**
  * 执行聚类分析
- * http.post 的响应拦截器已经解包了 response.data,所以直接返回 ClusterAnalysisResponse
+ * 后端返回 ApiResponse 包装格式,需要提取 data 字段
  */
-export function analyzeCluster(data: ClusterAnalysisRequest) {
-  return http.post<ClusterAnalysisResponse>('/clustering/analyze', data)
+export function analyzeCluster(data: ClusterAnalysisRequest): Promise<ClusterAnalysisResponse> {
+  return http.post<any>('/clustering/analyze', data).then((response: any) => {
+    // 解包 ApiResponse 结构: {success, message, data, code, timestamp}
+    if (response && response.data) {
+      return response.data as ClusterAnalysisResponse
+    }
+    // 如果已经是解包后的格式,直接返回
+    return response as ClusterAnalysisResponse
+  })
 }
