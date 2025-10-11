@@ -27,4 +27,7 @@ public class UpdateDocumentRequest {
 
     @Schema(description = "文档版本号（用于乐观锁）", example = "1")
     private Long version;
+
+    @Schema(description = "主分片term（用于乐观锁）", example = "1")
+    private Long primaryTerm;
 }

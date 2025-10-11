@@ -410,7 +410,8 @@ async function handleSubmit() {
       id: props.document._id,
       index: props.document._index,
       source: { ...formData },
-      version: props.document._version // 乐观锁
+      version: props.document._version, // 乐观锁 - seqNo
+      primaryTerm: props.document._primary_term // 乐观锁 - primaryTerm
     }
 
     const response = await searchDataService.updateDocument(updateRequest)

@@ -30,8 +30,11 @@ public class DocumentDetailResponse {
     @Schema(description = "文档类型")
     private String _type;
 
-    @Schema(description = "文档版本", example = "1")
+    @Schema(description = "文档版本(seq_no)", example = "1")
     private Long _version;
+
+    @Schema(description = "主分片term", example = "1")
+    private Long _primary_term;
 
     @Schema(description = "是否找到文档", example = "true")
     private Boolean found;

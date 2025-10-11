@@ -25,6 +25,7 @@ export interface TableRow {
   _index: string
   _type?: string
   _version?: number
+  _primary_term?: number
 }
 
 export interface TableData {

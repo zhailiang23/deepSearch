@@ -468,9 +468,9 @@ public class ElasticsearchDataService {
                     .document(finalSource);
 
             // 添加乐观锁版本控制
-            if (request.getVersion() != null) {
+            if (request.getVersion() != null && request.getPrimaryTerm() != null) {
                 updateBuilder.ifSeqNo(request.getVersion())
-                        .ifPrimaryTerm(1L); // 简化处理，实际应该获取真实的primary_term
+                        .ifPrimaryTerm(request.getPrimaryTerm());
             }
 
             // 执行更新
@@ -637,7 +637,8 @@ public class ElasticsearchDataService {
                     ._id(response.id())
                     ._index(response.index())
                     ._type(null) // ES 8.x 已废弃type概念
-                    ._version(response.version())
+                    ._version(response.seqNo())  // 使用seqNo作为版本号
+                    ._primary_term(response.primaryTerm())  // 获取primaryTerm
                     .found(response.found())
                     ._source(response.source())
                     .build();

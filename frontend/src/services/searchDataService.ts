@@ -39,6 +39,7 @@ export interface UpdateDocumentRequest {
   index: string
   source: Record<string, any>
   version?: number // 乐观锁版本号
+  primaryTerm?: number // 主分片term
 }
 
 // 文档更新响应
@@ -93,7 +94,8 @@ export const searchDataService = {
     http.put(`/elasticsearch/document/${params.id}`, {
       index: params.index,
       source: params.source,
-      version: params.version
+      version: params.version,
+      primaryTerm: params.primaryTerm
     }),
 
   /**
