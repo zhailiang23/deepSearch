@@ -9,6 +9,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -255,7 +257,8 @@ public class BasicSecurityTest {
         assertThat(foundLog.getSearchQuery()).isEqualTo(specialQuery);
 
         // 测试like查询
-        var logs = searchLogRepository.findPopularSearchQueries(baseTime.minusDays(1), 10);
+        Pageable pageable = PageRequest.of(0, 10);
+        var logs = searchLogRepository.findPopularSearchQueries(baseTime.minusDays(1), pageable);
         assertThat(logs).isNotNull();
     }
 

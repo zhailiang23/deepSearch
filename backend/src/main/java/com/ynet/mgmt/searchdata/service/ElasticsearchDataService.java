@@ -28,6 +28,9 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +50,7 @@ public class ElasticsearchDataService {
     private final com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService;
     private final RerankService rerankService;
     private final SearchWeightProperties weightProperties;
+    private final ExecutorService searchExecutor;
 
     /**
      * 是否启用语义搜索功能
@@ -66,13 +70,15 @@ public class ElasticsearchDataService {
                                   com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService,
                                   com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService,
                                   RerankService rerankService,
-                                  SearchWeightProperties weightProperties) {
+                                  SearchWeightProperties weightProperties,
+                                  ExecutorService searchExecutor) {
         this.elasticsearchClient = elasticsearchClient;
         this.embeddingService = embeddingService;
         this.sensitiveWordCheckService = sensitiveWordCheckService;
         this.searchSpaceService = searchSpaceService;
         this.rerankService = rerankService;
         this.weightProperties = weightProperties;
+        this.searchExecutor = searchExecutor;
     }
 
     /**
@@ -230,8 +236,8 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 搜索多个搜索空间的数据 - 使用均衡分布策略
-     * 对每个索引分别搜索，确保结果分布均衡
+     * 搜索多个搜索空间的数据 - 使用并发搜索策略优化性能
+     * 对每个索引并发搜索，确保结果分布均衡
      *
      * @param request 搜索请求
      * @param userRole 当前用户角色（可为空，为空时不进行角色过滤）
@@ -241,7 +247,7 @@ public class ElasticsearchDataService {
         long startTime = System.currentTimeMillis();
 
         try {
-            log.info("开始多空间均衡搜索: searchSpaceIds={}, query={}, page={}, size={}",
+            log.info("开始多空间并发搜索: searchSpaceIds={}, query={}, page={}, size={}",
                     request.getSearchSpaceIds(), request.getQuery(), request.getPage(), request.getSize());
 
             // 敏感词检测
@@ -268,87 +274,58 @@ public class ElasticsearchDataService {
                 throw new RuntimeException("没有有效的搜索空间");
             }
 
-            log.info("搜索索引列表: {}", indexNames);
+            log.info("搜索索引列表: {}, 使用并发策略", indexNames);
 
             // 计算每个索引应该返回的结果数
             int perIndexSize = Math.max(1, request.getSize() / indexNames.size());
             log.info("每个索引返回结果数: {}", perIndexSize);
 
-            // 存储所有索引的搜索结果
+            // 使用 CompletableFuture 并发搜索所有索引
+            List<CompletableFuture<List<SearchDataResponse.DocumentData>>> futures = indexNames.stream()
+                    .map(indexName -> CompletableFuture.supplyAsync(
+                            () -> searchSingleIndex(indexName, request, userRole, perIndexSize),
+                            searchExecutor
+                    ))
+                    .collect(Collectors.toList());
+
+            // 等待所有搜索完成，设置超时时间为30秒
+            CompletableFuture<Void> allOf = CompletableFuture.allOf(
+                    futures.toArray(new CompletableFuture[0])
+            );
+
+            try {
+                // 等待所有任务完成，最多等待30秒
+                allOf.get(30, TimeUnit.SECONDS);
+            } catch (java.util.concurrent.TimeoutException e) {
+                log.warn("部分索引搜索超时，使用已完成的结果");
+                // 继续处理已完成的结果
+            } catch (Exception e) {
+                log.error("并发搜索过程中发生异常", e);
+            }
+
+            // 收集所有成功的搜索结果
             List<SearchDataResponse.DocumentData> allDocuments = new ArrayList<>();
-            long totalHits = 0L;
+            int successCount = 0;
+            int failureCount = 0;
 
-            // 对每个索引分别搜索
-            for (String indexName : indexNames) {
+            for (CompletableFuture<List<SearchDataResponse.DocumentData>> future : futures) {
                 try {
-                    // 构建查询
-                    Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(),
-                            request.getPinyinMode(), indexName,
-                            request.getEnableSemanticSearch(), request.getSemanticWeight());
-
-                    // 添加渠道过滤
-                    if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
-                        query = addChannelFilter(query, request.getChannel());
+                    if (future.isDone() && !future.isCompletedExceptionally()) {
+                        List<SearchDataResponse.DocumentData> documents = future.get();
+                        allDocuments.addAll(documents);
+                        successCount++;
+                    } else {
+                        failureCount++;
                     }
-
-                    // 添加角色过滤
-                    if (userRole != null && !userRole.trim().isEmpty()) {
-                        query = addRoleFilter(query, userRole);
-                    }
-
-                    // 构建搜索请求 - 每个索引单独搜索
-                    SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
-                            .index(indexName)
-                            .query(query)
-                            .from(0)  // 总是从第一条开始，因为我们要按分数合并
-                            .size(perIndexSize)  // 每个索引返回固定数量
-                            .trackTotalHits(t -> t.enabled(true))
-                            // 排除向量字段,减少网络传输
-                            .source(s -> s.filter(f -> f.excludes("*_vector")));
-
-                    // 添加排序
-                    if (request.getSort() != null) {
-                        String sortField = request.getSort().getField();
-                        String sortOrder = request.getSort().getOrder();
-                        searchBuilder.sort(s -> s.field(f -> f
-                                .field(sortField)
-                                .order("desc".equalsIgnoreCase(sortOrder) ?
-                                        co.elastic.clients.elasticsearch._types.SortOrder.Desc :
-                                        co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
-                    }
-
-                    // 添加高亮配置
-                    if (StringUtils.hasText(request.getQuery())) {
-                        searchBuilder.highlight(h -> h
-                            .type(HighlighterType.Unified)
-                            .fragmentSize(0)
-                            .numberOfFragments(0)
-                            .fields(buildHighlightFields(indexName))
-                        );
-                    }
-
-                    // 执行搜索
-                    SearchResponse<Map> searchResponse = elasticsearchClient.search(searchBuilder.build(), Map.class);
-
-                    // 转换并添加结果
-                    List<SearchDataResponse.DocumentData> indexDocuments = searchResponse.hits().hits().stream()
-                            .map(this::convertHitToDocument)
-                            .collect(Collectors.toList());
-
-                    allDocuments.addAll(indexDocuments);
-
-                    // 累加总数
-                    if (searchResponse.hits().total() != null) {
-                        totalHits += searchResponse.hits().total().value();
-                    }
-
-                    log.info("索引 {} 搜索完成: 返回 {} 条结果", indexName, indexDocuments.size());
-
                 } catch (Exception e) {
-                    log.warn("索引 {} 搜索失败: {}", indexName, e.getMessage(), e);
-                    // 继续搜索其他索引
+                    log.warn("获取索引搜索结果失败: {}", e.getMessage());
+                    failureCount++;
                 }
             }
+
+            long totalHits = allDocuments.size();
+            log.info("并发搜索统计: 成功 {} 个索引, 失败 {} 个索引, 总结果数 {}",
+                    successCount, failureCount, totalHits);
 
             // 语义重排序（在推荐排序之前）
             if (request.getEnableRerank() != null && request.getEnableRerank() &&
@@ -389,8 +366,13 @@ public class ElasticsearchDataService {
             );
 
             long duration = System.currentTimeMillis() - startTime;
-            log.info("多空间均衡搜索完成: indices={}, total={}, returned={}, took={}ms",
-                    indexNames, totalHits, pagedDocuments.size(), duration);
+            long parallelSpeedup = indexNames.size() > 0 ?
+                    (long)(duration / indexNames.size()) : 0;
+
+            log.info("多空间并发搜索完成: indices={}, total={}, returned={}, took={}ms, 平均每索引~{}ms (理论串行耗时~{}ms)",
+                    indexNames, totalHits, pagedDocuments.size(), duration,
+                    duration / Math.max(successCount, 1),
+                    duration * indexNames.size());
 
             return SearchDataResponse.builder()
                     .data(pagedDocuments)
@@ -1722,6 +1704,95 @@ public class ElasticsearchDataService {
         }
 
         return result;
+    }
+
+    /**
+     * 搜索单个索引（内部方法，用于并发执行）
+     *
+     * @param indexName 索引名称
+     * @param request 搜索请求
+     * @param userRole 用户角色
+     * @param perIndexSize 每个索引返回的结果数
+     * @return 单个索引的搜索结果列表
+     */
+    private List<SearchDataResponse.DocumentData> searchSingleIndex(
+            String indexName,
+            SearchDataRequest request,
+            String userRole,
+            int perIndexSize) {
+
+        long indexStartTime = System.currentTimeMillis();
+
+        try {
+            // 构建查询
+            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(),
+                    request.getPinyinMode(), indexName,
+                    request.getEnableSemanticSearch(), request.getSemanticWeight());
+
+            // 添加渠道过滤
+            if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
+                query = addChannelFilter(query, request.getChannel());
+            }
+
+            // 添加角色过滤
+            if (userRole != null && !userRole.trim().isEmpty()) {
+                query = addRoleFilter(query, userRole);
+            }
+
+            // 构建搜索请求 - 每个索引单独搜索
+            SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
+                    .index(indexName)
+                    .query(query)
+                    .from(0)  // 总是从第一条开始，因为我们要按分数合并
+                    .size(perIndexSize)  // 每个索引返回固定数量
+                    .trackTotalHits(t -> t.enabled(true))
+                    // 排除向量字段,减少网络传输
+                    .source(s -> s.filter(f -> f.excludes("*_vector")));
+
+            // 添加排序
+            if (request.getSort() != null) {
+                String sortField = request.getSort().getField();
+                String sortOrder = request.getSort().getOrder();
+                searchBuilder.sort(s -> s.field(f -> f
+                        .field(sortField)
+                        .order("desc".equalsIgnoreCase(sortOrder) ?
+                                co.elastic.clients.elasticsearch._types.SortOrder.Desc :
+                                co.elastic.clients.elasticsearch._types.SortOrder.Asc)));
+            }
+
+            // 添加高亮配置
+            if (StringUtils.hasText(request.getQuery())) {
+                searchBuilder.highlight(h -> h
+                    .type(HighlighterType.Unified)
+                    .fragmentSize(0)
+                    .numberOfFragments(0)
+                    .fields(buildHighlightFields(indexName))
+                );
+            }
+
+            // 执行搜索
+            SearchResponse<Map> searchResponse = elasticsearchClient.search(searchBuilder.build(), Map.class);
+
+            // 转换结果
+            List<SearchDataResponse.DocumentData> documents = searchResponse.hits().hits().stream()
+                    .map(this::convertHitToDocument)
+                    .collect(Collectors.toList());
+
+            long indexDuration = System.currentTimeMillis() - indexStartTime;
+            long totalHits = searchResponse.hits().total() != null ?
+                    searchResponse.hits().total().value() : 0;
+
+            log.info("索引 {} 搜索完成: 返回 {} 条结果, 总计 {} 条, 耗时 {}ms",
+                    indexName, documents.size(), totalHits, indexDuration);
+
+            return documents;
+
+        } catch (Exception e) {
+            long indexDuration = System.currentTimeMillis() - indexStartTime;
+            log.warn("索引 {} 搜索失败: {}, 耗时 {}ms", indexName, e.getMessage(), indexDuration);
+            // 返回空列表，不影响其他索引的搜索
+            return new ArrayList<>();
+        }
     }
 
     /**

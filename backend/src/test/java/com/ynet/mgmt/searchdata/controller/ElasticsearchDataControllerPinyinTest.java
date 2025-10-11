@@ -90,7 +90,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testDefaultPinyinSearchEnabled() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备请求体
@@ -114,7 +114,7 @@ public class ElasticsearchDataControllerPinyinTest {
 
         // 验证服务层调用参数
         ArgumentCaptor<SearchDataRequest> requestCaptor = ArgumentCaptor.forClass(SearchDataRequest.class);
-        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace), eq(null));
 
         SearchDataRequest capturedRequest = requestCaptor.getValue();
         assertThat(capturedRequest.getEnablePinyinSearch()).isTrue(); // 默认启用
@@ -126,7 +126,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testPinyinSearchAutoMode() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备请求体 - 明确设置拼音参数
@@ -147,7 +147,7 @@ public class ElasticsearchDataControllerPinyinTest {
 
         // 验证参数传递
         ArgumentCaptor<SearchDataRequest> requestCaptor = ArgumentCaptor.forClass(SearchDataRequest.class);
-        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace), eq(null));
 
         SearchDataRequest capturedRequest = requestCaptor.getValue();
         assertThat(capturedRequest.getEnablePinyinSearch()).isTrue();
@@ -159,7 +159,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testPinyinSearchStrictMode() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备请求体 - STRICT模式
@@ -177,7 +177,7 @@ public class ElasticsearchDataControllerPinyinTest {
 
         // 验证参数传递
         ArgumentCaptor<SearchDataRequest> requestCaptor = ArgumentCaptor.forClass(SearchDataRequest.class);
-        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace), eq(null));
 
         SearchDataRequest capturedRequest = requestCaptor.getValue();
         assertThat(capturedRequest.getPinyinMode()).isEqualTo("STRICT");
@@ -188,7 +188,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testPinyinSearchFuzzyMode() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备请求体 - FUZZY模式
@@ -206,7 +206,7 @@ public class ElasticsearchDataControllerPinyinTest {
 
         // 验证参数传递
         ArgumentCaptor<SearchDataRequest> requestCaptor = ArgumentCaptor.forClass(SearchDataRequest.class);
-        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace), eq(null));
 
         SearchDataRequest capturedRequest = requestCaptor.getValue();
         assertThat(capturedRequest.getPinyinMode()).isEqualTo("FUZZY");
@@ -217,7 +217,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testPinyinSearchDisabled() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备请求体 - 禁用拼音搜索
@@ -234,7 +234,7 @@ public class ElasticsearchDataControllerPinyinTest {
 
         // 验证参数传递
         ArgumentCaptor<SearchDataRequest> requestCaptor = ArgumentCaptor.forClass(SearchDataRequest.class);
-        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace), eq(null));
 
         SearchDataRequest capturedRequest = requestCaptor.getValue();
         assertThat(capturedRequest.getEnablePinyinSearch()).isFalse();
@@ -245,7 +245,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testComplexPinyinQuery() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备复杂查询请求
@@ -269,7 +269,7 @@ public class ElasticsearchDataControllerPinyinTest {
                 .andExpect(jsonPath("$.success").value(true));
 
         // 验证调用
-        verify(elasticsearchDataService).searchData(any(SearchDataRequest.class), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null));
     }
 
     @Test
@@ -277,7 +277,7 @@ public class ElasticsearchDataControllerPinyinTest {
     void testInvalidPinyinMode() throws Exception {
         // 准备mock
         given(searchSpaceService.getSearchSpace(1L)).willReturn(mockSearchSpace);
-        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace)))
+        given(elasticsearchDataService.searchData(any(SearchDataRequest.class), eq(mockSearchSpace), eq(null)))
                 .willReturn(mockSearchResponse);
 
         // 准备请求体 - 无效的拼音模式
@@ -295,7 +295,7 @@ public class ElasticsearchDataControllerPinyinTest {
 
         // 验证参数传递（服务层会处理无效模式）
         ArgumentCaptor<SearchDataRequest> requestCaptor = ArgumentCaptor.forClass(SearchDataRequest.class);
-        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace));
+        verify(elasticsearchDataService).searchData(requestCaptor.capture(), eq(mockSearchSpace), eq(null));
 
         SearchDataRequest capturedRequest = requestCaptor.getValue();
         assertThat(capturedRequest.getEnablePinyinSearch()).isTrue();

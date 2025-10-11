@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -305,7 +307,8 @@ public class SimplePerformanceTest {
 
         // 测试热门查询
         queryStart = System.currentTimeMillis();
-        var topQueries = searchLogRepository.findHotQueriesOptimized(startTime, endTime, 10);
+        Pageable pageable = PageRequest.of(0, 10);
+        var topQueries = searchLogRepository.findHotQueriesOptimized(startTime, endTime, pageable);
         queryTime = System.currentTimeMillis() - queryStart;
 
         log.info("热门查询优化版: {}ms, 结果数={}", queryTime, topQueries.size());
