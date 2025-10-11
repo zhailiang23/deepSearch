@@ -276,8 +276,8 @@ public class SiliconFlowRerankService implements RerankService {
                     text.append(contentStr).append(" ");
                 }
             }
-            if (source.containsKey("description")) {
-                text.append(source.get("description")).append(" ");
+            if (source.containsKey("descript")) {
+                text.append(source.get("descript")).append(" ");
             }
 
             String result = text.toString().trim();
