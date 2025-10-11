@@ -507,10 +507,25 @@ function handleReachBottom() {
 }
 
 // 行操作
-function handleEdit(row: TableRow) {
-  editingDocument.value = row
-  editDialogOpen.value = true
-  emit('edit', row)
+async function handleEdit(row: TableRow) {
+  try {
+    // 显示加载状态
+    toast({
+      title: "加载中",
+      description: "正在获取文档详情..."
+    })
+
+    // 调用API获取完整的文档数据(包括向量字段)
+    const fullDocument = await searchDataService.getDocumentWithVectors(row._id, row._index)
+
+    // 使用完整的文档数据填充编辑对话框
+    editingDocument.value = fullDocument
+    editDialogOpen.value = true
+    emit('edit', fullDocument)
+  } catch (error: any) {
+    console.error('获取文档详情失败:', error)
+    showErrorMessage(error.message || '获取文档详情失败,请稍后重试')
+  }
 }
 
 function handleView(row: TableRow) {

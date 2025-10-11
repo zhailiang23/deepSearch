@@ -116,6 +116,20 @@ export const searchDataService = {
     }),
 
   /**
+   * 获取文档详情(包含向量字段,用于编辑)
+   */
+  getDocumentWithVectors: async (id: string, index: string): Promise<TableRow> => {
+    const response: any = await http.get(`/elasticsearch/document/${id}`, {
+      params: {
+        index,
+        includeVectors: true
+      }
+    })
+    // 后端返回的是 ApiResponse 格式，需要提取 data 字段
+    return response.data || response
+  },
+
+  /**
    * 批量操作文档
    */
   bulkOperation: (operations: Array<{

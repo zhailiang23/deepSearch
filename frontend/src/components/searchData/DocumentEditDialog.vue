@@ -266,7 +266,8 @@ function mapESTypeToFieldType(esType: string): FieldEditorField['type'] {
     float: 'number',
     boolean: 'boolean',
     object: 'object',
-    nested: 'nested'
+    nested: 'nested',
+    dense_vector: 'object' // 向量字段作为对象(JSON数组)处理
   }
   return typeMap[esType] || 'text'
 }
@@ -282,7 +283,8 @@ function getFieldHelp(esType: string): string {
     float: '单精度浮点数字段',
     boolean: '布尔值字段，true或false',
     object: 'JSON对象字段，可包含嵌套属性',
-    nested: '嵌套数组字段，包含多个对象'
+    nested: '嵌套数组字段，包含多个对象',
+    dense_vector: '向量字段，用于语义搜索的数字数组'
   }
   return helpMap[esType] || '未知字段类型'
 }

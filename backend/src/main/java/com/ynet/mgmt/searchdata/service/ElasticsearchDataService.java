@@ -436,6 +436,7 @@ public class ElasticsearchDataService {
     public UpdateDocumentResponse updateDocument(String id, UpdateDocumentRequest request) {
         try {
             log.info("更新文档: id={}, index={}, version={}", id, request.getIndex(), request.getVersion());
+            log.debug("更新文档请求数据: source={}", request.getSource());
 
             // 获取当前文档（用于比较字段变化）
             Map<String, Object> currentSource = null;
@@ -589,21 +590,42 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 获取文档详情
+     * 获取文档详情（默认不包含向量字段）
      *
      * @param id 文档ID
      * @param index 索引名称
      * @return 文档详情
      */
     public DocumentDetailResponse getDocument(String id, String index) {
-        try {
-            log.info("获取文档详情: id={}, index={}", id, index);
+        return getDocument(id, index, false);
+    }
 
-            // 构建请求,排除向量字段
-            GetRequest request = GetRequest.of(builder -> builder
-                    .index(index)
-                    .id(id)
-                    .sourceExcludes("*_vector"));  // 排除向量字段
+    /**
+     * 获取文档详情
+     *
+     * @param id 文档ID
+     * @param index 索引名称
+     * @param includeVectors 是否包含向量字段
+     * @return 文档详情
+     */
+    public DocumentDetailResponse getDocument(String id, String index, boolean includeVectors) {
+        try {
+            log.info("获取文档详情: id={}, index={}, includeVectors={}", id, index, includeVectors);
+
+            // 构建请求
+            GetRequest request;
+            if (includeVectors) {
+                // 包含向量字段
+                request = GetRequest.of(builder -> builder
+                        .index(index)
+                        .id(id));
+            } else {
+                // 排除向量字段
+                request = GetRequest.of(builder -> builder
+                        .index(index)
+                        .id(id)
+                        .sourceExcludes("*_vector"));  // 排除向量字段
+            }
 
             GetResponse<Map> response = elasticsearchClient.get(request, Map.class);
 
@@ -1568,10 +1590,15 @@ public class ElasticsearchDataService {
                         // 生成向量
                         List<Float> vector = embeddingService.getTextEmbedding(text);
                         if (vector != null && !vector.isEmpty()) {
-                            result.put(vectorField, vector);
-                            generatedCount++;
-                            log.info("为变化的字段生成向量: field={}, textLength={}, vectorDim={}",
-                                textField, text.length(), vector.size());
+                            // 验证向量值的有效性
+                            if (isValidVector(vector)) {
+                                result.put(vectorField, vector);
+                                generatedCount++;
+                                log.info("为变化的字段生成向量: field={}, textLength={}, vectorDim={}",
+                                    textField, text.length(), vector.size());
+                            } else {
+                                log.warn("向量包含无效值(null/NaN/Infinity): field={}", textField);
+                            }
                         } else {
                             log.warn("向量生成失败: field={}", textField);
                         }
@@ -1629,10 +1656,15 @@ public class ElasticsearchDataService {
                         // 生成向量
                         List<Float> vector = embeddingService.getTextEmbedding(text);
                         if (vector != null && !vector.isEmpty()) {
-                            result.put(vectorField, vector);
-                            generatedCount++;
-                            log.info("为字段生成向量: field={}, textLength={}, vectorDim={}",
-                                textField, text.length(), vector.size());
+                            // 验证向量值的有效性
+                            if (isValidVector(vector)) {
+                                result.put(vectorField, vector);
+                                generatedCount++;
+                                log.info("为字段生成向量: field={}, textLength={}, vectorDim={}",
+                                    textField, text.length(), vector.size());
+                            } else {
+                                log.warn("向量包含无效值(null/NaN/Infinity): field={}", textField);
+                            }
                         } else {
                             log.warn("向量生成失败: field={}", textField);
                         }
@@ -1704,6 +1736,27 @@ public class ElasticsearchDataService {
         }
 
         return result;
+    }
+
+    /**
+     * 验证向量是否包含有效的数值
+     * 检查向量中是否包含 null、NaN 或 Infinity
+     *
+     * @param vector 待验证的向量
+     * @return true 如果向量有效，false 如果包含无效值
+     */
+    private boolean isValidVector(List<Float> vector) {
+        if (vector == null || vector.isEmpty()) {
+            return false;
+        }
+
+        for (Float value : vector) {
+            if (value == null || Float.isNaN(value) || Float.isInfinite(value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -360,20 +360,22 @@ public class ElasticsearchDataController {
      *
      * @param id 文档ID
      * @param index 索引名称
+     * @param includeVectors 是否包含向量字段（用于编辑）
      * @return 文档详情
      */
-    @Operation(summary = "获取文档详情", description = "根据ID获取Elasticsearch中的文档详情")
+    @Operation(summary = "获取文档详情", description = "根据ID获取Elasticsearch中的文档详情。可通过includeVectors参数控制是否返回向量字段（编辑时需要）")
     @GetMapping("/document/{id}")
     public ResponseEntity<ApiResponse<DocumentDetailResponse>> getDocument(
             @Parameter(description = "文档ID", required = true) @PathVariable String id,
-            @Parameter(description = "索引名称", required = true) @RequestParam String index) {
+            @Parameter(description = "索引名称", required = true) @RequestParam String index,
+            @Parameter(description = "是否包含向量字段", required = false) @RequestParam(defaultValue = "false") boolean includeVectors) {
 
-        logger.info("获取文档详情: id={}, index={}", id, index);
+        logger.info("获取文档详情: id={}, index={}, includeVectors={}", id, index, includeVectors);
 
         try {
-            DocumentDetailResponse response = elasticsearchDataService.getDocument(id, index);
+            DocumentDetailResponse response = elasticsearchDataService.getDocument(id, index, includeVectors);
 
-            logger.info("文档获取成功: id={}, index={}", id, index);
+            logger.info("文档获取成功: id={}, index={}, includeVectors={}", id, index, includeVectors);
 
             return ResponseEntity.ok(ApiResponse.success("获取文档成功", response));
 
