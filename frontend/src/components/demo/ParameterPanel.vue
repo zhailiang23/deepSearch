@@ -107,7 +107,7 @@
         <CollapsibleContent class="px-3 pb-3">
           <PagingConfig
             v-model="localConfig.pagination"
-            :max-page-size="100"
+            :max-page-size="200"
             :min-page-size="5"
           />
         </CollapsibleContent>

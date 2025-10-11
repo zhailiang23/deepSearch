@@ -171,7 +171,7 @@ import type { PagingConfigProps, PaginationConfig } from '@/types/demo'
 
 // Props & Emits
 const props = withDefaults(defineProps<PagingConfigProps>(), {
-  maxPageSize: 100,
+  maxPageSize: 200,
   minPageSize: 5
 })
 
@@ -202,9 +202,9 @@ const performanceLevel = computed(() => {
   // 性能评估逻辑
   if (pageSize <= 20) {
     return 'good'
-  } else if (pageSize <= 50) {
+  } else if (pageSize <= 100) {
     return 'warning'
-  } else if (pageSize > 50 || initialLoad > 100) {
+  } else if (pageSize > 100 || initialLoad > 200) {
     return 'poor'
   } else {
     return 'good'
@@ -234,9 +234,9 @@ function getPerformanceMessage(): string {
   } else if (performanceLevel.value === 'warning') {
     return '页面大小适中，在大多数情况下能提供良好的用户体验。'
   } else {
-    if (pageSize > 50) {
-      return `页面大小过大 (${pageSize})，建议不超过50条记录以确保良好的用户体验。`
-    } else if (localConfig.value.initialLoad > 100) {
+    if (pageSize > 100) {
+      return `页面大小过大 (${pageSize})，建议不超过100条记录以确保良好的用户体验。`
+    } else if (localConfig.value.initialLoad > 200) {
       return '初始加载数量过多，可能导致首次加载时间过长。'
     } else {
       return '当前配置可能导致性能问题，建议调整参数以提升用户体验。'
