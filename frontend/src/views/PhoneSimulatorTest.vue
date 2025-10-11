@@ -96,6 +96,38 @@
                     placeholder="可选的初始搜索词"
                   />
                 </div>
+
+                <!-- 新增: 语义重排序开关 -->
+                <div class="col-span-2">
+                  <div class="flex items-center space-x-2">
+                    <input
+                      id="rerank-toggle"
+                      v-model="enableRerank"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <label for="rerank-toggle" class="text-sm font-medium">
+                      启用语义重排序 (Rerank)
+                    </label>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">
+                    基于BGE-Reranker-v2-m3模型,对搜索结果按语义相关度重新排序
+                  </p>
+                </div>
+
+                <!-- 新增: Top-N配置 -->
+                <div v-if="enableRerank">
+                  <label class="block text-sm font-medium mb-1">重排序Top-N</label>
+                  <input
+                    v-model.number="rerankTopN"
+                    type="number"
+                    min="10"
+                    max="100"
+                    class="w-full px-2 py-1 border rounded text-sm"
+                    placeholder="默认50"
+                  />
+                  <p class="text-xs text-gray-400 mt-0.5">返回前N条重排序结果</p>
+                </div>
               </div>
             </div>
             <div class="flex justify-center">
@@ -109,6 +141,8 @@
                   :initial-query="initialQuery"
                   :enable-history="true"
                   :page-size="10"
+                  :enable-rerank="enableRerank"
+                  :rerank-top-n="rerankTopN"
                   @item-click="handleSearchItemClick"
                   @search="handleSearchEvent"
                 />
@@ -162,6 +196,8 @@ const showStatusBar = ref(true)
 // 搜索配置
 const searchSpaceId = ref('1') // 默认搜索空间ID
 const initialQuery = ref('')
+const enableRerank = ref(false) // 语义重排序开关
+const rerankTopN = ref(50) // 重排序Top-N
 
 // 事件处理
 const handleSearchItemClick = (result: SearchResult) => {

@@ -20,6 +20,8 @@ export interface SearchDataRequest {
     operator: 'eq' | 'contains' | 'startsWith' | 'endsWith' | 'range' | 'in'
   }>
   channel?: string
+  enableRerank?: boolean      // 是否启用语义重排序
+  rerankTopN?: number         // 重排序返回前N条结果
 }
 
 // 搜索数据响应

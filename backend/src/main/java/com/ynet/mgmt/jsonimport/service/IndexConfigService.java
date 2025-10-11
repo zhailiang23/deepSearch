@@ -679,6 +679,15 @@ public class IndexConfigService {
                 .docValues(true)
                 .build());
 
+        // 推荐标记字段 - 用于搜索结果排序
+        // 值为 1 表示推荐文档(排在前面), 0 表示普通文档
+        mappings.put("recommend", IndexMappingConfig.FieldMapping.builder()
+                .fieldName("recommend")
+                .elasticsearchType("integer")
+                .index(true)
+                .docValues(true)
+                .build());
+
         // 请求渠道白名单字段（字符串数组）
         mappings.put("request_channel_white_list", IndexMappingConfig.FieldMapping.builder()
                 .fieldName("request_channel_white_list")

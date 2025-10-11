@@ -188,8 +188,51 @@ search:
       record-request-headers: ${SEARCH_LOG_RECORD_HEADERS:false}
       timeout-threshold-ms: ${SEARCH_LOG_TIMEOUT_THRESHOLD:30000}
 
+  weight:
+    # 字段权重配置 - 基于字段名称的boost值
+    field:
+      title: 1.2        # 标题类字段权重
+      name: 1.2         # 名称类字段权重
+      content: 1.0      # 内容类字段权重
+      text: 1.0         # 文本类字段权重
+      category: 1.0     # 类型分类字段权重
+      default-weight: 1.0  # 默认字段权重
+      keyword: 0.8      # keyword子字段权重
+
+    # 多字段搜索权重配置 - buildMultiFieldQuery 方法中的权重
+    multi-field:
+      phrase-match: 1.2      # 完全短语匹配权重倍数
+      all-words-match: 1.1   # 所有词都匹配权重倍数
+      any-word-match: 1.0    # 任意词匹配权重倍数
+
+    # 拼音搜索权重配置 - 不同拼音模式下的权重
+    pinyin:
+      # STRICT 模式权重
+      strict-keyword: 1.0
+      strict-pinyin: 0.8
+      strict-first-letter: 0.5
+
+      # FUZZY 模式权重
+      fuzzy-keyword: 1.0
+      fuzzy-pinyin: 0.8
+      fuzzy-first-letter: 0.6
+
+      # AUTO 模式权重
+      auto-keyword: 1.0
+      auto-pinyin: 0.8
+      auto-first-letter: 0.6
+
+      # 拼音字段权重
+      pinyin-field: 1.2
+      chinese-pinyin-field: 1.0
+      first-letter-field: 1.0
+
 # 语义搜索配置
 semantic:
+  # 语义搜索权重（0.0-1.0），剩余权重分配给关键词搜索
+  search:
+    weight: 0.3
+
   embedding:
     # 嵌入服务提供商: siliconflow(远程) 或 local(本地)，默认使用siliconflow
     provider: ${SEMANTIC_EMBEDDING_PROVIDER:siliconflow}
@@ -252,6 +295,21 @@ sensitive-word:
   cache:
     # 缓存刷新间隔（毫秒），默认5分钟
     refresh-interval: ${SENSITIVE_WORD_CACHE_REFRESH_INTERVAL:300000}
+
+# 重排序配置
+rerank:
+  # 重排序提供商: siliconflow(远程) 或 local(本地)
+  provider: ${RERANK_PROVIDER:siliconflow}
+  # 是否启用重排序
+  enabled: ${RERANK_ENABLED:true}
+
+  # 硅基流动重排序服务配置
+  siliconflow:
+    api-key: ${SILICONFLOW_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+    model: ${SILICONFLOW_RERANK_MODEL:BAAI/bge-reranker-v2-m3}
+    timeout: ${SILICONFLOW_RERANK_TIMEOUT:5000}
+    default-top-n: ${SILICONFLOW_RERANK_DEFAULT_TOP_N:50}
+    return-documents: ${SILICONFLOW_RERANK_RETURN_DOCUMENTS:true}
 
 # 聚类分析配置
 cluster:

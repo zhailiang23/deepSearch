@@ -1,5 +1,6 @@
 package com.ynet.mgmt.searchdata.service;
 
+import com.ynet.mgmt.searchdata.config.SearchWeightProperties;
 import com.ynet.mgmt.searchdata.dto.*;
 import com.ynet.mgmt.searchspace.dto.SearchSpaceDTO;
 import com.ynet.mgmt.searchdata.service.EmbeddingService;
@@ -44,6 +45,8 @@ public class ElasticsearchDataService {
     private final EmbeddingService embeddingService;
     private final com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService;
     private final com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService;
+    private final RerankService rerankService;
+    private final SearchWeightProperties weightProperties;
 
     /**
      * 是否启用语义搜索功能
@@ -61,11 +64,15 @@ public class ElasticsearchDataService {
     public ElasticsearchDataService(ElasticsearchClient elasticsearchClient,
                                   EmbeddingService embeddingService,
                                   com.ynet.mgmt.sensitiveWord.service.SensitiveWordCheckService sensitiveWordCheckService,
-                                  com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService) {
+                                  com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService,
+                                  RerankService rerankService,
+                                  SearchWeightProperties weightProperties) {
         this.elasticsearchClient = elasticsearchClient;
         this.embeddingService = embeddingService;
         this.sensitiveWordCheckService = sensitiveWordCheckService;
         this.searchSpaceService = searchSpaceService;
+        this.rerankService = rerankService;
+        this.weightProperties = weightProperties;
     }
 
     /**
@@ -112,7 +119,9 @@ public class ElasticsearchDataService {
                     .query(query)
                     .from(from)
                     .size(request.getSize())
-                    .trackTotalHits(t -> t.enabled(true));
+                    .trackTotalHits(t -> t.enabled(true))
+                    // 排除向量字段,减少网络传输
+                    .source(s -> s.filter(f -> f.excludes("*_vector")));
 
             // 添加排序
             if (request.getSort() != null) {
@@ -144,6 +153,23 @@ public class ElasticsearchDataService {
             List<SearchDataResponse.DocumentData> documents = searchResponse.hits().hits().stream()
                     .map(this::convertHitToDocument)
                     .collect(Collectors.toList());
+
+            // 语义重排序（在推荐排序之前）
+            if (request.getEnableRerank() != null && request.getEnableRerank() &&
+                StringUtils.hasText(request.getQuery())) {
+                try {
+                    log.info("执行语义重排序: query={}, documentsCount={}, topN={}",
+                            request.getQuery(), documents.size(), request.getRerankTopN());
+                    documents = rerankService.rerankDocuments(
+                            request.getQuery(),
+                            documents,
+                            request.getRerankTopN()
+                    );
+                    log.info("重排序完成: newDocumentsCount={}", documents.size());
+                } catch (Exception e) {
+                    log.error("重排序失败，使用原始结果: query={}", request.getQuery(), e);
+                }
+            }
 
             // 排序：推荐文档(recommend=1)永远排在最前面
             documents.sort((d1, d2) -> {
@@ -276,7 +302,9 @@ public class ElasticsearchDataService {
                             .query(query)
                             .from(0)  // 总是从第一条开始，因为我们要按分数合并
                             .size(perIndexSize)  // 每个索引返回固定数量
-                            .trackTotalHits(t -> t.enabled(true));
+                            .trackTotalHits(t -> t.enabled(true))
+                            // 排除向量字段,减少网络传输
+                            .source(s -> s.filter(f -> f.excludes("*_vector")));
 
                     // 添加排序
                     if (request.getSort() != null) {
@@ -319,6 +347,23 @@ public class ElasticsearchDataService {
                 } catch (Exception e) {
                     log.warn("索引 {} 搜索失败: {}", indexName, e.getMessage(), e);
                     // 继续搜索其他索引
+                }
+            }
+
+            // 语义重排序（在推荐排序之前）
+            if (request.getEnableRerank() != null && request.getEnableRerank() &&
+                StringUtils.hasText(request.getQuery()) && !allDocuments.isEmpty()) {
+                try {
+                    log.info("多空间搜索-执行语义重排序: query={}, documentsCount={}, topN={}",
+                            request.getQuery(), allDocuments.size(), request.getRerankTopN());
+                    allDocuments = rerankService.rerankDocuments(
+                            request.getQuery(),
+                            allDocuments,
+                            request.getRerankTopN()
+                    );
+                    log.info("多空间搜索-重排序完成: newDocumentsCount={}", allDocuments.size());
+                } catch (Exception e) {
+                    log.error("多空间搜索-重排序失败，使用原始结果: query={}", request.getQuery(), e);
                 }
             }
 
@@ -399,7 +444,8 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 更新文档
+     * 更新文档（智能向量生成版本）
+     * 当text字段内容发生变化时，自动重新生成对应的向量字段
      *
      * @param id 文档ID
      * @param request 更新请求
@@ -409,11 +455,34 @@ public class ElasticsearchDataService {
         try {
             log.info("更新文档: id={}, index={}, version={}", id, request.getIndex(), request.getVersion());
 
+            // 获取当前文档（用于比较字段变化）
+            Map<String, Object> currentSource = null;
+            try {
+                DocumentDetailResponse currentDoc = getDocument(id, request.getIndex());
+                currentSource = currentDoc.get_source();
+                log.debug("获取到当前文档用于比较: id={}", id);
+            } catch (Exception e) {
+                log.warn("无法获取当前文档，将跳过向量字段更新检测: id={}, error={}", id, e.getMessage());
+            }
+
+            // 智能处理：如果语义搜索启用且embedding服务可用，自动生成向量
+            Map<String, Object> finalSource = request.getSource();
+            if (semanticEnabled && embeddingService.isServiceAvailable() && currentSource != null) {
+                finalSource = generateVectorsForChangedFields(request.getIndex(), currentSource, request.getSource());
+            } else if (semanticEnabled && embeddingService.isServiceAvailable() && currentSource == null) {
+                // 新文档或无法获取原文档，为所有text字段生成向量
+                log.info("无法比较字段变化，为所有text字段生成向量: id={}", id);
+                finalSource = generateVectorsForAllTextFields(request.getIndex(), request.getSource());
+            } else {
+                log.debug("语义搜索未启用或服务不可用，跳过向量生成: semanticEnabled={}, serviceAvailable={}",
+                    semanticEnabled, embeddingService != null && embeddingService.isServiceAvailable());
+            }
+
             // 构建更新请求
             IndexRequest.Builder<Map<String, Object>> updateBuilder = new IndexRequest.Builder<Map<String, Object>>()
                     .index(request.getIndex())
                     .id(id)
-                    .document(request.getSource());
+                    .document(finalSource);
 
             // 添加乐观锁版本控制
             if (request.getVersion() != null) {
@@ -548,7 +617,12 @@ public class ElasticsearchDataService {
         try {
             log.info("获取文档详情: id={}, index={}", id, index);
 
-            GetRequest request = GetRequest.of(builder -> builder.index(index).id(id));
+            // 构建请求,排除向量字段
+            GetRequest request = GetRequest.of(builder -> builder
+                    .index(index)
+                    .id(id)
+                    .sourceExcludes("*_vector"));  // 排除向量字段
+
             GetResponse<Map> response = elasticsearchClient.get(request, Map.class);
 
             if (!response.found()) {
@@ -808,13 +882,13 @@ public class ElasticsearchDataService {
             case "STRICT":
                 // 严格模式：关键字匹配权重最高，拼音作为辅助，降低权重以平衡语义搜索
                 BoolQuery.Builder strictBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, indexName, 1.0f))  // 降低关键字权重
-                    .should(buildPinyinQuery(queryString, 0.8f))      // 拼音权重保持较低
+                    .should(buildMultiFieldQuery(queryString, indexName, weightProperties.getPinyin().getStrictKeyword()))
+                    .should(buildPinyinQuery(queryString, weightProperties.getPinyin().getStrictPinyin()))
                     .minimumShouldMatch("1");
                 // 短中文查询避免使用首字母匹配
                 if (!isShortChinese) {
                     System.out.println("STRICT模式: 添加首字母匹配 (非短中文)");
-                    strictBuilder.should(buildFirstLetterQuery(queryString, 0.5f));
+                    strictBuilder.should(buildFirstLetterQuery(queryString, weightProperties.getPinyin().getStrictFirstLetter()));
                 } else {
                     System.out.println("STRICT模式: 跳过首字母匹配 (短中文)");
                 }
@@ -824,9 +898,9 @@ public class ElasticsearchDataService {
                 // 模糊模式：降低权重以平衡语义搜索
                 System.out.println("FUZZY模式: 使用所有匹配方式，降低权重以平衡语义搜索");
                 return BoolQuery.of(b -> b
-                    .should(buildMultiFieldQuery(queryString, indexName, 1.0f))  // 降低关键字权重
-                    .should(buildPinyinQuery(queryString, 0.8f))      // 降低拼音权重
-                    .should(buildFirstLetterQuery(queryString, 0.6f)) // 降低首字母权重
+                    .should(buildMultiFieldQuery(queryString, indexName, weightProperties.getPinyin().getFuzzyKeyword()))
+                    .should(buildPinyinQuery(queryString, weightProperties.getPinyin().getFuzzyPinyin()))
+                    .should(buildFirstLetterQuery(queryString, weightProperties.getPinyin().getFuzzyFirstLetter()))
                     .minimumShouldMatch("1")
                 )._toQuery();
 
@@ -834,14 +908,14 @@ public class ElasticsearchDataService {
             default:
                 // 自动模式：降低权重以平衡语义搜索
                 BoolQuery.Builder autoBuilder = new BoolQuery.Builder()
-                    .should(buildMultiFieldQuery(queryString, indexName, 1.0f))  // 降低关键字权重至1.0
+                    .should(buildMultiFieldQuery(queryString, indexName, weightProperties.getPinyin().getAutoKeyword()))
                     .minimumShouldMatch("1"); // 至少匹配一个should条件
 
                 // 对于短中文查询，只使用原字段匹配，避免拼音分析器导致的过度匹配
                 if (!isShortChinese) {
                     System.out.println("AUTO模式: 添加拼音和首字母匹配 (非短中文)");
-                    autoBuilder.should(buildPinyinQuery(queryString, 0.8f));      // 降低拼音权重
-                    autoBuilder.should(buildFirstLetterQuery(queryString, 0.6f)); // 降低首字母权重
+                    autoBuilder.should(buildPinyinQuery(queryString, weightProperties.getPinyin().getAutoPinyin()));
+                    autoBuilder.should(buildFirstLetterQuery(queryString, weightProperties.getPinyin().getAutoFirstLetter()));
                 } else {
                     System.out.println("AUTO模式: 跳过拼音和首字母匹配 (短中文，避免过度匹配)");
                 }
@@ -868,33 +942,33 @@ public class ElasticsearchDataService {
         BoolQuery.Builder boolBuilder = new BoolQuery.Builder();
         List<String> searchableFields = getSearchableFields(indexName);
 
-        // 1. 完全短语匹配（最高权重：boost * 1.5）
+        // 1. 完全短语匹配（最高权重：boost * phraseMatch）
         // 用于匹配"取钱"这样的完整短语，降低权重以平衡语义搜索
         boolBuilder.should(MultiMatchQuery.of(m -> m
             .query(queryString)
             .fields(searchableFields)
             .type(TextQueryType.Phrase)
-            .boost(boost * 1.5f)
+            .boost(boost * weightProperties.getMultiField().getPhraseMatch())
         )._toQuery());
 
-        // 2. 所有词都匹配（次高权重：boost * 1.2）
+        // 2. 所有词都匹配（次高权重：boost * allWordsMatch）
         // 确保包含所有搜索词的文档有较高权重，降低权重以平衡语义搜索
         boolBuilder.should(MultiMatchQuery.of(m -> m
             .query(queryString)
             .fields(searchableFields)
             .type(TextQueryType.BestFields)
             .operator(Operator.And)
-            .boost(boost * 1.2f)
+            .boost(boost * weightProperties.getMultiField().getAllWordsMatch())
         )._toQuery());
 
-        // 3. 任意词匹配（基础权重：boost * 1.0）
+        // 3. 任意词匹配（基础权重：boost * anyWordMatch）
         // 允许部分匹配，如只包含"取"或"钱"的文档
         boolBuilder.should(MultiMatchQuery.of(m -> m
             .query(queryString)
             .fields(searchableFields)
             .type(TextQueryType.BestFields)
             .operator(Operator.Or)
-            .boost(boost)
+            .boost(boost * weightProperties.getMultiField().getAnyWordMatch())
         )._toQuery());
 
         // 至少匹配一个条件
@@ -1144,33 +1218,33 @@ public class ElasticsearchDataService {
 
         // 标题类字段权重最高
         if (lowerFieldName.contains("title") || lowerFieldName.contains("标题")) {
-            return "^3.0";
+            return "^" + weightProperties.getField().getTitle();
         }
 
         // 名称类字段权重较高
         if (lowerFieldName.contains("name") || lowerFieldName.contains("名称")) {
-            return "^2.5";
+            return "^" + weightProperties.getField().getName();
         }
 
         // 内容类字段权重中等
         if (lowerFieldName.contains("content") || lowerFieldName.contains("内容") ||
             lowerFieldName.contains("description") || lowerFieldName.contains("描述")) {
-            return "^2.0";
+            return "^" + weightProperties.getField().getContent();
         }
 
         // 文本类字段权重中等偏低
         if (lowerFieldName.contains("text") || lowerFieldName.contains("文本")) {
-            return "^1.5";
+            return "^" + weightProperties.getField().getText();
         }
 
         // 类型、分类字段权重较低
         if (lowerFieldName.contains("type") || lowerFieldName.contains("category") ||
             lowerFieldName.contains("类型") || lowerFieldName.contains("分类")) {
-            return "^1.2";
+            return "^" + weightProperties.getField().getCategory();
         }
 
         // 默认权重
-        return "^1.0";
+        return "^" + weightProperties.getField().getDefaultWeight();
     }
 
     /**
@@ -1181,7 +1255,7 @@ public class ElasticsearchDataService {
         if (property.isText() && property.text().fields() != null) {
             Map<String, Property> fields = property.text().fields();
             if (fields.containsKey("keyword")) {
-                searchableFields.add(fieldName + ".keyword^0.8");
+                searchableFields.add(fieldName + ".keyword^" + weightProperties.getField().getKeyword());
             }
         }
     }
@@ -1207,8 +1281,8 @@ public class ElasticsearchDataService {
     private List<String> getPinyinFields() {
         // 使用通配符匹配所有字段的拼音子字段，降低权重
         return Arrays.asList(
-            "*.pinyin^1.2",           // 匹配所有字段的 pinyin 子字段，权重降至1.2
-            "*.chinese_pinyin^1.0"    // 匹配所有字段的 chinese_pinyin 子字段，权重降至1.0
+            "*.pinyin^" + weightProperties.getPinyin().getPinyinField(),
+            "*.chinese_pinyin^" + weightProperties.getPinyin().getChinesePinyinField()
         );
     }
 
@@ -1219,7 +1293,7 @@ public class ElasticsearchDataService {
     private List<String> getFirstLetterFields() {
         // 使用通配符匹配所有字段的首字母子字段
         return Arrays.asList(
-            "*.first_letter^1.0"      // 匹配所有字段的 first_letter 子字段，权重1.0
+            "*.first_letter^" + weightProperties.getPinyin().getFirstLetterField()
         );
     }
 
@@ -1466,6 +1540,191 @@ public class ElasticsearchDataService {
     }
 
     /**
+     * 为变化的text字段生成向量
+     * 比较新旧文档，只为内容变化的text字段重新生成向量
+     *
+     * @param indexName 索引名称
+     * @param currentSource 当前文档内容
+     * @param newSource 新文档内容
+     * @return 包含自动生成向量的新文档内容
+     */
+    private Map<String, Object> generateVectorsForChangedFields(String indexName, Map<String, Object> currentSource, Map<String, Object> newSource) {
+        try {
+            log.debug("开始检测text字段变化并生成向量: index={}", indexName);
+
+            // 获取索引映射，找出所有text字段
+            Map<String, String> textFieldToVectorField = getTextFieldsWithVectors(indexName);
+
+            if (textFieldToVectorField.isEmpty()) {
+                log.debug("索引中没有定义向量字段，跳过向量生成: index={}", indexName);
+                return newSource;
+            }
+
+            // 复制新文档内容（避免修改原对象）
+            Map<String, Object> result = new HashMap<>(newSource);
+            int generatedCount = 0;
+
+            // 检查每个text字段是否发生变化
+            for (Map.Entry<String, String> entry : textFieldToVectorField.entrySet()) {
+                String textField = entry.getKey();
+                String vectorField = entry.getValue();
+
+                // 检查新文档中是否包含该text字段
+                if (!newSource.containsKey(textField)) {
+                    continue;
+                }
+
+                Object newValue = newSource.get(textField);
+                Object oldValue = currentSource.get(textField);
+
+                // 检查字段值是否发生变化
+                boolean hasChanged = !Objects.equals(newValue, oldValue);
+
+                if (hasChanged && newValue instanceof String) {
+                    String text = (String) newValue;
+                    if (text != null && !text.trim().isEmpty()) {
+                        // 生成向量
+                        List<Float> vector = embeddingService.getTextEmbedding(text);
+                        if (vector != null && !vector.isEmpty()) {
+                            result.put(vectorField, vector);
+                            generatedCount++;
+                            log.info("为变化的字段生成向量: field={}, textLength={}, vectorDim={}",
+                                textField, text.length(), vector.size());
+                        } else {
+                            log.warn("向量生成失败: field={}", textField);
+                        }
+                    }
+                }
+            }
+
+            log.info("向量生成完成: index={}, generatedCount={}", indexName, generatedCount);
+            return result;
+
+        } catch (Exception e) {
+            log.error("生成向量时发生异常，返回原始数据: index={}", indexName, e);
+            return newSource;
+        }
+    }
+
+    /**
+     * 为所有text字段生成向量
+     * 用于新文档或无法获取原文档的情况
+     *
+     * @param indexName 索引名称
+     * @param source 文档内容
+     * @return 包含自动生成向量的文档内容
+     */
+    private Map<String, Object> generateVectorsForAllTextFields(String indexName, Map<String, Object> source) {
+        try {
+            log.debug("为所有text字段生成向量: index={}", indexName);
+
+            // 获取索引映射，找出所有text字段
+            Map<String, String> textFieldToVectorField = getTextFieldsWithVectors(indexName);
+
+            if (textFieldToVectorField.isEmpty()) {
+                log.debug("索引中没有定义向量字段，跳过向量生成: index={}", indexName);
+                return source;
+            }
+
+            // 复制文档内容（避免修改原对象）
+            Map<String, Object> result = new HashMap<>(source);
+            int generatedCount = 0;
+
+            // 为所有text字段生成向量
+            for (Map.Entry<String, String> entry : textFieldToVectorField.entrySet()) {
+                String textField = entry.getKey();
+                String vectorField = entry.getValue();
+
+                // 检查文档中是否包含该text字段
+                if (!source.containsKey(textField)) {
+                    continue;
+                }
+
+                Object value = source.get(textField);
+                if (value instanceof String) {
+                    String text = (String) value;
+                    if (text != null && !text.trim().isEmpty()) {
+                        // 生成向量
+                        List<Float> vector = embeddingService.getTextEmbedding(text);
+                        if (vector != null && !vector.isEmpty()) {
+                            result.put(vectorField, vector);
+                            generatedCount++;
+                            log.info("为字段生成向量: field={}, textLength={}, vectorDim={}",
+                                textField, text.length(), vector.size());
+                        } else {
+                            log.warn("向量生成失败: field={}", textField);
+                        }
+                    }
+                }
+            }
+
+            log.info("向量生成完成: index={}, generatedCount={}", indexName, generatedCount);
+            return result;
+
+        } catch (Exception e) {
+            log.error("生成向量时发生异常，返回原始数据: index={}", indexName, e);
+            return source;
+        }
+    }
+
+    /**
+     * 获取索引中text字段与对应向量字段的映射关系
+     * 约定：text字段对应的向量字段名称为 {textField}_vector
+     *
+     * @param indexName 索引名称
+     * @return text字段名 -> 向量字段名 的映射
+     */
+    private Map<String, String> getTextFieldsWithVectors(String indexName) {
+        Map<String, String> result = new HashMap<>();
+
+        try {
+            // 获取索引映射
+            GetMappingRequest request = GetMappingRequest.of(builder -> builder.index(indexName));
+            GetMappingResponse response = elasticsearchClient.indices().getMapping(request);
+
+            Map<String, IndexMappingRecord> mappings = response.result();
+            if (mappings.isEmpty()) {
+                return result;
+            }
+
+            IndexMappingRecord indexMapping = mappings.values().iterator().next();
+            Map<String, Property> properties = indexMapping.mappings().properties();
+
+            if (properties == null) {
+                return result;
+            }
+
+            // 查找所有text字段，并检查是否存在对应的向量字段
+            for (Map.Entry<String, Property> entry : properties.entrySet()) {
+                String fieldName = entry.getKey();
+                Property property = entry.getValue();
+
+                // 检查是否为text字段
+                if (property.isText()) {
+                    // 按约定，向量字段名称为 {textField}_vector
+                    String vectorFieldName = fieldName + "_vector";
+
+                    // 检查向量字段是否存在
+                    if (properties.containsKey(vectorFieldName)) {
+                        Property vectorProperty = properties.get(vectorFieldName);
+                        if (vectorProperty.isDenseVector()) {
+                            result.put(fieldName, vectorFieldName);
+                            log.debug("找到text-vector映射: {} -> {}", fieldName, vectorFieldName);
+                        }
+                    }
+                }
+            }
+
+            log.debug("索引 {} 中找到 {} 对text-vector映射", indexName, result.size());
+
+        } catch (Exception e) {
+            log.warn("获取text-vector字段映射失败: index={}, error={}", indexName, e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
      * 简化的搜索方法
      * 只针对索引的可检索字段进行关键词匹配查询
      *
@@ -1509,6 +1768,8 @@ public class ElasticsearchDataService {
                 .from((request.getPage() - 1) * request.getSize())
                 .size(request.getSize())
                 .trackTotalHits(t -> t.enabled(true))
+                // 排除向量字段,减少网络传输
+                .source(s -> s.filter(f -> f.excludes("*_vector")))
                 .build();
 
             // 执行搜索

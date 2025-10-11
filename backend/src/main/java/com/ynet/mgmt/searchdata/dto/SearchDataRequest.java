@@ -64,6 +64,13 @@ public class SearchDataRequest {
     @Schema(description = "搜索渠道代码", example = "mobile_app")
     private String channel;
 
+    @Schema(description = "启用语义重排序", example = "false", defaultValue = "false")
+    private Boolean enableRerank = false;
+
+    @Schema(description = "重排序返回前N条结果", example = "50", minimum = "1")
+    @Min(value = 1, message = "重排序Top-N必须大于等于1")
+    private Integer rerankTopN;
+
     /**
      * 排序配置
      */

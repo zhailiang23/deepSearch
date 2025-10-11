@@ -62,6 +62,8 @@ export interface MobileSearchAppProps {
   pageSize?: number
   searchSpaceId?: string
   channel?: string
+  enableRerank?: boolean    // 是否启用语义重排序
+  rerankTopN?: number       // 重排序Top-N
 }
 
 const props = withDefaults(defineProps<MobileSearchAppProps>(), {
@@ -69,7 +71,9 @@ const props = withDefaults(defineProps<MobileSearchAppProps>(), {
   initialQuery: '',
   enableHistory: true,
   pageSize: 20,
-  searchSpaceId: '1'
+  searchSpaceId: '1',
+  enableRerank: false,
+  rerankTopN: 50
 })
 
 // 组件事件定义
@@ -153,7 +157,9 @@ const performSearch = async (query: string, reset = false) => {
       query: query.trim(),
       page: currentPage.value,
       size: props.pageSize,
-      channel: props.channel
+      channel: props.channel,
+      enableRerank: props.enableRerank,
+      rerankTopN: props.rerankTopN
     }
 
     const response = await searchDataService.search(searchParams)

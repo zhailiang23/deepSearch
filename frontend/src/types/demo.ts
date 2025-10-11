@@ -38,6 +38,12 @@ export interface SemanticSearchConfig {
   mode: 'AUTO' | 'KEYWORD_FIRST' | 'SEMANTIC_FIRST' | 'HYBRID'
 }
 
+// 语义重排序配置
+export interface RerankConfig {
+  enabled: boolean
+  topN: number  // 返回前N条结果，范围 10-100
+}
+
 // 搜索行为配置
 export interface SearchBehaviorConfig {
   debounceMs: number
@@ -72,6 +78,9 @@ export interface SearchDemoConfig {
   // 语义搜索配置
   semanticSearch: SemanticSearchConfig
 
+  // 语义重排序配置
+  rerank: RerankConfig
+
   // 分页配置
   pagination: PaginationConfig
 
@@ -95,7 +104,7 @@ export interface ConfigPreset {
 
 // 参数变更事件
 export interface ParameterChangeEvent {
-  type: 'searchSpace' | 'channel' | 'pinyin' | 'semantic' | 'pagination' | 'behavior' | 'display'
+  type: 'searchSpace' | 'channel' | 'pinyin' | 'semantic' | 'rerank' | 'pagination' | 'behavior' | 'display'
   key: string
   value: any
   previous: any
@@ -160,6 +169,10 @@ export const DEFAULT_SEARCH_DEMO_CONFIG: SearchDemoConfig = {
     enabled: true,
     weight: 0.3,
     mode: 'AUTO'
+  },
+  rerank: {
+    enabled: false,
+    topN: 50
   },
   pagination: {
     pageSize: 20,

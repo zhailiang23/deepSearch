@@ -637,7 +637,10 @@ const realSearch = async () => {
       // 语义搜索参数
       enableSemanticSearch: store.config.semanticSearch.enabled,
       semanticMode: store.config.semanticSearch.mode,
-      semanticWeight: store.config.semanticSearch.weight
+      semanticWeight: store.config.semanticSearch.weight,
+      // 语义重排序参数
+      enableRerank: store.config.rerank.enabled,
+      rerankTopN: store.config.rerank.topN
     }
 
     console.log('搜索请求参数:', searchRequest)
@@ -763,7 +766,10 @@ const loadMore = async () => {
       // 语义搜索参数
       enableSemanticSearch: store.config.semanticSearch.enabled,
       semanticMode: store.config.semanticSearch.mode,
-      semanticWeight: store.config.semanticSearch.weight
+      semanticWeight: store.config.semanticSearch.weight,
+      // 语义重排序参数
+      enableRerank: store.config.rerank.enabled,
+      rerankTopN: store.config.rerank.topN
     }
 
     console.log('加载更多请求参数:', searchRequest)
