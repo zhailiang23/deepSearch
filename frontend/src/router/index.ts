@@ -170,6 +170,15 @@ const routes = [
           requiresAuth: true,
           title: '查询聚类分析'
         }
+      },
+      {
+        path: 'batch-conversion',
+        name: 'BatchConversion',
+        component: () => import('@/views/BatchConversionPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '批量智能识别'
+        }
       }
     ]
   },
