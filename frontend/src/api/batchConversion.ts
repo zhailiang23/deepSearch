@@ -24,6 +24,12 @@ export interface ImageRecognitionResult {
   imagePath: string
   thumbnailBase64: string
   recognizedText: string
+  name?: string
+  descript?: string
+  link?: string
+  startDate?: string
+  endDate?: string
+  status?: string
   success: boolean
   errorMessage?: string
 }

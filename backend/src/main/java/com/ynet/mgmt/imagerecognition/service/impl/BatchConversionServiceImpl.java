@@ -248,6 +248,14 @@ public class BatchConversionServiceImpl implements BatchConversionService {
             recognizedText
         );
 
+        // 6. 设置结构化的活动信息字段
+        result.setName(activityInfo.getName());
+        result.setDescript(activityInfo.getDescript());
+        result.setLink(activityInfo.getLink());
+        result.setStartDate(activityInfo.getStartDate());
+        result.setEndDate(activityInfo.getEndDate());
+        result.setStatus(activityInfo.getStatus());
+
         return new ProcessedImageData(result, activityInfo);
     }
 

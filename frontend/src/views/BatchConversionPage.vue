@@ -1,218 +1,277 @@
 <template>
-    <!-- 主内容区域：左右分栏 -->
-    <div class="main-content">
-      <!-- 左侧：配置区域 (1/3) -->
-      <div class="left-panel">
-        <div class="config-section">
-          <h2 class="section-title">数据库配置</h2>
-          <form @submit.prevent="handleSubmit" class="config-form">
-            <div class="form-group">
-              <label for="dbHost">数据库 IP 地址 *</label>
-              <input
-                id="dbHost"
-                v-model="formData.dbHost"
-                type="text"
-                placeholder="例如: localhost"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="dbPort">数据库端口 *</label>
-              <input
-                id="dbPort"
-                v-model.number="formData.dbPort"
-                type="number"
-                placeholder="例如: 3306"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="dbName">数据库名称 *</label>
-              <input
-                id="dbName"
-                v-model="formData.dbName"
-                type="text"
-                placeholder="例如: my_database"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="dbUsername">用户名 *</label>
-              <input
-                id="dbUsername"
-                v-model="formData.dbUsername"
-                type="text"
-                placeholder="数据库用户名"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="dbPassword">密码 *</label>
-              <input
-                id="dbPassword"
-                v-model="formData.dbPassword"
-                type="password"
-                placeholder="数据库密码"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="tableName">数据表名称 *</label>
-              <input
-                id="tableName"
-                v-model="formData.tableName"
-                type="text"
-                placeholder="例如: images"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="imagePathColumn">图片地址列名 *</label>
-              <input
-                id="imagePathColumn"
-                v-model="formData.imagePathColumn"
-                type="text"
-                placeholder="例如: image_path"
-                required
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="imageUrlColumn">图片链接列名（可选）</label>
-              <input
-                id="imageUrlColumn"
-                v-model="formData.imageUrlColumn"
-                type="text"
-                placeholder="例如: image_url"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="primaryKeyColumn">主键列名</label>
-              <input
-                id="primaryKeyColumn"
-                v-model="formData.primaryKeyColumn"
-                type="text"
-                placeholder="默认: id"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="indexName">目标 Elasticsearch 索引名称</label>
-              <input
-                id="indexName"
-                v-model="formData.indexName"
-                type="text"
-                placeholder="例如: activity"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" :disabled="isLoading" class="btn btn-primary">
-                <span v-if="isLoading" class="btn-spinner"></span>
-                {{ isLoading ? '识别中...' : '开始识别' }}
-              </button>
-            </div>
-          </form>
-        </div>
+  <div class="batch-conversion-page">
+    <!-- 顶部操作按钮 -->
+    <div class="page-header">
+      <div class="header-actions">
+        <button @click="handleSubmit" :disabled="isLoading" class="btn btn-primary">
+          <span v-if="isLoading" class="btn-spinner"></span>
+          {{ isLoading ? '识别中...' : '开始识别' }}
+        </button>
+        <button @click="showConfigDialog = true" class="btn btn-secondary">
+          批量识别配置
+        </button>
       </div>
-
-      <!-- 右侧：结果展示区域 (2/3) -->
-      <div class="right-panel">
-        <!-- 加载状态 -->
-        <div v-if="isLoading" class="loading-section">
-          <div class="loading-spinner"></div>
-          <p>正在批量识别图片，请稍候...</p>
-        </div>
-
-        <!-- 结果展示 -->
-        <div v-else-if="results.length > 0" class="results-section">
-          <div class="results-header">
-            <h2 class="section-title">识别结果</h2>
-            <div class="results-stats">
-              <span class="stat-item">总数: {{ totalCount }}</span>
-              <span class="stat-item success">成功: {{ successCount }}</span>
-              <span class="stat-item failure">失败: {{ failureCount }}</span>
-              <span v-if="formData.indexName && (insertedCount > 0 || skippedCount > 0)" class="stat-item inserted">插入: {{ insertedCount }}</span>
-              <span v-if="formData.indexName && skippedCount > 0" class="stat-item skipped">跳过: {{ skippedCount }}</span>
-            </div>
-          </div>
-
-          <div class="results-list">
-            <div
-              v-for="result in results"
-              :key="result.id"
-              class="result-item"
-              :class="{ failed: !result.success }"
-            >
-              <div class="result-thumbnail">
-                <img
-                  v-if="result.success && result.thumbnailBase64"
-                  :src="result.thumbnailBase64"
-                  :alt="result.imagePath"
-                  class="thumbnail-image"
-                />
-                <div v-else class="thumbnail-placeholder">
-                  <span>无缩略图</span>
-                </div>
-              </div>
-              <div class="result-content">
-                <div class="result-path">{{ result.imagePath }}</div>
-                <div v-if="result.success" class="result-text">
-                  {{ result.recognizedText }}
-                </div>
-                <div v-else class="result-error">
-                  错误: {{ result.errorMessage }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 空状态 -->
-        <div v-else class="empty-section">
-          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
-          <p class="empty-text">请配置数据库连接并开始识别</p>
-        </div>
+      <div v-if="results.length > 0" class="results-stats">
+        <span class="stat-item">总数: {{ totalCount }}</span>
+        <span class="stat-item success">成功: {{ successCount }}</span>
+        <span class="stat-item failure">失败: {{ failureCount }}</span>
+        <span v-if="insertedCount > 0" class="stat-item inserted">已导入: {{ insertedCount }}</span>
+        <span v-if="skippedCount > 0" class="stat-item skipped">跳过: {{ skippedCount }}</span>
       </div>
     </div>
+
+    <!-- 主内容区域：结果列表 -->
+    <div class="main-content">
+      <!-- 加载状态 -->
+      <div v-if="isLoading" class="loading-section">
+        <div class="loading-spinner"></div>
+        <p>正在批量识别图片，请稍候...</p>
+      </div>
+
+      <!-- 结果展示 -->
+      <div v-else-if="results.length > 0" class="results-section">
+        <div class="results-list">
+          <div
+            v-for="result in results"
+            :key="result.id"
+            class="result-item"
+            :class="{ failed: !result.success }"
+          >
+            <div class="result-thumbnail">
+              <img
+                v-if="result.success && result.thumbnailBase64"
+                :src="result.thumbnailBase64"
+                :alt="result.imagePath"
+                class="thumbnail-image"
+              />
+              <div v-else class="thumbnail-placeholder">
+                <span>无缩略图</span>
+              </div>
+            </div>
+            <div class="result-content">
+              <div class="result-path">{{ result.imagePath }}</div>
+              <div v-if="result.success" class="result-text">
+                {{ result.recognizedText }}
+              </div>
+              <div v-else class="result-error">
+                错误: {{ result.errorMessage }}
+              </div>
+            </div>
+            <div class="result-actions">
+              <button
+                v-if="result.success"
+                @click="handleEditResult(result)"
+                class="btn btn-edit"
+                title="编辑活动信息"
+              >
+                编辑
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-else class="empty-section">
+        <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <p class="empty-text">请点击"批量识别配置"按钮配置数据库连接，然后点击"开始识别"</p>
+      </div>
+    </div>
+
+    <!-- 配置对话框 -->
+    <el-dialog
+      v-model="showConfigDialog"
+      title="批量识别配置"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <form @submit.prevent="saveConfig" class="config-form">
+        <div class="form-group">
+          <label for="dbHost">数据库 IP 地址 *</label>
+          <input
+            id="dbHost"
+            v-model="formData.dbHost"
+            type="text"
+            placeholder="例如: localhost"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="dbPort">数据库端口 *</label>
+          <input
+            id="dbPort"
+            v-model.number="formData.dbPort"
+            type="number"
+            placeholder="例如: 3306"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="dbName">数据库名称 *</label>
+          <input
+            id="dbName"
+            v-model="formData.dbName"
+            type="text"
+            placeholder="例如: my_database"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="dbUsername">用户名 *</label>
+          <input
+            id="dbUsername"
+            v-model="formData.dbUsername"
+            type="text"
+            placeholder="数据库用户名"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="dbPassword">密码 *</label>
+          <input
+            id="dbPassword"
+            v-model="formData.dbPassword"
+            type="password"
+            placeholder="数据库密码"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="tableName">数据表名称 *</label>
+          <input
+            id="tableName"
+            v-model="formData.tableName"
+            type="text"
+            placeholder="例如: images"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="imagePathColumn">图片地址列名 *</label>
+          <input
+            id="imagePathColumn"
+            v-model="formData.imagePathColumn"
+            type="text"
+            placeholder="例如: image_path"
+            required
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="imageUrlColumn">图片链接列名（可选）</label>
+          <input
+            id="imageUrlColumn"
+            v-model="formData.imageUrlColumn"
+            type="text"
+            placeholder="例如: image_url"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="primaryKeyColumn">主键列名</label>
+          <input
+            id="primaryKeyColumn"
+            v-model="formData.primaryKeyColumn"
+            type="text"
+            placeholder="默认: id"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="searchSpaceId">目标搜索空间 *</label>
+          <select
+            id="searchSpaceId"
+            v-model="formData.searchSpaceId"
+            required
+            class="form-input"
+          >
+            <option value="">请选择搜索空间</option>
+            <option v-for="space in searchSpaces" :key="space.id" :value="space.id">
+              {{ space.name }}
+            </option>
+          </select>
+        </div>
+      </form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <button @click="showConfigDialog = false" class="btn btn-cancel">
+            取消
+          </button>
+          <button @click="saveConfig" class="btn btn-primary">
+            保存配置
+          </button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑对话框 -->
+    <ActivityEditDialog
+      v-model:open="showEditDialog"
+      :result="editingResult"
+      @save="handleSaveEdit"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { batchConvertImages, type BatchConversionRequest, type ImageRecognitionResult } from '@/api/batchConversion'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { batchConvertImages, type ImageRecognitionResult } from '@/api/batchConversion'
+import { ElMessage, ElDialog } from 'element-plus'
+import http from '@/utils/http'
+import ActivityEditDialog from '@/components/batchConversion/ActivityEditDialog.vue'
+
+// 搜索空间列表
+const searchSpaces = ref<Array<{id: string; name: string}>>([])
+
+// 对话框显示状态
+const showConfigDialog = ref(false)
+const showEditDialog = ref(false)
+const editingResult = ref<ImageRecognitionResult | null>(null)
+
+// 表单数据接口
+interface BatchConversionFormData {
+  dbHost: string
+  dbPort: number
+  dbName: string
+  dbUsername: string
+  dbPassword: string
+  tableName: string
+  imagePathColumn: string
+  imageUrlColumn?: string
+  primaryKeyColumn?: string
+  searchSpaceId: string
+}
 
 // 表单数据
-const formData = ref<BatchConversionRequest>({
+const formData = ref<BatchConversionFormData>({
   dbHost: 'localhost',
   dbPort: 3306,
-  dbName: '',
-  dbUsername: '',
-  dbPassword: '',
-  tableName: '',
-  imagePathColumn: '',
-  imageUrlColumn: '',
+  dbName: 'mgmt_db',
+  dbUsername: 'mgmt_user',
+  dbPassword: 'mgmt_password',
+  tableName: 'pictures',
+  imagePathColumn: 'path',
+  imageUrlColumn: 'link',
   primaryKeyColumn: 'id',
-  indexName: ''
+  searchSpaceId: ''
 })
 
 // 状态
@@ -224,29 +283,93 @@ const failureCount = ref(0)
 const insertedCount = ref(0)
 const skippedCount = ref(0)
 
+// 保存配置
+const saveConfig = () => {
+  if (!formData.value.searchSpaceId) {
+    ElMessage.error('请选择目标搜索空间')
+    return
+  }
+  showConfigDialog.value = false
+  ElMessage.success('配置已保存')
+}
+
+
 // 提交表单
 const handleSubmit = async () => {
+  if (!formData.value.searchSpaceId) {
+    ElMessage.error('请先配置目标搜索空间')
+    showConfigDialog.value = true
+    return
+  }
+
   isLoading.value = true
   results.value = []
 
   try {
-    const response = await batchConvertImages(formData.value)
+    // 步骤1：调用批量识别API获取识别结果（不保存到索引）
+    const batchRequest = {
+      dbHost: formData.value.dbHost,
+      dbPort: formData.value.dbPort,
+      dbName: formData.value.dbName,
+      dbUsername: formData.value.dbUsername,
+      dbPassword: formData.value.dbPassword,
+      tableName: formData.value.tableName,
+      imagePathColumn: formData.value.imagePathColumn,
+      imageUrlColumn: formData.value.imageUrlColumn,
+      primaryKeyColumn: formData.value.primaryKeyColumn
+    }
 
-    if (response.success) {
-      results.value = response.results
-      totalCount.value = response.totalCount
-      successCount.value = response.successCount
-      failureCount.value = response.failureCount
-      insertedCount.value = response.insertedCount
-      skippedCount.value = response.skippedCount
+    const response = await batchConvertImages(batchRequest)
 
-      let message = `批量识别完成！成功: ${response.successCount}, 失败: ${response.failureCount}`
-      if (formData.value.indexName && (response.insertedCount > 0 || response.skippedCount > 0)) {
-        message += `, 插入: ${response.insertedCount}, 跳过: ${response.skippedCount}`
-      }
-      ElMessage.success(message)
-    } else {
+    if (!response.success) {
       ElMessage.error(response.message || '批量识别失败')
+      return
+    }
+
+    // 显示识别结果
+    results.value = response.results
+    totalCount.value = response.totalCount
+    successCount.value = response.successCount
+    failureCount.value = response.failureCount
+
+    // 步骤2：将识别成功的结果转换为JSON数组
+    const activitiesToImport = response.results
+      .filter((result: ImageRecognitionResult) => result.success && result.recognizedText)
+      .map((result: ImageRecognitionResult) => {
+        return {
+          id: result.id,
+          name: result.name || '',
+          descript: result.descript || '',
+          link: result.link || '',
+          startDate: result.startDate || '',
+          endDate: result.endDate || '',
+          status: result.status || '进行中',
+          imagePath: result.imagePath,
+          all: result.recognizedText
+        }
+      })
+
+    if (activitiesToImport.length === 0) {
+      ElMessage.warning('没有可导入的活动数据')
+      return
+    }
+
+    // 步骤3：调用import-json-content API保存到Elasticsearch
+    const importResponse = await http.post(
+      `/search-spaces/${formData.value.searchSpaceId}/import-json-content`,
+      activitiesToImport
+    )
+
+    // http.post返回的是整个ApiResponse对象
+    if (importResponse && importResponse.success) {
+      insertedCount.value = activitiesToImport.length
+      skippedCount.value = 0
+
+      ElMessage.success(
+        `批量识别并导入完成！识别成功: ${response.successCount}, 失败: ${response.failureCount}, 已导入: ${activitiesToImport.length}`
+      )
+    } else {
+      ElMessage.error(importResponse?.message || '导入失败')
     }
   } catch (error: any) {
     console.error('批量识别错误:', error)
@@ -255,6 +378,60 @@ const handleSubmit = async () => {
     isLoading.value = false
   }
 }
+
+// 加载搜索空间列表
+const loadSearchSpaces = async () => {
+  try {
+    const result = await http.get('/search-spaces', {
+      params: {
+        page: 0,
+        size: 100
+      }
+    })
+
+    // http.get返回的是整个ApiResponse对象,需要访问data字段
+    if (result && result.data && result.data.content && Array.isArray(result.data.content)) {
+      searchSpaces.value = result.data.content.map((space: any) => ({
+        id: space.id.toString(),
+        name: space.name
+      }))
+
+      // 自动选中名称为"活动"的搜索空间作为默认值
+      const activitySpace = searchSpaces.value.find(space => space.name === '活动')
+      if (activitySpace) {
+        formData.value.searchSpaceId = activitySpace.id
+      }
+    } else {
+      searchSpaces.value = []
+    }
+  } catch (error) {
+    console.error('加载搜索空间列表失败:', error)
+    searchSpaces.value = []
+  }
+}
+
+// 编辑结果
+const handleEditResult = (result: ImageRecognitionResult) => {
+  console.log('handleEditResult 被调用, result:', result)
+  editingResult.value = result
+  console.log('editingResult.value =', editingResult.value)
+  showEditDialog.value = true
+  console.log('showEditDialog.value =', showEditDialog.value)
+}
+
+// 保存编辑
+const handleSaveEdit = (updatedResult: ImageRecognitionResult) => {
+  // 在results数组中找到对应的结果并更新
+  const index = results.value.findIndex(r => r.id === updatedResult.id)
+  if (index !== -1) {
+    results.value[index] = updatedResult
+  }
+}
+
+// 组件挂载时加载搜索空间列表
+onMounted(() => {
+  loadSearchSpaces()
+})
 </script>
 
 <style scoped>
@@ -266,131 +443,67 @@ const handleSubmit = async () => {
   overflow: hidden;
 }
 
+/* 页面头部 */
 .page-header {
   flex-shrink: 0;
   margin-bottom: 24px;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 8px;
-}
-
-.page-description {
-  font-size: 14px;
-  color: #6c757d;
-}
-
-/* 主内容区域：左右分栏 */
-.main-content {
-  flex: 1;
   display: flex;
-  gap: 24px;
-  min-height: 0;
-  overflow: hidden;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-/* 左侧面板 (1/3) */
-.left-panel {
-  flex: 0 0 33.333%;
+.header-actions {
   display: flex;
-  flex-direction: column;
-  min-height: 0;
+  gap: 12px;
 }
 
-.config-section {
-  flex: 1;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.results-stats {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.section-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  flex-shrink: 0;
-}
-
-.config-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-/* 自定义滚动条 */
-.config-form::-webkit-scrollbar {
-  width: 6px;
-}
-
-.config-form::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.config-form::-webkit-scrollbar-thumb {
-  background: #81c784;
-  border-radius: 3px;
-}
-
-.config-form::-webkit-scrollbar-thumb:hover {
-  background: #66bb6a;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  font-size: 14px;
+.stat-item {
+  font-size: 13px;
   font-weight: 500;
-  color: #495057;
-  margin-bottom: 8px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: #f8f9fa;
+  white-space: nowrap;
 }
 
-.form-input {
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.2s;
+.stat-item.success {
+  color: #28a745;
+  background: #d4edda;
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: #81c784;
-  box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.1);
+.stat-item.failure {
+  color: #dc3545;
+  background: #f8d7da;
 }
 
-.form-actions {
-  margin-top: 8px;
-  padding-top: 16px;
-  border-top: 1px solid #e9ecef;
-  flex-shrink: 0;
+.stat-item.inserted {
+  color: #007bff;
+  background: #cfe2ff;
 }
 
+.stat-item.skipped {
+  color: #6c757d;
+  background: #e9ecef;
+}
+
+/* 按钮样式 */
 .btn {
-  width: 100%;
-  padding: 12px 32px;
-  font-size: 16px;
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: 500;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -412,6 +525,28 @@ const handleSubmit = async () => {
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  background: white;
+  color: #495057;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #f8f9fa;
+  border-color: #81c784;
+  color: #66bb6a;
+}
+
+.btn-cancel {
+  background: white;
+  color: #6c757d;
+  border: 1px solid #d1d5db;
+}
+
+.btn-cancel:hover {
+  background: #f8f9fa;
+}
+
 .btn-spinner {
   width: 16px;
   height: 16px;
@@ -421,12 +556,12 @@ const handleSubmit = async () => {
   animation: spin 1s linear infinite;
 }
 
-/* 右侧面板 (2/3) */
-.right-panel {
-  flex: 0 0 66.667%;
+/* 主内容区域 */
+.main-content {
+  flex: 1;
   display: flex;
-  flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 
 /* 加载状态 */
@@ -483,6 +618,7 @@ const handleSubmit = async () => {
 .empty-text {
   font-size: 16px;
   color: #6c757d;
+  text-align: center;
 }
 
 /* 结果展示区域 */
@@ -496,50 +632,6 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.results-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.stat-item {
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 4px;
-  background: #f8f9fa;
-  white-space: nowrap;
-}
-
-.stat-item.success {
-  color: #28a745;
-  background: #d4edda;
-}
-
-.stat-item.failure {
-  color: #dc3545;
-  background: #f8d7da;
-}
-
-.stat-item.inserted {
-  color: #007bff;
-  background: #cfe2ff;
-}
-
-.stat-item.skipped {
-  color: #6c757d;
-  background: #e9ecef;
 }
 
 .results-list {
@@ -578,6 +670,9 @@ const handleSubmit = async () => {
   border-radius: 6px;
   transition: all 0.2s;
   flex-shrink: 0;
+  height: 182px; /* 150px (缩略图) + 32px (padding) */
+  overflow: hidden;
+  position: relative;
 }
 
 .result-item:hover {
@@ -618,6 +713,7 @@ const handleSubmit = async () => {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .result-path {
@@ -628,11 +724,33 @@ const handleSubmit = async () => {
 }
 
 .result-text {
+  flex: 1;
   font-size: 14px;
   color: #2c3e50;
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* 自定义内容区域滚动条 */
+.result-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.result-text::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 2px;
+}
+
+.result-text::-webkit-scrollbar-thumb {
+  background: #c1c7cd;
+  border-radius: 2px;
+}
+
+.result-text::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
 }
 
 .result-error {
@@ -641,16 +759,91 @@ const handleSubmit = async () => {
   font-weight: 500;
 }
 
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  .main-content {
-    flex-direction: column;
-  }
+.result-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+}
 
-  .left-panel,
-  .right-panel {
-    flex: 1 1 auto;
-    min-height: 400px;
-  }
+.btn-edit {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #81c784;
+  background: white;
+  color: #66bb6a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  background: #81c784;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(129, 199, 132, 0.3);
+}
+
+.btn-edit:active {
+  transform: translateY(0);
+}
+
+/* 配置表单 */
+.config-form {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.config-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.config-form::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.config-form::-webkit-scrollbar-thumb {
+  background: #81c784;
+  border-radius: 3px;
+}
+
+.config-form::-webkit-scrollbar-thumb:hover {
+  background: #66bb6a;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #81c784;
+  box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.1);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>

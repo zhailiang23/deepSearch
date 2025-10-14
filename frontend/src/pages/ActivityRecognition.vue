@@ -355,22 +355,22 @@ const recognizeText = async () => {
       timeout: 300000 // 5分钟超时
     })
 
-    // http.post 已返回解包后的数据
-    if (response) {
-      activityData.value = response
+    // http.post 返回的是整个ApiResponse对象
+    if (response && response.data) {
+      activityData.value = response.data
       // 显示识别到的所有文字
       // 优先使用all字段,如果为空则组合其他字段
-      if (response.all && response.all.trim()) {
-        recognizedText.value = response.all
+      if (response.data.all && response.data.all.trim()) {
+        recognizedText.value = response.data.all
       } else {
         // 如果all字段为空,则组合其他识别到的字段
         const parts = []
-        if (response.name) parts.push(`名称: ${response.name}`)
-        if (response.descript) parts.push(`描述: ${response.descript}`)
-        if (response.link) parts.push(`链接: ${response.link}`)
-        if (response.startDate) parts.push(`开始日期: ${response.startDate}`)
-        if (response.endDate) parts.push(`结束日期: ${response.endDate}`)
-        if (response.status) parts.push(`状态: ${response.status}`)
+        if (response.data.name) parts.push(`名称: ${response.data.name}`)
+        if (response.data.descript) parts.push(`描述: ${response.data.descript}`)
+        if (response.data.link) parts.push(`链接: ${response.data.link}`)
+        if (response.data.startDate) parts.push(`开始日期: ${response.data.startDate}`)
+        if (response.data.endDate) parts.push(`结束日期: ${response.data.endDate}`)
+        if (response.data.status) parts.push(`状态: ${response.data.status}`)
 
         recognizedText.value = parts.length > 0 ? parts.join('\n') : '未识别到文字内容'
       }
@@ -464,8 +464,8 @@ const saveActivity = async () => {
     // 调用导入API
     const response = await http.post(`/search-spaces/${activityForm.value.searchSpaceId}/import-json-content`, activityData)
 
-    // http.post 已返回解包后的数据
-    if (response) {
+    // http.post 返回的是整个ApiResponse对象
+    if (response && response.success) {
       // 显示成功通知
       showSuccessNotification.value = true
       setTimeout(() => {
@@ -476,7 +476,7 @@ const saveActivity = async () => {
       resetForm()
       console.log('活动保存成功:', response)
     } else {
-      saveError.value = '保存失败'
+      saveError.value = response?.message || '保存失败'
     }
   } catch (error: any) {
     console.error('保存活动失败:', error)
@@ -496,9 +496,9 @@ const loadSearchSpaces = async () => {
       }
     })
 
-    // http.get 已返回解包后的数据
-    if (result && result.content && Array.isArray(result.content)) {
-      searchSpaces.value = result.content.map((space: any) => ({
+    // http.get 返回的是整个ApiResponse对象,需要访问data字段
+    if (result && result.data && result.data.content && Array.isArray(result.data.content)) {
+      searchSpaces.value = result.data.content.map((space: any) => ({
         id: space.id.toString(),
         name: space.name
       }))

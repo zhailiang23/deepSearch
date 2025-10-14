@@ -787,6 +787,9 @@ public class DataImportService {
             // 生成向量字段
             generateVectorFields(document, indexConfig);
 
+            // 清洗日期字段：将空字符串转换为null,避免Elasticsearch解析错误
+            sanitizeDateFields(document, indexConfig);
+
             IndexOperation<Map<String, Object>> indexOp = IndexOperation.of(io -> io
                     .index(indexName)
                     .id(UUID.randomUUID().toString())
@@ -889,6 +892,9 @@ public class DataImportService {
 
             // 生成向量字段
             generateVectorFields(document, indexConfig);
+
+            // 清洗日期字段：将空字符串转换为null,避免Elasticsearch解析错误
+            sanitizeDateFields(document, indexConfig);
 
             IndexOperation<Map<String, Object>> indexOp = IndexOperation.of(io -> io
                     .index(indexName)
@@ -1125,6 +1131,62 @@ public class DataImportService {
         return "text".equals(mapping.getElasticsearchType())
                && !fieldName.startsWith("_")
                && !fieldName.endsWith("_vector");
+    }
+
+    /**
+     * 清洗日期字段：将空字符串转换为null
+     * 避免Elasticsearch在解析date类型字段时遇到空字符串而报错
+     */
+    private void sanitizeDateFields(Map<String, Object> document, IndexMappingConfig indexConfig) {
+        try {
+            int sanitizedCount = 0;
+
+            // 方法1: 遍历索引映射配置，查找声明为日期类型的字段
+            for (Map.Entry<String, IndexMappingConfig.FieldMapping> entry : indexConfig.getFieldMappings().entrySet()) {
+                String fieldName = entry.getKey();
+                IndexMappingConfig.FieldMapping mapping = entry.getValue();
+
+                if ("date".equals(mapping.getElasticsearchType())) {
+                    Object fieldValue = document.get(fieldName);
+                    if (fieldValue instanceof String) {
+                        String strValue = (String) fieldValue;
+                        if (strValue.trim().isEmpty()) {
+                            document.put(fieldName, null);
+                            sanitizedCount++;
+                            log.info("日期字段 {} 的值为空字符串（从配置识别），已转换为null", fieldName);
+                        }
+                    }
+                }
+            }
+
+            // 方法2: 直接遍历文档中所有字段，查找可能是日期的字段（字段名包含Date）
+            // 这是一个后备方案，用于处理IndexMappingConfig中未正确识别为date类型的字段
+            for (Map.Entry<String, Object> entry : document.entrySet()) {
+                String fieldName = entry.getKey();
+                Object fieldValue = entry.getValue();
+
+                // 如果字段名包含"Date"且值是空字符串，则转换为null
+                if ((fieldName.contains("Date") || fieldName.contains("date") ||
+                     fieldName.equals("startDate") || fieldName.equals("endDate") ||
+                     fieldName.equals("createTime") || fieldName.equals("updateTime")) &&
+                    fieldValue instanceof String) {
+
+                    String strValue = (String) fieldValue;
+                    if (strValue.trim().isEmpty()) {
+                        document.put(fieldName, null);
+                        sanitizedCount++;
+                        log.info("日期字段 {} 的值为空字符串（从字段名识别），已转换为null", fieldName);
+                    }
+                }
+            }
+
+            if (sanitizedCount > 0) {
+                log.info("日期字段清洗完成: 共清洗了 {} 个空日期字段", sanitizedCount);
+            }
+        } catch (Exception e) {
+            log.error("清洗日期字段时发生错误: {}", e.getMessage(), e);
+            // 字段清洗失败不应该影响数据导入，只记录错误
+        }
     }
 
     /**

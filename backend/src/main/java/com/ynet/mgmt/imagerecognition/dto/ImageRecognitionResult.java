@@ -20,6 +20,24 @@ public class ImageRecognitionResult {
     @Schema(description = "识别的文本内容")
     private String recognizedText;
 
+    @Schema(description = "活动名称")
+    private String name;
+
+    @Schema(description = "活动描述")
+    private String descript;
+
+    @Schema(description = "活动链接")
+    private String link;
+
+    @Schema(description = "活动开始时间")
+    private String startDate;
+
+    @Schema(description = "活动结束时间")
+    private String endDate;
+
+    @Schema(description = "活动状态")
+    private String status;
+
     @Schema(description = "是否识别成功")
     private boolean success;
 
@@ -97,5 +115,53 @@ public class ImageRecognitionResult {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescript() {
+        return descript;
+    }
+
+    public void setDescript(String descript) {
+        this.descript = descript;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
