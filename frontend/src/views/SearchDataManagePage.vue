@@ -809,6 +809,8 @@ async function handleDeleteDocument(document: TableRow) {
 
   if (!currentIndex.value || !realIndexName.value) {
     showErrorToast('请先选择搜索空间')
+    // 关闭弹窗
+    tableRef.value?.handleDeleteError('请先选择搜索空间')
     return
   }
 
@@ -853,9 +855,13 @@ async function handleDeleteDocument(document: TableRow) {
       showWarningToast('文档不存在或已被删除')
       // 刷新数据
       await executeSearch()
+      // 通知表格组件删除完成（关闭弹窗）
+      tableRef.value?.handleDeleteSuccess()
     } else {
       console.error('删除响应格式异常:', response)
       showErrorToast('删除操作异常，请重试')
+      // 通知表格组件删除失败（关闭弹窗）
+      tableRef.value?.handleDeleteError('删除操作异常，请重试')
     }
   } catch (error: any) {
     console.error('删除文档失败:', error)
@@ -880,10 +886,14 @@ async function handleDeleteDocument(document: TableRow) {
 async function handleDeleteDocuments(documents: TableRow[]) {
   if (!currentIndex.value) {
     showErrorToast('请先选择索引')
+    // 关闭弹窗
+    tableRef.value?.handleDeleteError('请先选择索引')
     return
   }
 
   if (documents.length === 0) {
+    // 关闭弹窗
+    tableRef.value?.handleDeleteError('没有要删除的文档')
     return
   }
 
@@ -919,15 +929,16 @@ async function handleDeleteDocuments(documents: TableRow[]) {
 
     if (successCount === documents.length) {
       showSuccessToast(`成功删除 ${successCount} 条记录`)
+      // 通知表格组件删除成功（关闭弹窗）
+      tableRef.value?.handleDeleteSuccess()
     } else if (successCount > 0) {
       showWarningToast(`成功删除 ${successCount} 条记录，${errorCount} 条记录删除失败`)
+      // 部分成功也关闭弹窗
+      tableRef.value?.handleDeleteSuccess()
     } else {
       showErrorToast(`批量删除失败，所有记录删除失败`)
-    }
-
-    // 通知表格组件删除完成
-    if (successCount > 0) {
-      tableRef.value?.handleDeleteSuccess()
+      // 全部失败也要关闭弹窗
+      tableRef.value?.handleDeleteError('批量删除失败，所有记录删除失败')
     }
 
   } catch (error: any) {

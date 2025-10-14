@@ -624,68 +624,47 @@ function handleDelete(row: TableRow) {
 
 
 // 删除处理方法
-function handleDeleteConfirm(options: { forceDelete: boolean }) {
-  console.log('DynamicResultsTable.handleDeleteConfirm 收到事件:', options)
-  console.log('删除目标:', {
-    deletingDocument: deletingDocument.value,
-    deletingDocuments: deletingDocuments.value
-  })
+async function handleDeleteConfirm(options: { forceDelete: boolean }) {
+  if (deleteLoading.value) return
 
   deleteLoading.value = true
 
   if (deletingDocument.value) {
     // 单个删除
-    console.log('发送 delete 事件到父组件:', deletingDocument.value)
     emit('delete', deletingDocument.value)
   } else if (deletingDocuments.value.length > 0) {
     // 批量删除
-    console.log('发送 batch-delete 事件到父组件:', deletingDocuments.value)
     emit('batch-delete', deletingDocuments.value)
-  } else {
-    console.warn('没有要删除的文档')
   }
 }
 
 function handleDeleteCancel() {
+  if (deleteLoading.value) return
+
   deleteDialogOpen.value = false
   deletingDocument.value = null
   deletingDocuments.value = []
-  deleteLoading.value = false
 }
 
+// 监听loading状态变化，当loading从true变为false时重置状态
+watch(() => deleteLoading.value, (newVal, oldVal) => {
+  // 当loading从true变为false时，说明删除操作已完成（成功或失败）
+  // 弹窗会自动关闭，这里只需要重置删除相关的状态
+  if (oldVal === true && newVal === false) {
+    nextTick(() => {
+      deletingDocument.value = null
+      deletingDocuments.value = []
+    })
+  }
+})
+
+// 暴露方法供父组件调用，用于在删除操作完成后重置loading状态
 function handleDeleteSuccess() {
-  console.log('DynamicResultsTable.handleDeleteSuccess 被调用')
-  console.log('删除前状态:', {
-    deleteDialogOpen: deleteDialogOpen.value,
-    deleteLoading: deleteLoading.value,
-    deletingDocument: deletingDocument.value
-  })
-
-  // 清理选中状态
-  // 批量删除处理已移除选中状态相关逻辑
-
-  // 关闭对话框
-  deleteDialogOpen.value = false
-  deletingDocument.value = null
-  deletingDocuments.value = []
   deleteLoading.value = false
-
-  console.log('删除后状态:', {
-    deleteDialogOpen: deleteDialogOpen.value,
-    deleteLoading: deleteLoading.value
-  })
-
-  // 成功提示由父组件处理，这里只负责UI状态重置
 }
 
 function handleDeleteError(error: string) {
-  // 重置状态并关闭对话框
-  deleteDialogOpen.value = false
-  deletingDocument.value = null
-  deletingDocuments.value = []
   deleteLoading.value = false
-
-  // 显示错误消息
   showErrorMessage(error)
 }
 

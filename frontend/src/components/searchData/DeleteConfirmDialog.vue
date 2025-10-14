@@ -3,7 +3,7 @@
   <div
     v-if="open"
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-    @click.self="closeDialog"
+    @click.self="handleCancel"
   >
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full flex flex-col border">
 
@@ -19,8 +19,9 @@
             </h3>
           </div>
           <button
-            class="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-md"
-            @click="closeDialog"
+            class="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-md transition-colors"
+            @click="handleCancel"
+            :disabled="isDeleting"
           >
             <X class="h-4 w-4" />
           </button>
@@ -29,7 +30,7 @@
         <!-- 警告信息 -->
         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
           <div class="flex items-start">
-            <AlertCircle class="h-5 w-5 text-red-500 mt-0.5 mr-3" />
+            <AlertCircle class="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
             <div class="flex-1">
               <h3 class="text-sm font-medium text-red-800 mb-1">
                 这是一个不可逆的操作
@@ -44,16 +45,16 @@
         <!-- 底部按钮 -->
         <div class="flex justify-end space-x-3 pt-4">
           <button
-            @click="closeDialog"
+            @click="handleCancel"
             :disabled="isDeleting"
-            class="px-6 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
+            class="px-6 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             取消
           </button>
           <button
             @click="handleConfirmDelete"
             :disabled="isDeleting"
-            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50 flex items-center"
+            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             <Trash2 v-if="!isDeleting" class="w-4 h-4 mr-2" />
             <div v-else class="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -101,24 +102,26 @@ const isDeleting = computed(() => props.loading)
 // 计算属性
 const isBatchDelete = computed(() => props.documents && props.documents.length > 1)
 
-// 监听loading状态变化用于调试
+// 监听loading状态变化，当loading从true变为false时自动关闭对话框
 watch(() => props.loading, (newVal, oldVal) => {
-  console.log('DeleteConfirmDialog loading状态变化:', { from: oldVal, to: newVal })
+  // 当loading从true变为false时，说明删除操作已完成
+  if (oldVal === true && newVal === false && props.open) {
+    // 自动关闭对话框
+    emit('update:open', false)
+  }
 })
 
-// 确认删除处理 - 总是强制删除
-async function handleConfirmDelete() {
-  console.log('DeleteConfirmDialog.handleConfirmDelete 被点击')
-  console.log('发送 confirm 事件:', { forceDelete: true })
-  emit('confirm', { forceDelete: true }) // 总是强制删除
+// 确认删除处理
+function handleConfirmDelete() {
+  if (isDeleting.value) return
+  emit('confirm', { forceDelete: true })
 }
 
-// 关闭对话框
-function closeDialog() {
-  if (!isDeleting.value) {
-    emit('update:open', false)
-    emit('cancel')
-  }
+// 取消删除
+function handleCancel() {
+  if (isDeleting.value) return
+  emit('update:open', false)
+  emit('cancel')
 }
 </script>
 
