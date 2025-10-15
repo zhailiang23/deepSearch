@@ -783,6 +783,8 @@ public class DataImportService {
             // 修复：使用符合Elasticsearch strict_date_time格式的时间戳
             document.put("_importTimestamp", LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT));
             document.put("_dataVersion", 1);
+            // 设置默认审核状态为可用
+            document.put("audit_status", "available");
 
             // 生成向量字段
             generateVectorFields(document, indexConfig);
@@ -889,6 +891,8 @@ public class DataImportService {
             document.put("_documentId", UUID.randomUUID().toString());
             document.put("_importTimestamp", LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT));
             document.put("_dataVersion", 1);
+            // 设置默认审核状态为可用
+            document.put("audit_status", "available");
 
             // 生成向量字段
             generateVectorFields(document, indexConfig);
