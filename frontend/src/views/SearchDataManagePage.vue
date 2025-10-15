@@ -8,7 +8,7 @@
       <!-- 搜索条件面板 -->
       <Card>
         <CardContent class="pt-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- 搜索空间选择和字段管理 -->
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-700">搜索空间选择</label>
@@ -38,6 +38,20 @@
                   字段管理
                 </Button>
               </div>
+            </div>
+
+            <!-- 推荐状态过滤 -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">推荐状态</label>
+              <select
+                v-model="recommendFilter"
+                :disabled="loading || !currentIndex"
+                class="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
+              >
+                <option value="all">全部</option>
+                <option value="1">已推荐</option>
+                <option value="0">未推荐</option>
+              </select>
             </div>
 
             <!-- 搜索关键词和按钮 -->
@@ -229,6 +243,7 @@ const availableSearchSpaces = ref<Array<{id: number, name: string, description?:
 const searchQuery = ref('')
 const sortField = ref('')
 const sortOrder = ref<'asc' | 'desc'>('desc')
+const recommendFilter = ref<string>('all') // 推荐状态过滤: 'all' | '1' | '0'
 
 // 字段管理对话框状态
 const columnConfigDialogOpen = ref(false)
@@ -535,11 +550,22 @@ async function handleSearch() {
     loadingText.value = '搜索中...'
 
     // 构建简化搜索请求参数
-    const requestBody = {
-      searchSpaceId: currentIndex.value,
+    const requestBody: any = {
+      searchSpaceId: String(currentIndex.value), // 确保是字符串类型
       keyword: searchQuery.value || undefined,
       page: currentPage.value,
       size: pageSize.value
+    }
+
+    // 添加推荐状态过滤
+    if (recommendFilter.value !== 'all') {
+      requestBody.filters = [
+        {
+          field: 'recommend',
+          value: parseInt(recommendFilter.value),
+          operator: 'eq'
+        }
+      ]
     }
 
     console.log('发送简化搜索请求:', requestBody)

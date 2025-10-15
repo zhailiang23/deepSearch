@@ -1886,6 +1886,25 @@ public class ElasticsearchDataService {
                     .build();
             }
 
+            // 添加过滤条件
+            if (request.getFilters() != null && !request.getFilters().isEmpty()) {
+                BoolQuery.Builder boolBuilder = new BoolQuery.Builder()
+                    .must(query);
+
+                for (SearchDataRequest.FilterConfig filter : request.getFilters()) {
+                    if ("eq".equals(filter.getOperator())) {
+                        // 等值过滤
+                        boolBuilder.filter(f -> f.term(t -> t
+                            .field(filter.getField())
+                            .value(v -> v.longValue(((Number) filter.getValue()).longValue()))
+                        ));
+                    }
+                }
+
+                query = boolBuilder.build()._toQuery();
+                log.info("添加了过滤条件: {}", request.getFilters());
+            }
+
             // 构建搜索请求
             SearchRequest searchRequest = new SearchRequest.Builder()
                 .index(indexName)

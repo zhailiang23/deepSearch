@@ -65,19 +65,22 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     private final SearchSpaceValidator validator;
     private final ElasticsearchClient elasticsearchClient;
     private final UserRepository userRepository;
+    private final com.ynet.mgmt.role.repository.RoleSearchSpaceRepository roleSearchSpaceRepository;
 
     public SearchSpaceServiceImpl(SearchSpaceRepository searchSpaceRepository,
                                  ElasticsearchManager elasticsearchManager,
                                  SearchSpaceMapper mapper,
                                  SearchSpaceValidator validator,
                                  ElasticsearchClient elasticsearchClient,
-                                 UserRepository userRepository) {
+                                 UserRepository userRepository,
+                                 com.ynet.mgmt.role.repository.RoleSearchSpaceRepository roleSearchSpaceRepository) {
         this.searchSpaceRepository = searchSpaceRepository;
         this.elasticsearchManager = elasticsearchManager;
         this.mapper = mapper;
         this.validator = validator;
         this.elasticsearchClient = elasticsearchClient;
         this.userRepository = userRepository;
+        this.roleSearchSpaceRepository = roleSearchSpaceRepository;
     }
 
     @Override
@@ -98,6 +101,9 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
 
         // 5. 步创建ES索引
         createElasticsearchIndex(searchSpace);
+
+        // 6. 自动关联到当前用户的角色(如果存在认证用户)
+        associateSearchSpaceToCurrentUserRole(searchSpace);
 
         log.info("搜索空间创建成功: {} (ID: {})", searchSpace.getCode(), searchSpace.getId());
         return mapper.toDTO(searchSpace, getElasticsearchIndexStatus(searchSpace.getCode()));
@@ -314,6 +320,67 @@ public class SearchSpaceServiceImpl implements SearchSpaceService {
     }
 
     // ========== 私有辅助方法 ==========
+
+    /**
+     * 将新创建的搜索空间自动关联到当前用户的角色
+     * 使得创建者能立即在搜索空间列表中看到新创建的搜索空间
+     *
+     * @param searchSpace 新创建的搜索空间
+     */
+    private void associateSearchSpaceToCurrentUserRole(SearchSpace searchSpace) {
+        try {
+            // 1. 检查是否有认证用户
+            if (!SecurityUtils.isAuthenticated()) {
+                log.debug("未检测到认证用户，跳过搜索空间权限自动关联");
+                return;
+            }
+
+            // 2. 获取当前用户名
+            String username = SecurityUtils.getCurrentUsername();
+            if (username == null) {
+                log.debug("无法获取当前用户名，跳过搜索空间权限自动关联");
+                return;
+            }
+
+            // 3. 查询当前用户
+            User currentUser = userRepository.findByUsername(username).orElse(null);
+            if (currentUser == null) {
+                log.warn("未找到当前用户: username={}, 跳过搜索空间权限自动关联", username);
+                return;
+            }
+
+            // 4. 获取用户的角色
+            if (currentUser.getCustomRole() == null) {
+                log.warn("当前用户没有关联角色: username={}, userId={}, 跳过搜索空间权限自动关联",
+                        username, currentUser.getId());
+                return;
+            }
+
+            Long roleId = currentUser.getCustomRole().getId();
+
+            // 5. 检查是否已存在关联（防止重复）
+            boolean alreadyAssociated = roleSearchSpaceRepository
+                    .existsByRoleIdAndSearchSpaceId(roleId, searchSpace.getId());
+
+            if (alreadyAssociated) {
+                log.debug("搜索空间已关联到角色: roleId={}, searchSpaceId={}", roleId, searchSpace.getId());
+                return;
+            }
+
+            // 6. 创建角色-搜索空间关联
+            com.ynet.mgmt.role.entity.RoleSearchSpace roleSearchSpace =
+                    new com.ynet.mgmt.role.entity.RoleSearchSpace(roleId, searchSpace.getId());
+            roleSearchSpaceRepository.save(roleSearchSpace);
+
+            log.info("搜索空间已自动关联到当前用户角色: username={}, roleId={}, searchSpaceId={}, searchSpaceCode={}",
+                    username, roleId, searchSpace.getId(), searchSpace.getCode());
+
+        } catch (Exception e) {
+            // 权限关联失败不应该影响搜索空间创建，仅记录错误日志
+            log.error("自动关联搜索空间到角色失败: searchSpaceId={}, searchSpaceCode={}",
+                    searchSpace.getId(), searchSpace.getCode(), e);
+        }
+    }
 
     /**
      * 创建Elasticsearch索引

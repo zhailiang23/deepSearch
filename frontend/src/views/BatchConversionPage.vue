@@ -10,6 +10,9 @@
         <button @click="showConfigDialog = true" class="btn btn-secondary">
           批量识别配置
         </button>
+        <button @click="showPromptConfigDialog = true" class="btn btn-secondary">
+          识别提示词配置
+        </button>
       </div>
       <div v-if="results.length > 0" class="results-stats">
         <span class="stat-item">总数: {{ totalCount }}</span>
@@ -228,6 +231,12 @@
       :result="editingResult"
       @save="handleSaveEdit"
     />
+
+    <!-- 提示词配置对话框 -->
+    <PromptConfigDialog
+      v-model:visible="showPromptConfigDialog"
+      @saved="handlePromptConfigSaved"
+    />
   </div>
 </template>
 
@@ -237,6 +246,7 @@ import { batchConvertImages, type ImageRecognitionResult } from '@/api/batchConv
 import { ElMessage, ElDialog } from 'element-plus'
 import http from '@/utils/http'
 import ActivityEditDialog from '@/components/batchConversion/ActivityEditDialog.vue'
+import PromptConfigDialog from '@/components/batchConversion/PromptConfigDialog.vue'
 
 // 搜索空间列表
 const searchSpaces = ref<Array<{id: string; name: string}>>([])
@@ -244,6 +254,7 @@ const searchSpaces = ref<Array<{id: string; name: string}>>([])
 // 对话框显示状态
 const showConfigDialog = ref(false)
 const showEditDialog = ref(false)
+const showPromptConfigDialog = ref(false)
 const editingResult = ref<ImageRecognitionResult | null>(null)
 
 // 表单数据接口
@@ -426,6 +437,11 @@ const handleSaveEdit = (updatedResult: ImageRecognitionResult) => {
   if (index !== -1) {
     results.value[index] = updatedResult
   }
+}
+
+// 提示词配置保存成功处理
+const handlePromptConfigSaved = () => {
+  ElMessage.success('提示词配置已更新,下次识别将使用新的提示词')
 }
 
 // 组件挂载时加载搜索空间列表

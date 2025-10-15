@@ -3,6 +3,7 @@ import 'element-plus/dist/index.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './stores/auth'
@@ -12,6 +13,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(ElementPlus)
 
 // 初始化认证状态 - 暂时注释掉以避免自动调用API
 // const authStore = useAuthStore()

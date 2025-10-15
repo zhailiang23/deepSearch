@@ -1,8 +1,11 @@
 package com.ynet.mgmt.searchdata.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * 简化的搜索请求
@@ -24,4 +27,8 @@ public class SimpleSearchRequest {
 
     @Schema(description = "每页大小", example = "20")
     private Integer size = 20;
+
+    @Valid
+    @Schema(description = "过滤条件")
+    private List<SearchDataRequest.FilterConfig> filters;
 }

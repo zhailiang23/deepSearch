@@ -5,6 +5,7 @@ import com.ynet.mgmt.imagerecognition.config.SiliconFlowVisionProperties;
 import com.ynet.mgmt.imagerecognition.dto.ActivityInfo;
 import com.ynet.mgmt.imagerecognition.dto.VisionApiRequest;
 import com.ynet.mgmt.imagerecognition.dto.VisionApiResponse;
+import com.ynet.mgmt.imagerecognition.service.PromptConfigService;
 import com.ynet.mgmt.imagerecognition.service.SiliconFlowVisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,33 +35,36 @@ public class SiliconFlowVisionServiceImpl implements SiliconFlowVisionService {
     private final SiliconFlowVisionProperties properties;
     private RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final PromptConfigService promptConfigService;
 
     /**
-     * 提示词模板
+     * 默认提示词模板（作为后备方案）
      */
-    private static final String PROMPT_TEMPLATE =
-        "你是一个专业的图片文字识别助手。请仔细识别图片中的所有文字内容，并严格按照以下JSON格式返回结果。\n\n" +
-        "**重要要求：**\n" +
+    private static final String DEFAULT_PROMPT_TEMPLATE =
+        "你是一个专业的图片文字识别助手。请仔细识别图片中的所有文字内容,并严格按照以下JSON格式返回结果。\n\n" +
+        "**重要要求:**\n" +
         "1. 必须返回有效的JSON格式数据\n" +
         "2. 不要添加任何解释性文字\n" +
         "3. 不要使用markdown代码块标记\n" +
         "4. 直接返回纯JSON对象\n\n" +
-        "**JSON格式要求：**\n" +
+        "**JSON格式要求:**\n" +
         "{\n" +
-        "  \"name\": \"从图片中识别到的活动名称，如果无法识别则填写'未识别到活动名称'\",\n" +
-        "  \"descript\": \"活动描述，如果无法直接识别则根据活动名称和其他文字信息生成简洁描述(不超过100字)\",\n" +
-        "  \"link\": \"活动链接地址，如果无法识别则填写空字符串\",\n" +
-        "  \"startDate\": \"活动开始时间，格式YYYY-MM-DD，如果无法识别则填写空字符串\",\n" +
-        "  \"endDate\": \"活动结束时间，格式YYYY-MM-DD，如果无法识别则填写空字符串\",\n" +
-        "  \"status\": \"活动状态(如：进行中、即将开始、已结束、已取消)，如果无法识别则填写'未知'\",\n" +
-        "  \"all\": \"图片中识别到的所有文字内容，保持原始格式和换行\"\n" +
+        "  \"name\": \"从图片中识别到的活动名称,如果无法识别则填写'未识别到活动名称'\",\n" +
+        "  \"descript\": \"活动描述,如果无法直接识别则根据活动名称和其他文字信息生成简洁描述(不超过100字)\",\n" +
+        "  \"link\": \"活动链接地址,如果无法识别则填写空字符串\",\n" +
+        "  \"startDate\": \"活动开始时间,格式YYYY-MM-DD,如果无法识别则填写空字符串\",\n" +
+        "  \"endDate\": \"活动结束时间,格式YYYY-MM-DD,如果无法识别则填写空字符串\",\n" +
+        "  \"status\": \"活动状态(如:进行中、即将开始、已结束、已取消),如果无法识别则填写'未知'\",\n" +
+        "  \"all\": \"图片中识别到的所有文字内容,保持原始格式和换行\"\n" +
         "}\n\n" +
-        "请严格按照上述JSON格式返回识别结果：";
+        "请严格按照上述JSON格式返回识别结果:";
 
     public SiliconFlowVisionServiceImpl(SiliconFlowVisionProperties properties,
-                                       ObjectMapper objectMapper) {
+                                       ObjectMapper objectMapper,
+                                       PromptConfigService promptConfigService) {
         this.properties = properties;
         this.objectMapper = objectMapper;
+        this.promptConfigService = promptConfigService;
     }
 
     @PostConstruct
@@ -208,8 +212,11 @@ public class SiliconFlowVisionServiceImpl implements SiliconFlowVisionService {
      * 构建 Vision API 请求
      */
     private VisionApiRequest buildVisionApiRequest(String base64Image, String contentType) {
+        // 从数据库获取提示词,如果获取失败则使用默认提示词
+        String promptTemplate = getPromptTemplate();
+
         // 创建文本内容
-        VisionApiRequest.Content textContent = new VisionApiRequest.Content("text", PROMPT_TEMPLATE);
+        VisionApiRequest.Content textContent = new VisionApiRequest.Content("text", promptTemplate);
 
         // 创建图片内容
         VisionApiRequest.ImageUrl imageUrl = new VisionApiRequest.ImageUrl(base64Image);
@@ -228,6 +235,26 @@ public class SiliconFlowVisionServiceImpl implements SiliconFlowVisionService {
             properties.getTopP(),
             properties.getStream()
         );
+    }
+
+    /**
+     * 获取提示词模板
+     * 优先从数据库读取,如果读取失败则使用默认模板
+     */
+    private String getPromptTemplate() {
+        try {
+            String promptFromDb = promptConfigService.getEnabledPromptContent(
+                PromptConfigServiceImpl.DEFAULT_IMAGE_RECOGNITION_KEY
+            );
+            if (StringUtils.hasText(promptFromDb)) {
+                logger.debug("使用数据库配置的提示词");
+                return promptFromDb;
+            }
+        } catch (Exception e) {
+            logger.warn("从数据库读取提示词失败,使用默认提示词: {}", e.getMessage());
+        }
+        logger.debug("使用默认提示词");
+        return DEFAULT_PROMPT_TEMPLATE;
     }
 
     /**
