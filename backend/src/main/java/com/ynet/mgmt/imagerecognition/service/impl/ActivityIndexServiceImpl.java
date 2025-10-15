@@ -110,6 +110,9 @@ public class ActivityIndexServiceImpl implements ActivityIndexService {
                 .atZone(ZoneId.systemDefault())
                 .format(DateTimeFormatter.ISO_INSTANT));
 
+        // 系统字段：批量识别导入的数据默认为审核中状态
+        document.put("audit_status", "under_review");
+
         return document;
     }
 }
