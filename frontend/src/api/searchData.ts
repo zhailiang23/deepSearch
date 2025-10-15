@@ -120,6 +120,34 @@ export class SearchDataService {
       throw error
     }
   }
+
+  /**
+   * 更新文档审核状态
+   * @param documentId 文档ID
+   * @param index 索引名称
+   * @param auditStatus 审核状态 (available/unavailable/under_review)
+   */
+  static async updateAuditStatus(
+    documentId: string,
+    index: string,
+    auditStatus: string
+  ): Promise<any> {
+    try {
+      const response = await http.put<ApiResponse<any>>(
+        `/elasticsearch/document/${documentId}/audit-status?index=${index}&auditStatus=${auditStatus}`
+      )
+      const apiResponse = response as any
+
+      if (apiResponse.success) {
+        return apiResponse.data
+      } else {
+        throw new Error(apiResponse.message || '更新失败')
+      }
+    } catch (error: any) {
+      console.error('更新审核状态失败:', error)
+      throw error
+    }
+  }
 }
 
 /**

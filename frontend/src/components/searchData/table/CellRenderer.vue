@@ -1,19 +1,36 @@
 <template>
   <div class="cell-renderer">
+    <!-- audit_status 特殊处理: 下拉框编辑 -->
+    <div
+      v-if="field === 'audit_status'"
+      class="audit-status-cell"
+    >
+      <select
+        :value="value"
+        @change="handleAuditStatusChange"
+        :disabled="isUpdating"
+        class="w-full h-8 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <option value="available">可用</option>
+        <option value="unavailable">不可用</option>
+        <option value="under_review">审核中</option>
+      </select>
+    </div>
+
     <!-- 文本类型 -->
     <div
-      v-if="type === 'text'"
+      v-else-if="type === 'text'"
       class="text-cell"
       :title="displayValue"
     >
-      <span 
+      <span
         v-if="isHighlighted"
         v-html="highlightedValue"
         class="highlighted-text"
       />
       <span v-else class="truncate">{{ displayValue }}</span>
     </div>
-    
+
     <!-- 关键词类型 -->
     <div
       v-else-if="type === 'keyword'"
@@ -143,13 +160,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import { 
-  Calendar, 
-  CheckCircle, 
-  XCircle, 
-  Braces, 
-  List, 
-  ChevronUp, 
+import {
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Braces,
+  List,
+  ChevronUp,
   ChevronDown,
   Minus
 } from 'lucide-vue-next'
@@ -160,12 +177,20 @@ interface Props {
   format?: string
   field?: string
   searchTerm?: string
+  documentId?: string
+  indexName?: string
 }
 
 const props = defineProps<Props>()
 
+// 定义事件
+const emit = defineEmits<{
+  (e: 'update', field: string, value: any): void
+}>()
+
 // 响应式状态
 const expanded = ref(false)
+const isUpdating = ref(false)
 
 // 原始值
 const rawValue = computed(() => props.value)
@@ -173,6 +198,17 @@ const rawValue = computed(() => props.value)
 // 显示值
 const displayValue = computed(() => {
   if (props.value === null || props.value === undefined) return ''
+
+  // 特殊处理: audit_status 字段显示中文
+  if (props.field === 'audit_status') {
+    const statusMap: Record<string, string> = {
+      'available': '可用',
+      'unavailable': '不可用',
+      'under_review': '审核中'
+    }
+    return statusMap[String(props.value)] || String(props.value)
+  }
+
   return String(props.value)
 })
 
@@ -261,6 +297,15 @@ const highlightedValue = computed(() => {
 // 切换展开状态
 function toggleExpanded() {
   expanded.value = !expanded.value
+}
+
+// 处理 audit_status 变更
+function handleAuditStatusChange(event: Event) {
+  const target = event.target as HTMLSelectElement
+  const newValue = target.value
+
+  // 触发更新事件
+  emit('update', 'audit_status', newValue)
 }
 </script>
 

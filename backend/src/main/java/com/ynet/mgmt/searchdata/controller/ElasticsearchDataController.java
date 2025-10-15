@@ -548,4 +548,45 @@ public class ElasticsearchDataController {
                     .body(ApiResponse.badRequest("取消推荐失败: " + e.getMessage()));
         }
     }
+
+    /**
+     * 更新文档审核状态
+     *
+     * @param id 文档ID
+     * @param index 索引名称
+     * @param auditStatus 审核状态
+     * @return 操作结果
+     */
+    @Operation(summary = "更新文档审核状态", description = "更新文档的审核状态(available/unavailable/under_review)")
+    @PutMapping("/document/{id}/audit-status")
+    public ResponseEntity<ApiResponse<UpdateDocumentResponse>> updateAuditStatus(
+            @Parameter(description = "文档ID", required = true) @PathVariable String id,
+            @Parameter(description = "索引名称", required = true) @RequestParam String index,
+            @Parameter(description = "审核状态", required = true) @RequestParam String auditStatus) {
+
+        logger.info("更新文档审核状态: id={}, index={}, auditStatus={}", id, index, auditStatus);
+
+        try {
+            // 验证审核状态值
+            if (!auditStatus.equals("available") &&
+                !auditStatus.equals("unavailable") &&
+                !auditStatus.equals("under_review")) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.badRequest("无效的审核状态值，必须是 available、unavailable 或 under_review"));
+            }
+
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("audit_status", auditStatus);
+
+            UpdateDocumentResponse response = elasticsearchDataService.updateDocumentFields(id, index, fields);
+
+            logger.info("文档审核状态更新成功: id={}, index={}, auditStatus={}", id, index, auditStatus);
+            return ResponseEntity.ok(ApiResponse.success("审核状态更新成功", response));
+
+        } catch (RuntimeException e) {
+            logger.error("更新文档审核状态失败: id={}, index={}", id, index, e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("审核状态更新失败: " + e.getMessage()));
+        }
+    }
 }

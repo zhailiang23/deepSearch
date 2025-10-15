@@ -39,6 +39,9 @@
             :type="column.type"
             :format="column.format"
             :field="column.key"
+            :document-id="row._id"
+            :index-name="row._index"
+            @update="handleFieldUpdate"
           />
         </div>
       </div>
@@ -111,6 +114,8 @@ import {
 } from 'lucide-vue-next'
 import CellRenderer from './CellRenderer.vue'
 import type { TableColumn, TableRow } from '@/types/tableData'
+import { SearchDataService } from '@/api/searchData'
+import { ElMessage } from 'element-plus'
 
 interface Props {
   row: TableRow
@@ -124,6 +129,7 @@ interface Emits {
   (e: 'edit', row: TableRow): void
   (e: 'delete', row: TableRow): void
   (e: 'click', row: TableRow, index: number, event: MouseEvent | KeyboardEvent): void
+  (e: 'field-updated', row: TableRow): void
 }
 
 const props = defineProps<Props>()
@@ -270,6 +276,36 @@ function getCellValue(row: TableRow, column: TableColumn): any {
   return value
 }
 
+/**
+ * 处理字段更新
+ */
+async function handleFieldUpdate(field: string, value: any) {
+  if (field !== 'audit_status') {
+    console.warn('暂不支持更新字段:', field)
+    return
+  }
+
+  try {
+    await SearchDataService.updateAuditStatus(
+      props.row._id,
+      props.row._index,
+      value
+    )
+
+    // 更新本地数据
+    if (props.row._source) {
+      props.row._source[field] = value
+    }
+
+    ElMessage.success('审核状态更新成功')
+
+    // 通知父组件字段已更新
+    emit('field-updated', props.row)
+  } catch (error: any) {
+    console.error('更新字段失败:', error)
+    ElMessage.error(error.message || '更新失败')
+  }
+}
 
 // 事件处理方法已在上面定义
 </script>
