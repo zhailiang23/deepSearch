@@ -1893,11 +1893,24 @@ public class ElasticsearchDataService {
 
                 for (SearchDataRequest.FilterConfig filter : request.getFilters()) {
                     if ("eq".equals(filter.getOperator())) {
-                        // 等值过滤
-                        boolBuilder.filter(f -> f.term(t -> t
-                            .field(filter.getField())
-                            .value(v -> v.longValue(((Number) filter.getValue()).longValue()))
-                        ));
+                        // 等值过滤 - 支持字符串和数值类型
+                        Object filterValue = filter.getValue();
+                        if (filterValue instanceof String) {
+                            // 字符串类型过滤（如 audit_status）
+                            boolBuilder.filter(f -> f.term(t -> t
+                                .field(filter.getField())
+                                .value((String) filterValue)
+                            ));
+                        } else if (filterValue instanceof Number) {
+                            // 数值类型过滤（如 recommend）
+                            boolBuilder.filter(f -> f.term(t -> t
+                                .field(filter.getField())
+                                .value(v -> v.longValue(((Number) filterValue).longValue()))
+                            ));
+                        } else {
+                            log.warn("不支持的过滤值类型: field={}, valueType={}",
+                                filter.getField(), filterValue != null ? filterValue.getClass() : null);
+                        }
                     }
                 }
 

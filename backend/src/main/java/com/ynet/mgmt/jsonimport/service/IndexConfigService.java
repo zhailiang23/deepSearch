@@ -703,6 +703,17 @@ public class IndexConfigService {
                 .index(true)
                 .docValues(true)
                 .build());
+
+        // 审核状态字段 - 文档的审核状态（系统字段）
+        // 值: "available"(可用), "unavailable"(不可用), "under_review"(审核中)
+        // 默认值: "available"
+        // 注意：使用 audit_status 而非 status，避免与业务字段冲突
+        mappings.put("audit_status", IndexMappingConfig.FieldMapping.builder()
+                .fieldName("audit_status")
+                .elasticsearchType("keyword")
+                .index(true)
+                .docValues(true)
+                .build());
     }
 
     /**

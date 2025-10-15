@@ -8,40 +8,29 @@
       <!-- 搜索条件面板 -->
       <Card>
         <CardContent class="pt-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- 搜索空间选择和字段管理 -->
-            <div class="space-y-2">
+          <div class="flex gap-4 items-end">
+            <!-- 搜索空间选择 -->
+            <div class="space-y-2 w-56">
               <label class="text-sm font-medium text-gray-700">搜索空间选择</label>
-              <div class="flex gap-2">
-                <select
-                  v-model="currentIndex"
-                  @change="handleIndexChange"
-                  :disabled="loading"
-                  class="flex-1 h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
+              <select
+                v-model="currentIndex"
+                @change="handleIndexChange"
+                :disabled="loading"
+                class="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
+              >
+                <option value="">请选择搜索空间</option>
+                <option
+                  v-for="space in availableSearchSpaces"
+                  :key="space.id"
+                  :value="space.id"
                 >
-                  <option value="">请选择搜索空间</option>
-                  <option
-                    v-for="space in availableSearchSpaces"
-                    :key="space.id"
-                    :value="space.id"
-                  >
-                    {{ space.name }}
-                  </option>
-                </select>
-                <Button
-                  @click="openColumnConfigDialog"
-                  :disabled="!currentIndex || !indexMapping"
-                  variant="outline"
-                  class="h-10 border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-4 whitespace-nowrap"
-                >
-                  <Settings class="w-4 h-4 mr-2" />
-                  字段管理
-                </Button>
-              </div>
+                  {{ space.name }}
+                </option>
+              </select>
             </div>
 
             <!-- 推荐状态过滤 -->
-            <div class="space-y-2">
+            <div class="space-y-2 w-32">
               <label class="text-sm font-medium text-gray-700">推荐状态</label>
               <select
                 v-model="recommendFilter"
@@ -54,8 +43,23 @@
               </select>
             </div>
 
+            <!-- 审计状态过滤 -->
+            <div class="space-y-2 w-32">
+              <label class="text-sm font-medium text-gray-700">审计状态</label>
+              <select
+                v-model="auditStatusFilter"
+                :disabled="loading || !currentIndex"
+                class="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50"
+              >
+                <option value="all">全部</option>
+                <option value="available">可用</option>
+                <option value="unavailable">不可用</option>
+                <option value="under_review">审核中</option>
+              </select>
+            </div>
+
             <!-- 搜索关键词和按钮 -->
-            <div class="space-y-2">
+            <div class="flex-1 space-y-2">
               <label class="text-sm font-medium text-gray-700">搜索关键词</label>
               <div class="flex gap-2">
                 <div class="relative flex-1">
@@ -78,6 +82,20 @@
                   搜索
                 </Button>
               </div>
+            </div>
+
+            <!-- 字段管理按钮 -->
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700 invisible">操作</label>
+              <Button
+                @click="openColumnConfigDialog"
+                :disabled="!currentIndex || !indexMapping"
+                variant="outline"
+                class="h-10 border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-4 whitespace-nowrap"
+              >
+                <Settings class="w-4 h-4 mr-2" />
+                字段管理
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -244,6 +262,7 @@ const searchQuery = ref('')
 const sortField = ref('')
 const sortOrder = ref<'asc' | 'desc'>('desc')
 const recommendFilter = ref<string>('all') // 推荐状态过滤: 'all' | '1' | '0'
+const auditStatusFilter = ref<string>('all') // 审计状态过滤: 'all' | 'available' | 'unavailable' | 'under_review'
 
 // 字段管理对话框状态
 const columnConfigDialogOpen = ref(false)
@@ -557,15 +576,30 @@ async function handleSearch() {
       size: pageSize.value
     }
 
-    // 添加推荐状态过滤
+    // 添加过滤条件
+    const filters: any[] = []
+
+    // 推荐状态过滤
     if (recommendFilter.value !== 'all') {
-      requestBody.filters = [
-        {
-          field: 'recommend',
-          value: parseInt(recommendFilter.value),
-          operator: 'eq'
-        }
-      ]
+      filters.push({
+        field: 'recommend',
+        value: parseInt(recommendFilter.value),
+        operator: 'eq'
+      })
+    }
+
+    // 审计状态过滤
+    if (auditStatusFilter.value !== 'all') {
+      filters.push({
+        field: 'audit_status',
+        value: auditStatusFilter.value,
+        operator: 'eq'
+      })
+    }
+
+    // 如果有过滤条件，添加到请求体
+    if (filters.length > 0) {
+      requestBody.filters = filters
     }
 
     console.log('发送简化搜索请求:', requestBody)
