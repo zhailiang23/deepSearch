@@ -351,6 +351,14 @@ query-understanding:
     enabled: ${QUERY_UNDERSTANDING_SMART_SKIP:true}
     simple-query-threshold: ${QUERY_UNDERSTANDING_SIMPLE_THRESHOLD:2}  # 少于2个字符跳过复杂处理
 
+  # 缓存配置
+  cache:
+    enabled: ${QUERY_UNDERSTANDING_CACHE_ENABLED:true}  # 默认启用缓存
+    ttl:
+      query-context: ${QUERY_UNDERSTANDING_CACHE_TTL:PT10M}  # 查询上下文缓存10分钟
+      llm-result: ${QUERY_UNDERSTANDING_LLM_CACHE_TTL:PT1H}  # LLM结果缓存1小时
+      synonym: ${QUERY_UNDERSTANDING_SYNONYM_CACHE_TTL:PT24H}  # 同义词缓存24小时
+
   # LLM增强配置
   llm:
     enabled: ${QUERY_UNDERSTANDING_LLM_ENABLED:false}  # 默认关闭LLM功能

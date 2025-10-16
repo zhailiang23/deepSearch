@@ -2,7 +2,10 @@ package com.ynet.mgmt.queryunderstanding.pipeline;
 
 import com.ynet.mgmt.queryunderstanding.context.QueryContext;
 import com.ynet.mgmt.queryunderstanding.processor.QueryProcessor;
+import com.ynet.mgmt.queryunderstanding.service.QueryUnderstandingCacheService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,6 +22,12 @@ import java.util.List;
 @Slf4j
 @Component
 public class QueryUnderstandingPipeline {
+
+    @Autowired(required = false)
+    private QueryUnderstandingCacheService cacheService;
+
+    @Value("${query-understanding.cache.enabled:true}")
+    private boolean cacheEnabled;
 
     /**
      * 注册的处理器列表（按优先级排序）
@@ -70,6 +79,15 @@ public class QueryUnderstandingPipeline {
     public QueryContext execute(String query) {
         log.info("开始执行查询理解管道，原始查询: {}", query);
 
+        // 尝试从缓存获取
+        if (cacheEnabled && cacheService != null) {
+            QueryContext cachedContext = cacheService.getCachedQueryContext(query);
+            if (cachedContext != null) {
+                log.info("从缓存获取查询理解结果，查询: {}", query);
+                return cachedContext;
+            }
+        }
+
         // 创建查询上下文
         QueryContext context = new QueryContext(query);
 
@@ -94,6 +112,11 @@ public class QueryUnderstandingPipeline {
         long totalTime = context.getTotalProcessingTime();
         log.info("查询理解管道执行完成，总耗时: {} ms，处理后查询: {}",
                 totalTime, context.getCurrentQuery());
+
+        // 缓存结果
+        if (cacheEnabled && cacheService != null) {
+            cacheService.cacheQueryContext(query, context);
+        }
 
         return context;
     }
