@@ -340,13 +340,25 @@ cluster:
 query-understanding:
   # 是否启用查询理解管道
   enabled: ${QUERY_UNDERSTANDING_ENABLED:true}
-  
+
   # 管道超时配置（毫秒）
   timeout:
     total: ${QUERY_UNDERSTANDING_TOTAL_TIMEOUT:5000}  # 总超时 5秒
     processor: ${QUERY_UNDERSTANDING_PROCESSOR_TIMEOUT:1000}  # 单个处理器超时 1秒
-  
+
   # 智能跳过策略
   smart-skip:
     enabled: ${QUERY_UNDERSTANDING_SMART_SKIP:true}
     simple-query-threshold: ${QUERY_UNDERSTANDING_SIMPLE_THRESHOLD:2}  # 少于2个字符跳过复杂处理
+
+  # LLM增强配置
+  llm:
+    enabled: ${QUERY_UNDERSTANDING_LLM_ENABLED:false}  # 默认关闭LLM功能
+    siliconflow:
+      api-key: ${SILICONFLOW_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+      api-url: ${QUERY_UNDERSTANDING_LLM_API_URL:https://api.siliconflow.cn/v1/chat/completions}
+      model: ${QUERY_UNDERSTANDING_LLM_MODEL:Qwen/Qwen2.5-7B-Instruct}
+      temperature: ${QUERY_UNDERSTANDING_LLM_TEMPERATURE:0.3}
+      max-tokens: ${QUERY_UNDERSTANDING_LLM_MAX_TOKENS:500}
+      top-p: ${QUERY_UNDERSTANDING_LLM_TOP_P:0.9}
+      timeout: ${QUERY_UNDERSTANDING_LLM_TIMEOUT:10000}

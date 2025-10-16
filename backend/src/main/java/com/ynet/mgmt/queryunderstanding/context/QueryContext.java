@@ -40,6 +40,11 @@ public class QueryContext {
     private String expandedQuery;
 
     /**
+     * 重写后的查询（基于意图和实体优化）
+     */
+    private String rewrittenQuery;
+
+    /**
      * 从查询中识别出的实体列表
      */
     private List<Entity> entities = new ArrayList<>();
@@ -195,10 +200,13 @@ public class QueryContext {
 
     /**
      * 获取当前有效的查询文本
-     * 优先级：expandedQuery > correctedQuery > normalizedQuery > originalQuery
+     * 优先级：rewrittenQuery > expandedQuery > correctedQuery > normalizedQuery > originalQuery
      * @return 当前有效查询
      */
     public String getCurrentQuery() {
+        if (rewrittenQuery != null && !rewrittenQuery.isEmpty()) {
+            return rewrittenQuery;
+        }
         if (expandedQuery != null && !expandedQuery.isEmpty()) {
             return expandedQuery;
         }

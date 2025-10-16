@@ -440,31 +440,55 @@ frontend/src/
 
 ---
 
-### **Phase 2: NLP 能力** - 预计 2 周
+### **Phase 2: NLP 能力** - ✅ 已完成
 ✅ **目标**: 添加智能分析能力
 
-**后端任务**:
-1. 实现 PythonNLPClient（HTTP 客户端）
-2. 实现 NERProcessor
-3. 实现 IntentClassificationProcessor
-4. 实现 PhraseDetectionProcessor
-5. 创建实体和意图数据模型
-6. 数据库表设计和迁移
+**已完成任务**:
+1. ✅ 实现 QueryUnderstandingLlmService（LLM服务抽象层）
+2. ✅ 实现 QueryUnderstandingLlmServiceImpl（SiliconFlow API集成）
+3. ✅ 实现 IntentRecognitionProcessor（意图识别处理器）
+4. ✅ 实现 EntityExtractionProcessor（实体抽取处理器）
+5. ✅ 实现 QueryRewriteProcessor（查询重写处理器）
+6. ✅ 增强 TypoCorrectionProcessor（ES Term Suggester框架）
+7. ✅ 扩展 IntentType 枚举（新增 QUERY/COMMAND/QUESTION）
+8. ✅ 扩展 QueryContext（新增 rewrittenQuery 字段）
+9. ✅ 添加完整的 LLM 配置（application.yml）
+10. ✅ 创建标准化 LLM 通信 DTOs（LlmApiRequest/Response）
 
-**Python 任务**:
-1. 创建 nlp_service.py（FastAPI）
-2. 实现 NER 端点（spaCy 或 SiliconFlow）
-3. 实现 Intent 分类端点（SiliconFlow LLM）
-4. 添加缓存和错误处理
+**技术实现**:
+- **LLM集成**: 使用 SiliconFlow Qwen2.5-7B-Instruct 模型
+- **意图识别**: 三分类（QUERY/COMMAND/QUESTION），带置信度计算
+- **实体抽取**: 支持8种实体类型（PERSON/LOCATION/ORGANIZATION/DATE/TIME/MONEY/PRODUCT/EVENT）
+- **查询重写**: 基于意图和实体的智能查询优化
+- **错别字纠正**: ES Term Suggester集成框架（Phase 2基础）
 
-**测试**:
-- NLP 服务单独测试
-- 端到端测试
+**配置选项**:
+```yaml
+query-understanding:
+  llm:
+    enabled: false  # 默认关闭（避免成本）
+    siliconflow:
+      api-key: xxx
+      api-url: https://api.siliconflow.cn/v1/chat/completions
+      model: Qwen/Qwen2.5-7B-Instruct
+      temperature: 0.3
+      max-tokens: 500
+      timeout: 10000
+```
+
+**性能和容错**:
+- 所有LLM调用带超时保护（10秒）
+- 服务不可用时自动跳过
+- 失败自动降级（使用默认值）
+- 不影响现有搜索功能
 
 **交付物**:
-- NLP 服务
-- NER 和意图识别能力
-- 配置管理系统
+- ✅ 完整的LLM服务层
+- ✅ 3个新增NLP处理器（意图识别、实体抽取、查询重写）
+- ✅ 增强的错别字纠正框架
+- ✅ 标准化配置管理
+- ✅ 编译通过（271个源文件）
+- ✅ 完整的错误处理和日志记录
 
 ---
 

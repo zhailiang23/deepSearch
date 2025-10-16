@@ -10,6 +10,21 @@ package com.ynet.mgmt.queryunderstanding.context;
 public enum IntentType {
 
     /**
+     * 查询 - 用户想要查询或搜索信息
+     */
+    QUERY("查询"),
+
+    /**
+     * 命令 - 用户想要执行某个操作或命令
+     */
+    COMMAND("命令"),
+
+    /**
+     * 问题 - 用户在询问一个问题，需要解释性回答
+     */
+    QUESTION("问题"),
+
+    /**
      * 信息查询 - 用户想要获取信息
      */
     INFORMATION_QUERY("信息查询"),

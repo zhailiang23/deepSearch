@@ -1,0 +1,262 @@
+package com.ynet.mgmt.queryunderstanding.service.impl;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ynet.mgmt.queryunderstanding.config.QueryUnderstandingLlmProperties;
+import com.ynet.mgmt.queryunderstanding.context.Entity;
+import com.ynet.mgmt.queryunderstanding.context.EntityType;
+import com.ynet.mgmt.queryunderstanding.context.IntentType;
+import com.ynet.mgmt.queryunderstanding.dto.LlmApiRequest;
+import com.ynet.mgmt.queryunderstanding.dto.LlmApiResponse;
+import com.ynet.mgmt.queryunderstanding.service.QueryUnderstandingLlmService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * 查询理解LLM服务实现
+ *
+ * @author deepSearch
+ * @since 2025-01-16
+ */
+@Slf4j
+@Service
+public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmService {
+
+    private final QueryUnderstandingLlmProperties properties;
+    private final ObjectMapper objectMapper;
+    private RestTemplate restTemplate;
+
+    /**
+     * 意图识别提示词
+     */
+    private static final String INTENT_RECOGNITION_PROMPT =
+        "你是一个查询意图分析助手。请分析用户的查询意图,并只返回以下类型之一:\n" +
+        "- QUERY: 用户想要查询或搜索信息\n" +
+        "- COMMAND: 用户想要执行某个操作或命令\n" +
+        "- QUESTION: 用户在询问一个问题,需要解释性回答\n\n" +
+        "用户查询: {query}\n\n" +
+        "请只返回意图类型(QUERY/COMMAND/QUESTION),不要有其他内容。";
+
+    /**
+     * 实体抽取提示词
+     */
+    private static final String ENTITY_EXTRACTION_PROMPT =
+        "你是一个实体识别助手。请从用户查询中识别出以下类型的实体:\n" +
+        "- PERSON: 人名\n" +
+        "- LOCATION: 地名\n" +
+        "- ORGANIZATION: 机构名\n" +
+        "- DATE: 日期\n" +
+        "- TIME: 时间\n" +
+        "- MONEY: 金额\n" +
+        "- PRODUCT: 产品名\n" +
+        "- EVENT: 事件名\n\n" +
+        "用户查询: {query}\n\n" +
+        "请以JSON格式返回实体列表,格式: [{\"type\":\"PERSON\",\"text\":\"张三\",\"value\":\"张三\"}]\n" +
+        "如果没有识别到实体,请返回空数组: []";
+
+    /**
+     * 查询重写提示词
+     */
+    private static final String QUERY_REWRITE_PROMPT =
+        "你是一个查询优化助手。基于用户的意图和提取的实体,请生成一个更精确的搜索查询。\n\n" +
+        "原始查询: {query}\n" +
+        "意图类型: {intent}\n" +
+        "实体: {entities}\n\n" +
+        "请直接返回优化后的查询文本,不要有其他说明。";
+
+    public QueryUnderstandingLlmServiceImpl(QueryUnderstandingLlmProperties properties,
+                                           ObjectMapper objectMapper) {
+        this.properties = properties;
+        this.objectMapper = objectMapper;
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+                new org.springframework.http.client.SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(properties.getSiliconflow().getTimeout().intValue());
+            factory.setReadTimeout(properties.getSiliconflow().getTimeout().intValue());
+            this.restTemplate = new RestTemplate(factory);
+        } catch (Exception e) {
+            log.warn("无法配置RestTemplate超时，将使用默认RestTemplate", e);
+            this.restTemplate = new RestTemplate();
+        }
+
+        log.info("初始化查询理解LLM服务: enabled={}, model={}",
+            properties.getEnabled(), properties.getSiliconflow().getModel());
+    }
+
+    @Override
+    public IntentType recognizeIntent(String query) {
+        if (!isServiceAvailable() || !StringUtils.hasText(query)) {
+            return IntentType.QUERY; // 默认为查询意图
+        }
+
+        try {
+            String prompt = INTENT_RECOGNITION_PROMPT.replace("{query}", query);
+            String response = callLlm(prompt);
+
+            if (StringUtils.hasText(response)) {
+                response = response.trim().toUpperCase();
+                try {
+                    return IntentType.valueOf(response);
+                } catch (IllegalArgumentException e) {
+                    log.warn("无法识别意图类型: {}, 使用默认QUERY", response);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("LLM意图识别失败: {}", e.getMessage());
+        }
+
+        return IntentType.QUERY;
+    }
+
+    @Override
+    public List<Entity> extractEntities(String query) {
+        List<Entity> entities = new ArrayList<>();
+
+        if (!isServiceAvailable() || !StringUtils.hasText(query)) {
+            return entities;
+        }
+
+        try {
+            String prompt = ENTITY_EXTRACTION_PROMPT.replace("{query}", query);
+            String response = callLlm(prompt);
+
+            if (StringUtils.hasText(response)) {
+                // 尝试解析JSON
+                response = extractJsonFromResponse(response);
+                Entity[] entityArray = objectMapper.readValue(response, Entity[].class);
+                entities.addAll(Arrays.asList(entityArray));
+
+                log.debug("从查询 \"{}\" 中提取到 {} 个实体", query, entities.size());
+            }
+        } catch (Exception e) {
+            log.warn("LLM实体抽取失败: {}", e.getMessage());
+        }
+
+        return entities;
+    }
+
+    @Override
+    public String rewriteQuery(String query, IntentType intent, List<Entity> entities) {
+        if (!isServiceAvailable() || !StringUtils.hasText(query)) {
+            return query;
+        }
+
+        try {
+            String entitiesStr = entities.isEmpty() ? "无" : entities.toString();
+            String prompt = QUERY_REWRITE_PROMPT
+                .replace("{query}", query)
+                .replace("{intent}", intent.toString())
+                .replace("{entities}", entitiesStr);
+
+            String rewrittenQuery = callLlm(prompt);
+
+            if (StringUtils.hasText(rewrittenQuery)) {
+                rewrittenQuery = rewrittenQuery.trim();
+                log.debug("查询重写: \"{}\" -> \"{}\"", query, rewrittenQuery);
+                return rewrittenQuery;
+            }
+        } catch (Exception e) {
+            log.warn("LLM查询重写失败: {}", e.getMessage());
+        }
+
+        return query;
+    }
+
+    @Override
+    public boolean isServiceAvailable() {
+        return properties.getEnabled() != null && properties.getEnabled()
+            && StringUtils.hasText(properties.getSiliconflow().getApiKey());
+    }
+
+    /**
+     * 调用LLM API
+     *
+     * @param prompt 提示词
+     * @return LLM响应文本
+     */
+    private String callLlm(String prompt) throws Exception {
+        // 构建请求
+        LlmApiRequest request = new LlmApiRequest();
+        request.setModel(properties.getSiliconflow().getModel());
+        request.setTemperature(properties.getSiliconflow().getTemperature());
+        request.setMaxTokens(properties.getSiliconflow().getMaxTokens());
+        request.setTopP(properties.getSiliconflow().getTopP());
+
+        // 添加消息
+        List<LlmApiRequest.Message> messages = new ArrayList<>();
+        messages.add(new LlmApiRequest.Message("user", prompt));
+        request.setMessages(messages);
+
+        // 构建请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(properties.getSiliconflow().getApiKey());
+
+        // 发送请求
+        HttpEntity<LlmApiRequest> requestEntity = new HttpEntity<>(request, headers);
+        ResponseEntity<LlmApiResponse> responseEntity = restTemplate.exchange(
+            properties.getSiliconflow().getApiUrl(),
+            HttpMethod.POST,
+            requestEntity,
+            LlmApiResponse.class
+        );
+
+        LlmApiResponse response = responseEntity.getBody();
+        if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+            throw new RuntimeException("LLM API 返回空响应");
+        }
+
+        LlmApiResponse.Choice choice = response.getChoices().get(0);
+        if (choice.getMessage() == null || !StringUtils.hasText(choice.getMessage().getContent())) {
+            throw new RuntimeException("LLM API 响应中没有内容");
+        }
+
+        return choice.getMessage().getContent();
+    }
+
+    /**
+     * 从响应中提取JSON内容
+     * 处理LLM可能返回markdown代码块的情况
+     *
+     * @param response 原始响应
+     * @return 提取的JSON字符串
+     */
+    private String extractJsonFromResponse(String response) {
+        if (!StringUtils.hasText(response)) {
+            return "[]";
+        }
+
+        // 移除markdown代码块标记
+        response = response.trim();
+        if (response.startsWith("```json")) {
+            response = response.substring(7);
+        } else if (response.startsWith("```")) {
+            response = response.substring(3);
+        }
+        if (response.endsWith("```")) {
+            response = response.substring(0, response.length() - 3);
+        }
+
+        response = response.trim();
+
+        // 如果不是JSON格式,返回空数组
+        if (!response.startsWith("[") && !response.startsWith("{")) {
+            return "[]";
+        }
+
+        return response;
+    }
+}

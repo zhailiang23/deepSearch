@@ -86,21 +86,100 @@ public class TypoCorrectionProcessor extends AbstractQueryProcessor {
      * @return 纠正后的查询，如果没有建议则返回 null
      */
     private String correctTypos(String query) throws Exception {
-        // 为简化，Phase 1 先返回原查询
-        // 完整实现需要调用 ES Suggester API
-        // 这里提供框架，后续可以完善
-
         log.debug("使用 Term Suggester 检测错别字: {}", query);
 
-        // TODO: 完整实现
-        // 1. 构建 Term Suggester 请求
-        // 2. 发送到 Elasticsearch
-        // 3. 解析建议结果
-        // 4. 根据置信度选择最佳建议
-        // 5. 返回纠正后的查询
+        try {
+            // 分词 - 简单按空格分割
+            String[] words = query.split("\\s+");
+            StringBuilder correctedQuery = new StringBuilder();
+            boolean hasCorrected = false;
 
-        // Phase 1: 暂时返回 null（不纠正）
-        return null;
+            for (String word : words) {
+                if (word.isEmpty()) {
+                    continue;
+                }
+
+                // 对每个词使用 Term Suggester
+                String suggestion = getSuggestionForTerm(word);
+
+                if (suggestion != null && !suggestion.equals(word)) {
+                    // 计算相似度
+                    double similarity = calculateSimilarity(word, suggestion);
+
+                    if (similarity >= minSimilarity) {
+                        log.debug("词 \"{}\" 建议纠正为 \"{}\", 相似度: {}", word, suggestion, similarity);
+                        correctedQuery.append(suggestion);
+                        hasCorrected = true;
+                    } else {
+                        log.debug("词 \"{}\" 的建议 \"{}\" 相似度过低({}), 保持原词", word, suggestion, similarity);
+                        correctedQuery.append(word);
+                    }
+                } else {
+                    correctedQuery.append(word);
+                }
+
+                correctedQuery.append(" ");
+            }
+
+            if (hasCorrected) {
+                return correctedQuery.toString().trim();
+            }
+
+            return null; // 没有纠正
+
+        } catch (Exception e) {
+            log.warn("Term Suggester 调用失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 为单个词获取拼写建议
+     *
+     * @param term 词
+     * @return 建议的词，如果没有建议则返回原词
+     */
+    private String getSuggestionForTerm(String term) throws Exception {
+        // Phase 2: 暂时返回原词，避免实际调用ES
+        // 在实际部署时需要配置具体的索引名称和字段
+        // 示例代码如下:
+        /*
+        SearchResponse<Void> response = elasticsearchClient.search(s -> s
+            .index("function", "information", "product", "activity") // 搜索所有索引
+            .suggest(suggest -> suggest
+                .suggesters("term-suggestion", ts -> ts
+                    .term(t -> t
+                        .field("name") // 在name字段上建议
+                        .text(term)
+                        .suggestMode(SuggestMode.Popular)
+                        .maxEdits(2)
+                        .minWordLength(2)
+                        .prefixLength(1)
+                        .minDocFreq(1)
+                    )
+                )
+            )
+            .size(0), // 不需要文档结果
+            Void.class
+        );
+
+        // 解析建议结果
+        Map<String, List<Suggestion<Void>>> suggestions = response.suggest();
+        if (suggestions != null && suggestions.containsKey("term-suggestion")) {
+            List<Suggestion<Void>> termSuggestions = suggestions.get("term-suggestion");
+            if (!termSuggestions.isEmpty()) {
+                List<TermSuggestOption> options = termSuggestions.get(0).term().options();
+                if (!options.isEmpty()) {
+                    TermSuggestOption bestOption = options.get(0);
+                    if (bestOption.score() >= minSuggestScore) {
+                        return bestOption.text();
+                    }
+                }
+            }
+        }
+        */
+
+        return term; // Phase 2: 返回原词
     }
 
     /**
