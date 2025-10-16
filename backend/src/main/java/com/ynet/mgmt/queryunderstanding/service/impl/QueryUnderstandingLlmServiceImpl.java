@@ -84,7 +84,12 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
         "原始查询: {query}\n" +
         "意图类型: {intent}\n" +
         "识别实体: {entities}\n\n" +
-        "请直接返回优化后的查询文本,不要有其他说明。";
+        "重要规则:\n" +
+        "- 如果原始查询已经足够清晰明确,直接返回原查询\n" +
+        "- 如果查询含义不明确或无法优化,直接返回原查询\n" +
+        "- 只返回优化后的查询文本,不要返回任何解释、说明或提示信息\n" +
+        "- 不要返回类似'请提供更多信息'、'查询不明确'等提示文字\n" +
+        "- 返回的查询应该简短精炼,不超过30个字";
 
     public QueryUnderstandingLlmServiceImpl(QueryUnderstandingLlmProperties properties,
                                            ObjectMapper objectMapper) {
@@ -243,6 +248,13 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
 
             if (StringUtils.hasText(rewrittenQuery)) {
                 rewrittenQuery = rewrittenQuery.trim();
+
+                // 验证返回的是否是有效的查询重写
+                if (!isValidQueryRewrite(rewrittenQuery)) {
+                    log.debug("LLM返回的不是有效的查询重写,保持原查询: \"{}\"", rewrittenQuery);
+                    return query;
+                }
+
                 log.debug("查询重写: \"{}\" -> \"{}\"", query, rewrittenQuery);
 
                 // 缓存结果
@@ -342,5 +354,47 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
         }
 
         return response;
+    }
+
+    /**
+     * 验证LLM返回的是否是有效的查询重写
+     * 排除提示性文字、说明文字等非查询内容
+     *
+     * @param rewrittenQuery LLM返回的文本
+     * @return true表示是有效的查询重写
+     */
+    private boolean isValidQueryRewrite(String rewrittenQuery) {
+        if (!StringUtils.hasText(rewrittenQuery)) {
+            return false;
+        }
+
+        // 检查是否包含提示性关键词
+        String[] invalidKeywords = {
+            "请提供", "请输入", "请说明", "请明确",
+            "不明确", "无法", "不能", "无效",
+            "抱歉", "对不起", "很抱歉",
+            "查询信息", "具体业务", "关键信息",
+            "需要更多", "缺少", "不足"
+        };
+
+        String lowerQuery = rewrittenQuery.toLowerCase();
+        for (String keyword : invalidKeywords) {
+            if (lowerQuery.contains(keyword.toLowerCase())) {
+                return false;
+            }
+        }
+
+        // 检查长度是否合理(超过50个字符可能是说明文字)
+        if (rewrittenQuery.length() > 50) {
+            return false;
+        }
+
+        // 检查是否包含句号、问号等结束符号(说明文字通常有标点)
+        if (rewrittenQuery.contains("。") || rewrittenQuery.contains("?") ||
+            rewrittenQuery.contains("!") || rewrittenQuery.contains("?")) {
+            return false;
+        }
+
+        return true;
     }
 }
