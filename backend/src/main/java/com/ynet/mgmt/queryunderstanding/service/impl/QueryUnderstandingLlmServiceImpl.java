@@ -7,9 +7,12 @@ import com.ynet.mgmt.queryunderstanding.context.EntityType;
 import com.ynet.mgmt.queryunderstanding.context.IntentType;
 import com.ynet.mgmt.queryunderstanding.dto.LlmApiRequest;
 import com.ynet.mgmt.queryunderstanding.dto.LlmApiResponse;
+import com.ynet.mgmt.queryunderstanding.service.QueryUnderstandingCacheService;
 import com.ynet.mgmt.queryunderstanding.service.QueryUnderstandingLlmService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -34,6 +37,9 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
     private final QueryUnderstandingLlmProperties properties;
     private final ObjectMapper objectMapper;
     private RestTemplate restTemplate;
+
+    @Autowired(required = false)
+    private QueryUnderstandingCacheService cacheService;
 
     /**
      * 意图识别提示词
@@ -82,11 +88,23 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
     @PostConstruct
     public void init() {
         try {
-            org.springframework.http.client.SimpleClientHttpRequestFactory factory =
-                new org.springframework.http.client.SimpleClientHttpRequestFactory();
-            factory.setConnectTimeout(properties.getSiliconflow().getTimeout().intValue());
-            factory.setReadTimeout(properties.getSiliconflow().getTimeout().intValue());
-            this.restTemplate = new RestTemplate(factory);
+            // 使用HttpComponents连接池提升性能 (如果可用)
+            try {
+                Class.forName("org.apache.http.client.HttpClient");
+                HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+                factory.setConnectTimeout(properties.getSiliconflow().getTimeout().intValue());
+                factory.setConnectionRequestTimeout(properties.getSiliconflow().getTimeout().intValue());
+                this.restTemplate = new RestTemplate(factory);
+                log.info("使用HttpComponents连接池配置RestTemplate");
+            } catch (Throwable e) {
+                // 如果HttpComponents不可用，回退到SimpleClientHttpRequestFactory
+                log.info("HttpComponents不可用({}), 使用SimpleClientHttpRequestFactory", e.getClass().getSimpleName());
+                org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+                    new org.springframework.http.client.SimpleClientHttpRequestFactory();
+                factory.setConnectTimeout(properties.getSiliconflow().getTimeout().intValue());
+                factory.setReadTimeout(properties.getSiliconflow().getTimeout().intValue());
+                this.restTemplate = new RestTemplate(factory);
+            }
         } catch (Exception e) {
             log.warn("无法配置RestTemplate超时，将使用默认RestTemplate", e);
             this.restTemplate = new RestTemplate();
@@ -102,6 +120,22 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
             return IntentType.QUERY; // 默认为查询意图
         }
 
+        // 尝试从缓存获取
+        if (cacheService != null) {
+            String cachedIntent = cacheService.getCachedLlmIntent(query);
+            if (cachedIntent != null) {
+                try {
+                    // 从JSON中提取intent值
+                    if (cachedIntent.contains("\"intent\"")) {
+                        String intentValue = cachedIntent.split("\"intent\"\\s*:\\s*\"")[1].split("\"")[0];
+                        return IntentType.valueOf(intentValue);
+                    }
+                } catch (Exception e) {
+                    log.warn("解析缓存的意图失败: {}", e.getMessage());
+                }
+            }
+        }
+
         try {
             String prompt = INTENT_RECOGNITION_PROMPT.replace("{query}", query);
             String response = callLlm(prompt);
@@ -109,7 +143,15 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
             if (StringUtils.hasText(response)) {
                 response = response.trim().toUpperCase();
                 try {
-                    return IntentType.valueOf(response);
+                    IntentType intent = IntentType.valueOf(response);
+
+                    // 缓存结果
+                    if (cacheService != null) {
+                        String cacheValue = String.format("{\"intent\":\"%s\"}", intent.name());
+                        cacheService.cacheLlmIntent(query, cacheValue);
+                    }
+
+                    return intent;
                 } catch (IllegalArgumentException e) {
                     log.warn("无法识别意图类型: {}, 使用默认QUERY", response);
                 }
@@ -129,6 +171,21 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
             return entities;
         }
 
+        // 尝试从缓存获取
+        if (cacheService != null) {
+            String cachedEntities = cacheService.getCachedLlmEntities(query);
+            if (cachedEntities != null) {
+                try {
+                    Entity[] entityArray = objectMapper.readValue(cachedEntities, Entity[].class);
+                    entities.addAll(Arrays.asList(entityArray));
+                    log.debug("从缓存获取到 {} 个实体", entities.size());
+                    return entities;
+                } catch (Exception e) {
+                    log.warn("解析缓存的实体失败: {}", e.getMessage());
+                }
+            }
+        }
+
         try {
             String prompt = ENTITY_EXTRACTION_PROMPT.replace("{query}", query);
             String response = callLlm(prompt);
@@ -140,6 +197,11 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
                 entities.addAll(Arrays.asList(entityArray));
 
                 log.debug("从查询 \"{}\" 中提取到 {} 个实体", query, entities.size());
+
+                // 缓存结果
+                if (cacheService != null) {
+                    cacheService.cacheLlmEntities(query, response);
+                }
             }
         } catch (Exception e) {
             log.warn("LLM实体抽取失败: {}", e.getMessage());
@@ -154,6 +216,15 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
             return query;
         }
 
+        // 尝试从缓存获取
+        if (cacheService != null) {
+            String cachedRewrite = cacheService.getCachedLlmRewrite(query);
+            if (cachedRewrite != null) {
+                log.debug("从缓存获取重写查询: \"{}\" -> \"{}\"", query, cachedRewrite);
+                return cachedRewrite;
+            }
+        }
+
         try {
             String entitiesStr = entities.isEmpty() ? "无" : entities.toString();
             String prompt = QUERY_REWRITE_PROMPT
@@ -166,6 +237,12 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
             if (StringUtils.hasText(rewrittenQuery)) {
                 rewrittenQuery = rewrittenQuery.trim();
                 log.debug("查询重写: \"{}\" -> \"{}\"", query, rewrittenQuery);
+
+                // 缓存结果
+                if (cacheService != null) {
+                    cacheService.cacheLlmRewrite(query, rewrittenQuery);
+                }
+
                 return rewrittenQuery;
             }
         } catch (Exception e) {
