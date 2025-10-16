@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/query-understanding/metrics")
+@RequestMapping("/query-understanding/metrics")
 public class QueryUnderstandingMetricsController {
 
     @Autowired(required = false)

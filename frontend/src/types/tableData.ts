@@ -26,6 +26,7 @@ export interface TableRow {
   _type?: string
   _version?: number
   _primary_term?: number
+  highlight?: Record<string, string[]> // Elasticsearch高亮字段
 }
 
 export interface TableData {

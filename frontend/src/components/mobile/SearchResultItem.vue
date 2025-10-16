@@ -146,24 +146,11 @@ const emit = defineEmits<{
 const isFavorited = ref(false)
 const showMoreMenu = ref(false)
 
-// 高亮显示文本
+// 高亮显示文本 - 如果文本已包含HTML标记则直接返回,否则不做任何处理
 const highlightText = (text: string, query: string): string => {
-  if (!query || !text) return text
-
-  const keywords = query.trim().split(/\s+/)
-  let highlightedText = text
-
-  keywords.forEach(keyword => {
-    if (keyword.length > 0) {
-      const regex = new RegExp(`(${keyword})`, 'gi')
-      highlightedText = highlightedText.replace(
-        regex,
-        '<mark class="bg-yellow-200 text-yellow-900 px-0.5 rounded">$1</mark>'
-      )
-    }
-  })
-
-  return highlightedText
+  // 直接返回原文本,不做任何处理
+  // 高亮应该由Elasticsearch的highlight字段提供,而不是前端生成
+  return text || ''
 }
 
 // 高亮标题
@@ -381,9 +368,23 @@ onUnmounted(() => {
   @apply transition-colors duration-150;
 }
 
-/* 高亮样式 */
+/* 高亮样式 - 支持Elasticsearch的<em>标签 */
+:deep(em) {
+  @apply bg-yellow-200 text-yellow-900 px-0.5 rounded;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* 高亮样式 - 兼容<mark>标签 */
 :deep(mark) {
   @apply bg-yellow-200 text-yellow-900 px-0.5 rounded;
+  font-weight: 500;
+}
+
+/* 高亮样式 - 兼容class="search-highlight" */
+:deep(.search-highlight) {
+  @apply bg-yellow-200 text-yellow-900 px-0.5 rounded;
+  font-weight: 500;
 }
 
 /* 行截断 */

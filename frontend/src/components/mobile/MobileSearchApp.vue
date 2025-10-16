@@ -122,13 +122,75 @@ watch(searchQuery, (newQuery) => {
   }
 })
 
+// HTML解码函数
+const decodeHtmlEntities = (text: string): string => {
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = text
+  return textarea.value
+}
+
+// HTML清洗函数 - 清理损坏或嵌套的HTML标签
+const cleanHtmlTags = (text: string): string => {
+  if (!text) return ''
+
+  // 移除损坏的嵌套标签,如 <m<mark>
+  let cleaned = text.replace(/<[^>]*<[^>]*>/g, match => {
+    // 如果发现嵌套标签,只保留最内层的完整标签
+    const innerMatch = match.match(/<([^<>]+)>$/);
+    return innerMatch ? `<${innerMatch[1]}>` : ''
+  })
+
+  // 规范化高亮标签:将所有 <mark class="search-highlight"> 转换为 <em>
+  cleaned = cleaned.replace(/<mark[^>]*class="search-highlight"[^>]*>/gi, '<em>')
+  cleaned = cleaned.replace(/<\/mark>/gi, '</em>')
+
+  // 移除其他可能存在的mark标签
+  cleaned = cleaned.replace(/<\/?mark[^>]*>/gi, '')
+
+  return cleaned
+}
+
 // 转换 TableRow 到 SearchResult
 const convertToSearchResult = (row: TableRow): SearchResult => {
   const source = row._source
+  // 获取原始数据
+  let title = source.title || source.name || '未知标题'
+  let content = source.content || source.description || source.summary || ''
+
+  // 如果有highlight字段,优先使用高亮后的内容
+  if (row.highlight) {
+    if (row.highlight.title && row.highlight.title.length > 0) {
+      title = row.highlight.title[0]
+    }
+    if (row.highlight.content && row.highlight.content.length > 0) {
+      content = row.highlight.content[0]
+    }
+    if (row.highlight.name && row.highlight.name.length > 0) {
+      title = row.highlight.name[0]
+    }
+    if (row.highlight.description && row.highlight.description.length > 0) {
+      content = row.highlight.description[0]
+    }
+  }
+
+  // 清洗HTML标签 - 移除损坏和嵌套的标签
+  title = cleanHtmlTags(title)
+  content = cleanHtmlTags(content)
+
+  // 注意: 不要使用decodeHtmlEntities,因为它会移除HTML标签
+  // highlight字段返回的<em>标签需要保留,让v-html渲染
+
+  console.log('转换搜索结果:', {
+    id: row._id,
+    highlightTitle: row.highlight?.name?.[0],
+    finalTitle: title,
+    hasHtmlTags: /<[^>]+>/.test(title)
+  })
+
   return {
     id: row._id,
-    title: source.title || source.name || '未知标题',
-    content: source.content || source.description || source.summary || '',
+    title,
+    content,
     url: source.url,
     timestamp: source.timestamp || source.createdAt || source.updatedAt,
     relevance: row._score,
