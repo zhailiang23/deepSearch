@@ -2,6 +2,7 @@ package com.ynet.mgmt.hotTopic.controller;
 
 import com.ynet.mgmt.hotTopic.dto.*;
 import com.ynet.mgmt.hotTopic.service.HotTopicService;
+import com.ynet.mgmt.hotTopic.service.HotTopicPinyinService;
 import com.ynet.mgmt.common.dto.ApiResponse;
 import com.ynet.mgmt.common.dto.PageResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 热门话题管理控制器
@@ -40,9 +43,11 @@ public class HotTopicController {
     private static final Logger logger = LoggerFactory.getLogger(HotTopicController.class);
 
     private final HotTopicService hotTopicService;
+    private final HotTopicPinyinService pinyinService;
 
-    public HotTopicController(HotTopicService hotTopicService) {
+    public HotTopicController(HotTopicService hotTopicService, HotTopicPinyinService pinyinService) {
         this.hotTopicService = hotTopicService;
+        this.pinyinService = pinyinService;
     }
 
     // ========== 基础CRUD操作 ==========
@@ -335,5 +340,45 @@ public class HotTopicController {
                 visibleCount, invisibleCount, averagePopularity);
 
         return ResponseEntity.ok(ApiResponse.success(statistics));
+    }
+
+    // ========== 拼音相关接口 ==========
+
+    /**
+     * 初始化所有热门话题的拼音字段
+     */
+    @Operation(summary = "初始化拼音数据", description = "为所有缺失拼音字段的热门话题生成拼音")
+    @PostMapping("/init-pinyin")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> initializePinyin() {
+        logger.info("开始初始化热门话题拼音数据");
+
+        int updateCount = pinyinService.initializeAllPinyin();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("updateCount", updateCount);
+        result.put("message", "拼音数据初始化完成");
+
+        logger.info("拼音数据初始化完成: updateCount={}", updateCount);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * 强制更新所有热门话题的拼音字段
+     */
+    @Operation(summary = "强制更新拼音数据", description = "强制重新生成所有热门话题的拼音字段")
+    @PostMapping("/force-update-pinyin")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> forceUpdatePinyin() {
+        logger.info("开始强制更新所有热门话题拼音数据");
+
+        int updateCount = pinyinService.forceUpdateAllPinyin();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("updateCount", updateCount);
+        result.put("message", "拼音数据强制更新完成");
+
+        logger.info("拼音数据强制更新完成: updateCount={}", updateCount);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

@@ -253,9 +253,32 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
             // 查询可见的热门话题
             List<HotTopic> hotTopics = hotTopicRepository.findByVisibleTrueOrderByPopularityDesc();
 
-            // 过滤以查询词开头的话题（前缀匹配）
+            String query = request.getQuery().toLowerCase();
+
+            // 过滤匹配的话题（支持中文前缀、拼音前缀和首字母前缀匹配）
             List<HotTopic> matchedTopics = hotTopics.stream()
-                .filter(topic -> topic.getName().toLowerCase().startsWith(request.getQuery().toLowerCase()))
+                .filter(topic -> {
+                    String name = topic.getName().toLowerCase();
+                    String pinyin = topic.getPinyin();
+                    String firstLetter = topic.getPinyinFirstLetter();
+
+                    // 中文前缀匹配
+                    if (name.startsWith(query)) {
+                        return true;
+                    }
+
+                    // 拼音前缀匹配（如果拼音字段存在）
+                    if (pinyin != null && pinyin.toLowerCase().startsWith(query)) {
+                        return true;
+                    }
+
+                    // 首字母前缀匹配（如果首字母字段存在）
+                    if (firstLetter != null && firstLetter.toLowerCase().startsWith(query)) {
+                        return true;
+                    }
+
+                    return false;
+                })
                 .collect(Collectors.toList());
 
             if (matchedTopics.isEmpty()) {
@@ -294,6 +317,7 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
 
     /**
      * 获取ES Completion建议
+     * 混合策略：使用completion suggester（中文）+ prefix query（拼音）
      */
     private List<SearchSuggestionDTO> getESCompletionSuggestions(SearchSuggestionRequest request) {
         try {
@@ -304,101 +328,197 @@ public class SearchSuggestionServiceImpl implements SearchSuggestionService {
                 return Collections.emptyList();
             }
 
-            logger.debug("查询ES Completion建议: indices={}, query={}", indexNames, request.getQuery());
+            logger.debug("查询ES建议: indices={}, query={}", indexNames, request.getQuery());
 
-            // 为每个索引单独查询，避免字段不一致问题
             List<SearchSuggestionDTO> allSuggestions = new ArrayList<>();
 
             for (String indexName : indexNames) {
                 try {
-                    // 获取该索引的 completion 字段
-                    List<String> completionFields = getCompletionFields(indexName);
-                    if (completionFields.isEmpty()) {
-                        logger.debug("索引 {} 中没有找到 completion 字段", indexName);
-                        continue;
-                    }
+                    // 策略1：使用completion suggester（支持中文前缀匹配）
+                    allSuggestions.addAll(getCompletionSuggesterResults(indexName, request));
 
-                    logger.debug("索引 {} 使用 completion 字段: {}", indexName, completionFields);
-
-                    // 构建该索引的 completion suggest 查询
-                    SearchRequest searchRequest = SearchRequest.of(s -> {
-                        var requestBuilder = s.index(indexName).size(0);
-
-                        // 为每个 completion 字段创建一个 suggester
-                        requestBuilder.suggest(suggester -> {
-                            for (String field : completionFields) {
-                                suggester.suggesters(field.replace(".", "_"), suggest -> suggest
-                                    .prefix(request.getQuery())
-                                    .completion(completion -> {
-                                        var builder = completion
-                                            .field(field)
-                                            .size(request.getSize())
-                                            .skipDuplicates(true);  // 跳过重复建议
-
-                                        // 如果启用模糊匹配
-                                        if (request.getEnableFuzzy() != null && request.getEnableFuzzy()) {
-                                            builder.fuzzy(f -> f
-                                                .fuzziness("AUTO")
-                                                .transpositions(true)
-                                                .minLength(3)
-                                            );
-                                        }
-
-                                        return builder;
-                                    })
-                                );
-                            }
-                            return suggester;
-                        });
-
-                        return requestBuilder;
-                    });
-
-                    // 执行查询
-                    SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
-
-                    // 处理该索引的建议结果
-                    if (response.suggest() != null) {
-                        for (Map.Entry<String, List<Suggestion<Map>>> entry : response.suggest().entrySet()) {
-                            String suggesterName = entry.getKey();
-                            List<Suggestion<Map>> suggestionList = entry.getValue();
-
-                            for (Suggestion<Map> suggestion : suggestionList) {
-                                if (suggestion.isCompletion() && suggestion.completion() != null) {
-                                    for (CompletionSuggestOption<Map> option : suggestion.completion().options()) {
-                                        Double optionScore = option.score();
-                                        double score = (optionScore != null ? optionScore.doubleValue() : 1.0) * 40.0;
-
-                                        SearchSuggestionDTO dto = new SearchSuggestionDTO(
-                                            option.text(),
-                                            score,
-                                            SuggestionType.ES_COMPLETION
-                                        );
-                                        dto.addMetadata("esScore", optionScore);
-                                        dto.addMetadata("field", suggesterName);
-                                        dto.addMetadata("index", indexName);
-                                        allSuggestions.add(dto);
-
-                                        logger.debug("找到建议: text={}, score={}, field={}, index={}",
-                                            option.text(), score, suggesterName, indexName);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    // 策略2：使用prefix query在chinese_pinyin字段上查询（支持拼音匹配）
+                    allSuggestions.addAll(getPinyinPrefixResults(indexName, request));
 
                 } catch (Exception e) {
-                    logger.warn("索引 {} 的 ES Completion 查询失败: {}", indexName, e.getMessage());
+                    logger.warn("索引 {} 的建议查询失败: {}", indexName, e.getMessage());
                 }
             }
 
-            logger.debug("ES Completion建议查询完成: indices={}, count={}", indexNames, allSuggestions.size());
+            logger.debug("ES建议查询完成: indices={}, count={}", indexNames, allSuggestions.size());
             return allSuggestions;
 
         } catch (Exception e) {
-            logger.error("ES Completion建议查询失败（未知异常）", e);
+            logger.error("ES建议查询失败（未知异常）", e);
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * 使用completion suggester获取建议
+     */
+    @SuppressWarnings("unchecked")
+    private List<SearchSuggestionDTO> getCompletionSuggesterResults(String indexName, SearchSuggestionRequest request) {
+        List<SearchSuggestionDTO> suggestions = new ArrayList<>();
+
+        try {
+            // 获取该索引的 completion 字段
+            List<String> completionFields = getCompletionFields(indexName);
+            if (completionFields.isEmpty()) {
+                logger.debug("索引 {} 中没有找到 completion 字段", indexName);
+                return suggestions;
+            }
+
+            logger.debug("索引 {} 使用 completion 字段: {}", indexName, completionFields);
+
+            // 构建 completion suggest 查询
+            SearchRequest searchRequest = SearchRequest.of(s -> {
+                var requestBuilder = s.index(indexName).size(0);
+
+                // 为每个 completion 字段创建一个 suggester
+                requestBuilder.suggest(suggester -> {
+                    for (String field : completionFields) {
+                        suggester.suggesters(field.replace(".", "_"), suggest -> suggest
+                            .prefix(request.getQuery())
+                            .completion(completion -> {
+                                var builder = completion
+                                    .field(field)
+                                    .size(request.getSize())
+                                    .skipDuplicates(true);
+
+                                if (request.getEnableFuzzy() != null && request.getEnableFuzzy()) {
+                                    builder.fuzzy(f -> f
+                                        .fuzziness("AUTO")
+                                        .transpositions(true)
+                                        .minLength(3)
+                                    );
+                                }
+
+                                return builder;
+                            })
+                        );
+                    }
+                    return suggester;
+                });
+
+                return requestBuilder;
+            });
+
+            // 执行查询
+            SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
+
+            // 处理建议结果
+            if (response.suggest() != null) {
+                for (Map.Entry<String, List<Suggestion<Map>>> entry : response.suggest().entrySet()) {
+                    for (Suggestion<Map> suggestion : entry.getValue()) {
+                        if (suggestion.isCompletion() && suggestion.completion() != null) {
+                            for (CompletionSuggestOption<Map> option : suggestion.completion().options()) {
+                                Double optionScore = option.score();
+                                double score = (optionScore != null ? optionScore.doubleValue() : 1.0) * 40.0;
+
+                                SearchSuggestionDTO dto = new SearchSuggestionDTO(
+                                    option.text(),
+                                    score,
+                                    SuggestionType.ES_COMPLETION
+                                );
+                                dto.addMetadata("esScore", optionScore);
+                                dto.addMetadata("method", "completion");
+                                dto.addMetadata("index", indexName);
+                                suggestions.add(dto);
+
+                                logger.debug("Completion建议: text={}, score={}", option.text(), score);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Completion suggester查询失败: index={}, error={}", indexName, e.getMessage());
+        }
+
+        return suggestions;
+    }
+
+    /**
+     * 使用match query在拼音字段上查询
+     * 注意:拼音分析器是按字分词的,所以使用match query + operator:and来匹配多个拼音tokens
+     */
+    @SuppressWarnings("unchecked")
+    private List<SearchSuggestionDTO> getPinyinPrefixResults(String indexName, SearchSuggestionRequest request) {
+        List<SearchSuggestionDTO> suggestions = new ArrayList<>();
+
+        try {
+            // 构建match query查询拼音字段
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                .index(indexName)
+                .size(request.getSize())
+                .query(q -> q
+                    .bool(b -> b
+                        .should(sh -> sh
+                            .match(m -> m
+                                .field("name.chinese_pinyin")
+                                .query(request.getQuery().toLowerCase())
+                                .operator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
+                                .boost(2.0f)
+                            )
+                        )
+                        .should(sh -> sh
+                            .match(m -> m
+                                .field("descript.chinese_pinyin")
+                                .query(request.getQuery().toLowerCase())
+                                .operator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
+                                .boost(1.0f)
+                            )
+                        )
+                        .should(sh -> sh
+                            .match(m -> m
+                                .field("category.chinese_pinyin")
+                                .query(request.getQuery().toLowerCase())
+                                .operator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
+                                .boost(1.5f)
+                            )
+                        )
+                        .minimumShouldMatch("1")
+                    )
+                )
+                .source(src -> src
+                    .filter(f -> f
+                        .includes("name", "descript", "category")
+                    )
+                )
+            );
+
+            // 执行查询
+            SearchResponse<Map> response = elasticsearchClient.search(searchRequest, Map.class);
+
+            // 处理查询结果
+            if (response.hits() != null && response.hits().hits() != null) {
+                for (var hit : response.hits().hits()) {
+                    Map source = hit.source();
+                    if (source != null && source.containsKey("name")) {
+                        String text = source.get("name").toString();
+                        Double hitScore = hit.score();
+                        double score = (hitScore != null ? hitScore : 1.0) * 40.0;
+
+                        SearchSuggestionDTO dto = new SearchSuggestionDTO(
+                            text,
+                            score,
+                            SuggestionType.ES_COMPLETION
+                        );
+                        dto.addMetadata("esScore", hitScore);
+                        dto.addMetadata("method", "pinyin_match");
+                        dto.addMetadata("index", indexName);
+                        suggestions.add(dto);
+
+                        logger.debug("拼音匹配建议: text={}, score={}", text, score);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("拼音match查询失败: index={}, error={}", indexName, e.getMessage());
+        }
+
+        return suggestions;
     }
 
     /**

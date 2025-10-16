@@ -17,7 +17,9 @@ import java.util.Objects;
 @Table(name = "hot_topics", indexes = {
     @Index(name = "idx_hot_topic_name", columnList = "name"),
     @Index(name = "idx_hot_topic_popularity", columnList = "popularity"),
-    @Index(name = "idx_hot_topic_visible", columnList = "visible")
+    @Index(name = "idx_hot_topic_visible", columnList = "visible"),
+    @Index(name = "idx_hot_topic_pinyin", columnList = "pinyin"),
+    @Index(name = "idx_hot_topic_pinyin_first_letter", columnList = "pinyin_first_letter")
 })
 public class HotTopic extends BaseEntity {
 
@@ -51,6 +53,22 @@ public class HotTopic extends BaseEntity {
     @Column(name = "visible", nullable = false)
     @NotNull(message = "可见性设置不能为空")
     private Boolean visible;
+
+    /**
+     * 话题名称的拼音全拼（用于拼音搜索）
+     * 例如："取现" -> "quxian"
+     */
+    @Column(name = "pinyin", length = 200)
+    @Size(max = 200, message = "拼音长度不能超过200字符")
+    private String pinyin;
+
+    /**
+     * 话题名称的拼音首字母（用于首字母搜索）
+     * 例如："取现" -> "qx"
+     */
+    @Column(name = "pinyin_first_letter", length = 50)
+    @Size(max = 50, message = "拼音首字母长度不能超过50字符")
+    private String pinyinFirstLetter;
 
     // 构造函数
 
@@ -94,6 +112,22 @@ public class HotTopic extends BaseEntity {
 
     public void setVisible(Boolean visible) {
         this.visible = visible;
+    }
+
+    public String getPinyin() {
+        return pinyin;
+    }
+
+    public void setPinyin(String pinyin) {
+        this.pinyin = pinyin;
+    }
+
+    public String getPinyinFirstLetter() {
+        return pinyinFirstLetter;
+    }
+
+    public void setPinyinFirstLetter(String pinyinFirstLetter) {
+        this.pinyinFirstLetter = pinyinFirstLetter;
     }
 
     // 业务方法

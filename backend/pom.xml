@@ -131,6 +131,13 @@
 			<version>1.0.2</version>
 		</dependency>
 
+		<!-- Pinyin Conversion -->
+		<dependency>
+			<groupId>com.belerweb</groupId>
+			<artifactId>pinyin4j</artifactId>
+			<version>2.5.1</version>
+		</dependency>
+
 		<!-- Caffeine Cache -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>

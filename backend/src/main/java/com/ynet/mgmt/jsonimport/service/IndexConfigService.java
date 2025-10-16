@@ -294,11 +294,26 @@ public class IndexConfigService {
         // 为适合的字段添加 completion 子字段支持，用于搜索建议
         if (shouldAddCompletionField(fieldResult)) {
             log.debug("为字段 {} 添加 completion 子字段支持", fieldResult.getFieldName());
-            fields.put("completion", IndexMappingConfig.FieldMapping.builder()
+
+            IndexMappingConfig.FieldMapping.FieldMappingBuilder completionBuilder =
+                IndexMappingConfig.FieldMapping.builder()
                     .elasticsearchType("completion")
                     .index(true)
-                    .docValues(false)
-                    .build());
+                    .docValues(false);
+
+            // completion 字段的拼音支持配置
+            // 注意：completion 字段需要使用 search_analyzer 而不是 analyzer
+            // analyzer 用于索引时分析输入，search_analyzer 用于搜索时分析查询
+            if (shouldAddPinyinField(fieldResult)) {
+                // 使用 analyzer 来分析输入内容（索引时）
+                completionBuilder.analyzer("chinese_pinyin_analyzer");
+                // 使用 search_analyzer 来分析查询词（搜索时）
+                completionBuilder.searchAnalyzer("chinese_pinyin_analyzer");
+                log.debug("为字段 {} 的 completion 子字段配置拼音支持（analyzer: chinese_pinyin_analyzer）",
+                         fieldResult.getFieldName());
+            }
+
+            fields.put("completion", completionBuilder.build());
         }
 
         // 注意：dense_vector字段不能作为multifields，需要在主字段级别单独创建
