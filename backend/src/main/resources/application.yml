@@ -359,9 +359,18 @@ query-understanding:
       llm-result: ${QUERY_UNDERSTANDING_LLM_CACHE_TTL:PT1H}  # LLM结果缓存1小时
       synonym: ${QUERY_UNDERSTANDING_SYNONYM_CACHE_TTL:PT24H}  # 同义词缓存24小时
 
+  # Embedding配置
+  embedding:
+    enabled: ${QUERY_UNDERSTANDING_EMBEDDING_ENABLED:true}  # 启用Embedding功能
+    siliconflow:
+      api-key: ${SILICONFLOW_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
+      api-url: ${QUERY_UNDERSTANDING_EMBEDDING_API_URL:https://api.siliconflow.cn/v1/embeddings}
+      model: ${QUERY_UNDERSTANDING_EMBEDDING_MODEL:BAAI/bge-large-zh-v1.5}
+      timeout: ${QUERY_UNDERSTANDING_EMBEDDING_TIMEOUT:10000}
+
   # LLM增强配置
   llm:
-    enabled: ${QUERY_UNDERSTANDING_LLM_ENABLED:false}  # 默认关闭LLM功能
+    enabled: ${QUERY_UNDERSTANDING_LLM_ENABLED:true}  # 启用LLM功能
     siliconflow:
       api-key: ${SILICONFLOW_API_KEY:sk-iiqrscvxpnomsjmissalpxylgwbmoszzoawkgtowyuqirejb}
       api-url: ${QUERY_UNDERSTANDING_LLM_API_URL:https://api.siliconflow.cn/v1/chat/completions}
@@ -369,4 +378,4 @@ query-understanding:
       temperature: ${QUERY_UNDERSTANDING_LLM_TEMPERATURE:0.3}
       max-tokens: ${QUERY_UNDERSTANDING_LLM_MAX_TOKENS:500}
       top-p: ${QUERY_UNDERSTANDING_LLM_TOP_P:0.9}
-      timeout: ${QUERY_UNDERSTANDING_LLM_TIMEOUT:10000}
+      timeout: ${QUERY_UNDERSTANDING_LLM_TIMEOUT:5000}

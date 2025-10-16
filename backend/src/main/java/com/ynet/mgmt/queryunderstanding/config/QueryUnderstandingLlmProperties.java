@@ -25,6 +25,11 @@ public class QueryUnderstandingLlmProperties {
      */
     private SiliconFlowConfig siliconflow = new SiliconFlowConfig();
 
+    /**
+     * Embedding API配置
+     */
+    private EmbeddingConfig embedding = new EmbeddingConfig();
+
     @Data
     public static class SiliconFlowConfig {
         /**
@@ -61,5 +66,38 @@ public class QueryUnderstandingLlmProperties {
          * 超时时间(毫秒)
          */
         private Long timeout = 10000L;
+    }
+
+    @Data
+    public static class EmbeddingConfig {
+        /**
+         * API Key (如果为空则使用siliconflow.apiKey)
+         */
+        private String apiKey;
+
+        /**
+         * API URL
+         */
+        private String apiUrl = "https://api.siliconflow.cn/v1/embeddings";
+
+        /**
+         * 模型名称
+         */
+        private String model = "BAAI/bge-large-zh-v1.5";
+
+        /**
+         * 编码格式
+         */
+        private String encodingFormat = "float";
+
+        /**
+         * 超时时间(毫秒)
+         */
+        private Long timeout = 10000L;
+
+        /**
+         * 语义相似度阈值
+         */
+        private Double similarityThreshold = 0.7;
     }
 }

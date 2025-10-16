@@ -34,6 +34,16 @@ public class QueryUnderstandingResponse {
     private String correctedQuery;
 
     /**
+     * 扩展后的查询（包含同义词等）
+     */
+    private String expandedQuery;
+
+    /**
+     * 重写后的查询（基于意图和实体优化）
+     */
+    private String rewrittenQuery;
+
+    /**
      * 最终的查询（用于搜索）
      */
     private String finalQuery;

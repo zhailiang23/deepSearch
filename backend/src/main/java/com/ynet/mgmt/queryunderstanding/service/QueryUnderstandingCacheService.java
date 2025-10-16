@@ -35,6 +35,7 @@ public class QueryUnderstandingCacheService {
     private static final String LLM_ENTITY_PREFIX = "llm:entity:";
     private static final String LLM_REWRITE_PREFIX = "llm:rewrite:";
     private static final String SYNONYM_PREFIX = "synonym:";
+    private static final String EMBEDDING_PREFIX = "embedding:";
 
     /**
      * 默认缓存过期时间
@@ -42,6 +43,7 @@ public class QueryUnderstandingCacheService {
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(10);
     private static final Duration LLM_TTL = Duration.ofHours(1);
     private static final Duration SYNONYM_TTL = Duration.ofHours(24);
+    private static final Duration EMBEDDING_TTL = Duration.ofHours(24);
 
     /**
      * 缓存查询理解结果
@@ -268,6 +270,44 @@ public class QueryUnderstandingCacheService {
         } catch (Exception e) {
             log.warn("清除所有缓存失败: {}", e.getMessage());
         }
+    }
+
+    /**
+     * 缓存embedding向量
+     *
+     * @param text      文本
+     * @param embedding embedding向量(JSON字符串)
+     */
+    public void cacheEmbedding(String text, String embedding) {
+        try {
+            String key = CACHE_PREFIX + EMBEDDING_PREFIX + text;
+            redisTemplate.opsForValue().set(key, embedding, EMBEDDING_TTL.toMillis(), TimeUnit.MILLISECONDS);
+            log.debug("缓存embedding向量: text={}", text);
+        } catch (Exception e) {
+            log.warn("缓存embedding向量失败: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 获取缓存的embedding向量
+     *
+     * @param text 文本
+     * @return embedding向量(JSON字符串),如果不存在则返回null
+     */
+    public String getCachedEmbedding(String text) {
+        try {
+            String key = CACHE_PREFIX + EMBEDDING_PREFIX + text;
+            Object value = redisTemplate.opsForValue().get(key);
+
+            if (value != null) {
+                log.debug("命中embedding缓存: text={}", text);
+                return value.toString();
+            }
+        } catch (Exception e) {
+            log.warn("获取缓存的embedding向量失败: {}", e.getMessage());
+        }
+
+        return null;
     }
 
     /**

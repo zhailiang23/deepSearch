@@ -179,6 +179,15 @@ const routes = [
           requiresAuth: true,
           title: '批量智能识别'
         }
+      },
+      {
+        path: 'query-understanding',
+        name: 'QueryUnderstanding',
+        component: () => import('@/views/query-understanding/QueryUnderstandingPage.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '查询理解管理'
+        }
       }
     ]
   },

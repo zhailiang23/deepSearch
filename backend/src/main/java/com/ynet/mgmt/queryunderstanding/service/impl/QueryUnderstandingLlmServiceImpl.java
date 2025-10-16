@@ -45,10 +45,11 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
      * 意图识别提示词
      */
     private static final String INTENT_RECOGNITION_PROMPT =
-        "你是一个查询意图分析助手。请分析用户的查询意图,并只返回以下类型之一:\n" +
-        "- QUERY: 用户想要查询或搜索信息\n" +
-        "- COMMAND: 用户想要执行某个操作或命令\n" +
-        "- QUESTION: 用户在询问一个问题,需要解释性回答\n\n" +
+        "你是银行手机APP的查询意图分析助手。请分析用户的查询意图,并只返回以下类型之一:\n" +
+        "- QUERY: 用户想要查询或搜索银行服务、产品、功能等信息\n" +
+        "- COMMAND: 用户想要执行银行业务操作(如转账、缴费、开户等)\n" +
+        "- QUESTION: 用户在询问银行相关问题,需要解释性回答\n\n" +
+        "银行业务场景包括:转账汇款、理财投资、信用卡、贷款、生活缴费、账户查询、网点服务等。\n\n" +
         "用户查询: {query}\n\n" +
         "请只返回意图类型(QUERY/COMMAND/QUESTION),不要有其他内容。";
 
@@ -56,27 +57,33 @@ public class QueryUnderstandingLlmServiceImpl implements QueryUnderstandingLlmSe
      * 实体抽取提示词
      */
     private static final String ENTITY_EXTRACTION_PROMPT =
-        "你是一个实体识别助手。请从用户查询中识别出以下类型的实体:\n" +
-        "- PERSON: 人名\n" +
-        "- LOCATION: 地名\n" +
-        "- ORGANIZATION: 机构名\n" +
-        "- DATE: 日期\n" +
-        "- TIME: 时间\n" +
-        "- MONEY: 金额\n" +
-        "- PRODUCT: 产品名\n" +
-        "- EVENT: 事件名\n\n" +
+        "你是银行手机APP的实体识别助手。请从用户查询中识别银行业务相关实体:\n" +
+        "- ACCOUNT_TYPE: 账户类型(储蓄卡、信用卡、理财账户、工资卡等)\n" +
+        "- TRANSACTION_TYPE: 交易类型(转账、缴费、充值、提现、还款等)\n" +
+        "- SERVICE: 服务类型(网点、ATM、在线客服、预约服务等)\n" +
+        "- PRODUCT: 金融产品(贷款、理财、基金、保险、定期存款等)\n" +
+        "- MONEY: 金额(如:1000元、5万)\n" +
+        "- DATE: 日期(如:今天、本月、2024年1月)\n" +
+        "- TIME: 时间(如:上午、工作时间)\n" +
+        "- LOCATION: 地点(网点位置、城市、地区)\n" +
+        "- ORGANIZATION: 机构(收款单位、缴费单位)\n\n" +
         "用户查询: {query}\n\n" +
-        "请以JSON格式返回实体列表,格式: [{\"type\":\"PERSON\",\"text\":\"张三\",\"value\":\"张三\"}]\n" +
+        "请以JSON格式返回实体列表,格式: [{\"type\":\"ACCOUNT_TYPE\",\"text\":\"信用卡\",\"value\":\"信用卡\"}]\n" +
         "如果没有识别到实体,请返回空数组: []";
 
     /**
      * 查询重写提示词
      */
     private static final String QUERY_REWRITE_PROMPT =
-        "你是一个查询优化助手。基于用户的意图和提取的实体,请生成一个更精确的搜索查询。\n\n" +
+        "你是银行手机APP的查询优化助手。基于用户意图和识别的实体,生成更精确的银行业务搜索查询。\n\n" +
+        "优化原则:\n" +
+        "1. 补充银行业务术语(如:将'还钱'改为'信用卡还款')\n" +
+        "2. 明确业务场景(如:将'转账'改为'个人转账汇款')\n" +
+        "3. 保留关键实体信息(金额、日期、账户类型等)\n" +
+        "4. 使用银行标准服务名称(如:'理财产品'而非'赚钱')\n\n" +
         "原始查询: {query}\n" +
         "意图类型: {intent}\n" +
-        "实体: {entities}\n\n" +
+        "识别实体: {entities}\n\n" +
         "请直接返回优化后的查询文本,不要有其他说明。";
 
     public QueryUnderstandingLlmServiceImpl(QueryUnderstandingLlmProperties properties,

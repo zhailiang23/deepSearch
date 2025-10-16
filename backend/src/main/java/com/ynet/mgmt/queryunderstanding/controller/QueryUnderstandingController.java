@@ -44,6 +44,8 @@ public class QueryUnderstandingController {
                         .originalQuery(context.getOriginalQuery())
                         .normalizedQuery(context.getNormalizedQuery())
                         .correctedQuery(context.getCorrectedQuery())
+                        .expandedQuery(context.getExpandedQuery())
+                        .rewrittenQuery(context.getRewrittenQuery())
                         .finalQuery(context.getCurrentQuery())
                         .totalProcessingTime(context.getTotalProcessingTime());
 
