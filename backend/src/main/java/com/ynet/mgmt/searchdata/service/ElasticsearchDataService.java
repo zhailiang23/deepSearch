@@ -51,6 +51,7 @@ public class ElasticsearchDataService {
     private final RerankService rerankService;
     private final SearchWeightProperties weightProperties;
     private final ExecutorService searchExecutor;
+    private final com.ynet.mgmt.queryunderstanding.service.QueryUnderstandingService queryUnderstandingService;
 
     /**
      * 是否启用语义搜索功能
@@ -71,7 +72,8 @@ public class ElasticsearchDataService {
                                   com.ynet.mgmt.searchspace.service.SearchSpaceService searchSpaceService,
                                   RerankService rerankService,
                                   SearchWeightProperties weightProperties,
-                                  ExecutorService searchExecutor) {
+                                  ExecutorService searchExecutor,
+                                  com.ynet.mgmt.queryunderstanding.service.QueryUnderstandingService queryUnderstandingService) {
         this.elasticsearchClient = elasticsearchClient;
         this.embeddingService = embeddingService;
         this.sensitiveWordCheckService = sensitiveWordCheckService;
@@ -79,6 +81,7 @@ public class ElasticsearchDataService {
         this.rerankService = rerankService;
         this.weightProperties = weightProperties;
         this.searchExecutor = searchExecutor;
+        this.queryUnderstandingService = queryUnderstandingService;
     }
 
     /**
@@ -104,7 +107,7 @@ public class ElasticsearchDataService {
                     request.getEnablePinyinSearch(), request.getPinyinMode(), request.getChannel());
 
             // 构建查询
-            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName, request.getEnableSemanticSearch(), request.getSemanticWeight());
+            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName, request.getEnableSemanticSearch(), request.getSemanticWeight(), request.getEnableQueryUnderstanding());
 
             // 如果指定了渠道，添加渠道过滤
             if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
@@ -805,12 +808,31 @@ public class ElasticsearchDataService {
     }
 
     /**
-     * 构建查询 - 支持拼音搜索和语义搜索增强
+     * 构建查询 - 支持拼音搜索、语义搜索增强和查询理解
      */
-    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName, Boolean enableSemanticSearch, Double requestSemanticWeight) {
+    private Query buildQuery(String queryString, Boolean enablePinyinSearch, String pinyinMode, String indexName, Boolean enableSemanticSearch, Double requestSemanticWeight, Boolean enableQueryUnderstanding) {
         if (!StringUtils.hasText(queryString)) {
             return MatchAllQuery.of(m -> m)._toQuery();
         }
+
+        // 如果启用查询理解，先通过管道处理查询
+        String processedQuery = queryString;
+        if (enableQueryUnderstanding != null && enableQueryUnderstanding) {
+            try {
+                com.ynet.mgmt.queryunderstanding.context.QueryContext context = queryUnderstandingService.understandQuery(queryString);
+                // 使用查询理解管道处理后的查询(优先级: 纠正后查询 > 标准化查询 > 原始查询)
+                processedQuery = context.getCurrentQuery();
+                log.info("查询理解处理: \"{}\" -> \"{}\"", queryString, processedQuery);
+                log.debug("查询理解详情: 同义词={}, 意图={}, 置信度={}",
+                    context.getSynonyms(), context.getIntent(), context.getIntentConfidence());
+            } catch (Exception e) {
+                log.warn("查询理解处理失败，使用原始查询: query={}, error={}", queryString, e.getMessage());
+                // 失败时继续使用原始查询
+            }
+        }
+
+        // 使用处理后的查询继续构建ES查询 - 使用final变量以便在lambda中使用
+        final String finalQueryString = processedQuery;
 
         // 检查是否启用语义搜索：请求参数、全局配置和服务可用性
         boolean actualEnableSemanticSearch = (enableSemanticSearch != null ? enableSemanticSearch : true)
@@ -822,13 +844,13 @@ public class ElasticsearchDataService {
         // 如果启用语义搜索，构建混合查询（关键词 + 向量）
         if (actualEnableSemanticSearch) {
             try {
-                Query hybridQuery = buildHybridQuery(queryString, enablePinyinSearch, pinyinMode, indexName, requestSemanticWeight);
+                Query hybridQuery = buildHybridQuery(finalQueryString, enablePinyinSearch, pinyinMode, indexName, requestSemanticWeight);
                 if (hybridQuery != null) {
-                    log.debug("使用混合查询（关键词+语义）: query={}", queryString);
+                    log.debug("使用混合查询（关键词+语义）: query={}", finalQueryString);
                     return hybridQuery;
                 }
             } catch (Exception e) {
-                log.warn("混合查询构建失败，降级为关键词查询: query={}, error={}", queryString, e.getMessage(), e);
+                log.warn("混合查询构建失败，降级为关键词查询: query={}, error={}", finalQueryString, e.getMessage(), e);
                 if (log.isDebugEnabled()) {
                     log.debug("混合查询构建异常详情", e);
                 }
@@ -837,23 +859,23 @@ public class ElasticsearchDataService {
 
         // 如果拼音搜索被禁用，直接使用标准查询
         if (enablePinyinSearch == null || !enablePinyinSearch) {
-            log.debug("拼音搜索已禁用，使用标准查询: query={}", queryString);
+            log.debug("拼音搜索已禁用，使用标准查询: query={}", finalQueryString);
             return QueryStringQuery.of(q -> q
-                    .query(queryString)
+                    .query(finalQueryString)
                     .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
                     .analyzeWildcard(true))._toQuery();
         }
 
         try {
             // 尝试构建拼音增强查询
-            Query pinyinQuery = buildPinyinEnhancedQuery(queryString, pinyinMode, indexName);
+            Query pinyinQuery = buildPinyinEnhancedQuery(finalQueryString, pinyinMode, indexName);
             if (pinyinQuery != null) {
-                log.debug("使用拼音增强查询: query={}, mode={}", queryString, pinyinMode);
+                log.debug("使用拼音增强查询: query={}, mode={}", finalQueryString, pinyinMode);
                 return pinyinQuery;
             }
         } catch (Exception e) {
             log.warn("拼音查询构建失败，降级为标准查询: query={}, mode={}, error={}",
-                    queryString, pinyinMode, e.getMessage());
+                    finalQueryString, pinyinMode, e.getMessage());
 
             // 记录拼音搜索错误的详细信息，便于问题排查
             if (log.isDebugEnabled()) {
@@ -863,7 +885,7 @@ public class ElasticsearchDataService {
 
         // 降级为标准查询
         return QueryStringQuery.of(q -> q
-                .query(queryString)
+                .query(finalQueryString)
                 .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
                 .analyzeWildcard(true))._toQuery();
     }
@@ -1781,7 +1803,8 @@ public class ElasticsearchDataService {
             // 构建查询
             Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(),
                     request.getPinyinMode(), indexName,
-                    request.getEnableSemanticSearch(), request.getSemanticWeight());
+                    request.getEnableSemanticSearch(), request.getSemanticWeight(),
+                    request.getEnableQueryUnderstanding());
 
             // 添加渠道过滤
             if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {

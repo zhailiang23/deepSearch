@@ -336,3 +336,17 @@ cluster:
       temperature: ${SILICONFLOW_CLUSTER_LLM_TEMPERATURE:0.3}
       max-tokens: ${SILICONFLOW_CLUSTER_LLM_MAX_TOKENS:500}
       timeout: ${SILICONFLOW_CLUSTER_LLM_TIMEOUT:30000}
+# 查询理解管道配置
+query-understanding:
+  # 是否启用查询理解管道
+  enabled: ${QUERY_UNDERSTANDING_ENABLED:true}
+  
+  # 管道超时配置（毫秒）
+  timeout:
+    total: ${QUERY_UNDERSTANDING_TOTAL_TIMEOUT:5000}  # 总超时 5秒
+    processor: ${QUERY_UNDERSTANDING_PROCESSOR_TIMEOUT:1000}  # 单个处理器超时 1秒
+  
+  # 智能跳过策略
+  smart-skip:
+    enabled: ${QUERY_UNDERSTANDING_SMART_SKIP:true}
+    simple-query-threshold: ${QUERY_UNDERSTANDING_SIMPLE_THRESHOLD:2}  # 少于2个字符跳过复杂处理

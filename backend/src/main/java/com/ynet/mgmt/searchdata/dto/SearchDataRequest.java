@@ -71,6 +71,9 @@ public class SearchDataRequest {
     @Min(value = 1, message = "重排序Top-N必须大于等于1")
     private Integer rerankTopN;
 
+    @Schema(description = "启用查询理解", example = "true", defaultValue = "false")
+    private Boolean enableQueryUnderstanding = false;
+
     /**
      * 排序配置
      */
