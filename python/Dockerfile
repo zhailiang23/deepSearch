@@ -26,7 +26,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制所有应用代码
 COPY main_service.py \
-     cluster_api.py \
      clustering.py \
      siliconflow_client.py \
      embedding_service.py \
