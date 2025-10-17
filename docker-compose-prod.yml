@@ -1,0 +1,199 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: deepsearch-mysql-prod
+    environment:
+      MYSQL_DATABASE: mgmt_db
+      MYSQL_USER: mgmt_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Ynet@2024}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Ynet@2024Root}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - deepsearch-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_connections=500
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mgmt_user", "-p${MYSQL_PASSWORD:-Ynet@2024}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: deepsearch-redis-prod
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - deepsearch-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+
+  elasticsearch:
+    build:
+      context: ./docker/elasticsearch
+      dockerfile: Dockerfile
+    image: deepsearch-elasticsearch:prod
+    container_name: deepsearch-elasticsearch-prod
+    environment:
+      - node.name=es-node-1
+      - cluster.name=deepsearch-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - action.destructive_requires_name=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./docker/elasticsearch/pinyin-analyzer.json:/usr/share/elasticsearch/config/analysis/pinyin-analyzer.json
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - deepsearch-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  python-service:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    image: deepsearch-python-service:prod
+    container_name: deepsearch-python-service-prod
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+      - TRANSFORMERS_CACHE=/app/models
+      - HF_HOME=/app/models
+    volumes:
+      - python_models:/app/models
+    ports:
+      - "5002:5002"
+    networks:
+      - deepsearch-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: deepsearch-backend:prod
+    container_name: deepsearch-backend-prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: mgmt_db
+      DB_USERNAME: mgmt_user
+      DB_PASSWORD: ${MYSQL_PASSWORD:-Ynet@2024}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ELASTICSEARCH_URI: http://elasticsearch:9200
+      SEARCH_LOG_ENABLED: true
+      SEARCH_LOG_RETENTION_DAYS: 90
+      SEARCH_LOG_MONITOR_ENABLED: true
+      SEMANTIC_EMBEDDING_SERVICE_URL: http://python-service:5002
+      SEMANTIC_EMBEDDING_ENABLED: true
+      SEMANTIC_SEARCH_WEIGHT: 0.3
+      PYTHON_CLUSTER_URL: http://python-service:5002
+      JAVA_OPTS: "-Xms1g -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      python-service:
+        condition: service_healthy
+    networks:
+      - deepsearch-network
+    volumes:
+      - ./logs/backend:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 2G
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: deepsearch-frontend:prod
+    container_name: deepsearch-frontend-prod
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - deepsearch-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  python_models:
+    driver: local
+
+networks:
+  deepsearch-network:
+    driver: bridge
