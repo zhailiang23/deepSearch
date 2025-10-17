@@ -1,13 +1,11 @@
 """
-统一的Python微服务
-整合嵌入、重排和聚类三个服务
+Python微服务 - 精简版
+仅提供聚类分析服务,使用SiliconFlow API
 """
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Dict
 import logging
-import os
-from sentence_transformers import SentenceTransformer, CrossEncoder
 import numpy as np
 from siliconflow_client import SiliconFlowClient
 from clustering import perform_clustering
@@ -21,16 +19,10 @@ logger = logging.getLogger(__name__)
 
 # 创建 FastAPI 应用
 app = FastAPI(
-    title="deepSearch Python 统一服务",
-    description="整合嵌入、重排和聚类功能的统一微服务",
-    version="1.0.0"
+    title="deepSearch Python Service",
+    description="聚类分析服务 - 使用SiliconFlow API",
+    version="2.0.0"
 )
-
-# 全局模型实例
-_embedding_model: Optional[SentenceTransformer] = None
-_embedding_model_name: Optional[str] = None
-_rerank_model: Optional[CrossEncoder] = None
-_rerank_model_name: Optional[str] = None
 
 
 # ========== 通用模型 ==========
@@ -41,55 +33,6 @@ class HealthResponse(BaseModel):
     service: str = Field(..., description="服务名称")
     version: str = Field(..., description="版本号")
     modules: Dict[str, bool] = Field(..., description="模块状态")
-
-
-# ========== 嵌入服务模型 ==========
-
-class EmbeddingRequest(BaseModel):
-    """嵌入请求"""
-    input: List[str] = Field(..., description="待向量化的文本列表")
-    model: str = Field("BAAI/bge-large-zh-v1.5", description="模型名称")
-    encoding_format: str = Field("float", description="编码格式(float/base64)")
-
-
-class EmbeddingData(BaseModel):
-    """嵌入数据"""
-    object: str = Field("embedding", description="对象类型")
-    embedding: List[float] = Field(..., description="向量")
-    index: int = Field(..., description="索引")
-
-
-class EmbeddingResponse(BaseModel):
-    """嵌入响应"""
-    object: str = Field("list", description="对象类型")
-    data: List[EmbeddingData] = Field(..., description="嵌入数据列表")
-    model: str = Field(..., description="模型名称")
-    usage: dict = Field(..., description="使用量统计")
-
-
-# ========== 重排服务模型 ==========
-
-class RerankRequest(BaseModel):
-    """重排请求"""
-    model: str = Field("BAAI/bge-reranker-v2-m3", description="模型名称")
-    query: str = Field(..., description="查询文本")
-    documents: List[str] = Field(..., description="候选文档列表")
-    top_n: Optional[int] = Field(None, description="返回前N个结果")
-    return_documents: bool = Field(True, description="是否返回文档内容")
-
-
-class RerankResult(BaseModel):
-    """重排结果"""
-    index: int = Field(..., description="原始索引")
-    relevance_score: float = Field(..., description="相关性分数")
-    document: Optional[str] = Field(None, description="文档内容")
-
-
-class RerankResponse(BaseModel):
-    """重排响应"""
-    model: str = Field(..., description="模型名称")
-    results: List[RerankResult] = Field(..., description="重排结果列表")
-    usage: dict = Field(..., description="使用量统计")
 
 
 # ========== 聚类服务模型 ==========
@@ -164,96 +107,20 @@ class ClusterResponse(BaseModel):
         by_alias = True
 
 
-# ========== 模型管理 ==========
-
-def load_embedding_model(model_name: str) -> SentenceTransformer:
-    """加载嵌入模型"""
-    global _embedding_model, _embedding_model_name
-
-    if _embedding_model is not None and _embedding_model_name == model_name:
-        logger.info(f"使用已加载的嵌入模型: {model_name}")
-        return _embedding_model
-
-    logger.info(f"正在加载嵌入模型: {model_name}")
-
-    try:
-        if os.path.exists(model_name):
-            logger.info(f"从本地路径加载嵌入模型: {model_name}")
-            os.environ['TRANSFORMERS_OFFLINE'] = '1'
-            os.environ['HF_HUB_OFFLINE'] = '1'
-            _embedding_model = SentenceTransformer(
-                model_name,
-                local_files_only=True,
-                cache_folder=model_name
-            )
-        else:
-            logger.info(f"从 HuggingFace Hub 下载嵌入模型: {model_name}")
-            _embedding_model = SentenceTransformer(model_name)
-
-        _embedding_model_name = model_name
-        logger.info(f"嵌入模型加载成功,维度: {_embedding_model.get_sentence_embedding_dimension()}")
-        return _embedding_model
-
-    except Exception as e:
-        logger.error(f"嵌入模型加载失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"嵌入模型加载失败: {str(e)}")
-
-
-def load_rerank_model(model_name: str) -> CrossEncoder:
-    """加载重排模型"""
-    global _rerank_model, _rerank_model_name
-
-    if _rerank_model is not None and _rerank_model_name == model_name:
-        logger.info(f"使用已加载的重排模型: {model_name}")
-        return _rerank_model
-
-    logger.info(f"正在加载重排模型: {model_name}")
-
-    try:
-        if os.path.exists(model_name):
-            logger.info(f"从本地路径加载重排模型: {model_name}")
-            os.environ['TRANSFORMERS_OFFLINE'] = '1'
-            os.environ['HF_HUB_OFFLINE'] = '1'
-            _rerank_model = CrossEncoder(model_name, local_files_only=True)
-        else:
-            logger.info(f"从 HuggingFace Hub 下载重排模型: {model_name}")
-            _rerank_model = CrossEncoder(model_name)
-
-        _rerank_model_name = model_name
-        logger.info(f"重排模型加载成功: {model_name}")
-        return _rerank_model
-
-    except Exception as e:
-        logger.error(f"重排模型加载失败: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"重排模型加载失败: {str(e)}")
-
-
 # ========== API 端点 - 服务信息 ==========
 
 @app.get("/", summary="服务信息")
 async def root():
     """服务根路径,返回基本信息"""
     return {
-        "service": "deepSearch Python 统一服务",
-        "version": "1.0.0",
-        "description": "整合嵌入、重排和聚类功能的统一微服务",
+        "service": "deepSearch Python Service",
+        "version": "2.0.0",
+        "description": "聚类分析服务 - 使用SiliconFlow API",
         "modules": {
-            "embedding": "文本向量化服务",
-            "rerank": "文档重排序服务",
             "cluster": "文本聚类分析服务"
         },
         "endpoints": {
-            "embedding": {
-                "v1": "/embedding/v1/embeddings",
-                "api": "/embedding/api/embeddings"
-            },
-            "rerank": {
-                "v1": "/rerank/v1/rerank",
-                "api": "/rerank/api/rerank"
-            },
-            "cluster": {
-                "api": "/cluster/api/cluster"
-            },
+            "cluster": "/cluster/api/cluster",
             "health": "/health",
             "docs": "/docs"
         }
@@ -266,143 +133,11 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         service="deepsearch-python-service",
-        version="1.0.0",
+        version="2.0.0",
         modules={
-            "embedding": _embedding_model is not None,
-            "rerank": _rerank_model is not None,
             "cluster": True
         }
     )
-
-
-# ========== API 端点 - 嵌入服务 ==========
-
-@app.post("/embedding/v1/embeddings", response_model=EmbeddingResponse, summary="生成文本向量")
-async def create_embeddings(request: EmbeddingRequest):
-    """生成文本向量 (兼容 OpenAI API 格式)"""
-    try:
-        logger.info(f"收到嵌入请求 - 文本数量: {len(request.input)}, 模型: {request.model}")
-
-        if not request.input:
-            raise HTTPException(status_code=400, detail="input 不能为空")
-
-        model = load_embedding_model(request.model)
-
-        logger.info(f"正在为 {len(request.input)} 条文本生成向量...")
-        embeddings = model.encode(
-            request.input,
-            normalize_embeddings=True,
-            show_progress_bar=False
-        )
-
-        embeddings_list = embeddings.tolist() if isinstance(embeddings, np.ndarray) else embeddings
-
-        data = [
-            EmbeddingData(
-                object="embedding",
-                embedding=embedding,
-                index=i
-            )
-            for i, embedding in enumerate(embeddings_list)
-        ]
-
-        total_tokens = sum(len(text.split()) for text in request.input)
-
-        logger.info(f"向量生成完成,总数: {len(data)}, 维度: {len(data[0].embedding)}")
-
-        return EmbeddingResponse(
-            object="list",
-            data=data,
-            model=request.model,
-            usage={
-                "prompt_tokens": total_tokens,
-                "total_tokens": total_tokens
-            }
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"生成向量失败: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"生成向量失败: {str(e)}")
-
-
-@app.post("/embedding/api/embeddings", response_model=EmbeddingResponse, summary="生成文本向量(备用端点)")
-async def create_embeddings_api(request: EmbeddingRequest):
-    """生成文本向量 (备用端点)"""
-    return await create_embeddings(request)
-
-
-# ========== API 端点 - 重排服务 ==========
-
-@app.post("/rerank/v1/rerank", response_model=RerankResponse, summary="文档重排序")
-async def rerank_documents(request: RerankRequest):
-    """对文档进行重排序 (兼容硅基流动 API 格式)"""
-    try:
-        logger.info(f"收到重排请求 - 文档数量: {len(request.documents)}, 模型: {request.model}")
-
-        if not request.documents:
-            raise HTTPException(status_code=400, detail="documents 不能为空")
-
-        if not request.query:
-            raise HTTPException(status_code=400, detail="query 不能为空")
-
-        model = load_rerank_model(request.model)
-
-        pairs = [[request.query, doc] for doc in request.documents]
-
-        logger.info(f"正在计算 {len(pairs)} 个查询-文档对的相关性分数...")
-        scores = model.predict(pairs)
-
-        if isinstance(scores, np.ndarray):
-            scores = scores.tolist()
-
-        results_with_index = [
-            {
-                "index": i,
-                "score": float(score),
-                "document": doc
-            }
-            for i, (score, doc) in enumerate(zip(scores, request.documents))
-        ]
-
-        results_with_index.sort(key=lambda x: x["score"], reverse=True)
-
-        if request.top_n is not None and request.top_n > 0:
-            results_with_index = results_with_index[:request.top_n]
-
-        results = [
-            RerankResult(
-                index=item["index"],
-                relevance_score=item["score"],
-                document=item["document"] if request.return_documents else None
-            )
-            for item in results_with_index
-        ]
-
-        total_tokens = len(request.query.split()) + sum(len(doc.split()) for doc in request.documents)
-
-        logger.info(f"重排完成,返回结果数: {len(results)}")
-
-        return RerankResponse(
-            model=request.model,
-            results=results,
-            usage={
-                "total_tokens": total_tokens
-            }
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"重排失败: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"重排失败: {str(e)}")
-
-
-@app.post("/rerank/api/rerank", response_model=RerankResponse, summary="文档重排序(备用端点)")
-async def rerank_documents_api(request: RerankRequest):
-    """对文档进行重排序 (备用端点)"""
-    return await rerank_documents(request)
 
 
 # ========== API 端点 - 聚类服务 ==========

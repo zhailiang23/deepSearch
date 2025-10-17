@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate  # 生产环境不自动创建表
+      ddl-auto: update  # 首次部署自动创建表,后续可改为validate
     show-sql: false
 
 # 搜索日志配置

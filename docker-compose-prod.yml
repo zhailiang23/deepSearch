@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.0
+    image: mysql:5.7
     container_name: deepsearch-mysql-prod
     environment:
       MYSQL_DATABASE: mgmt_db
@@ -91,18 +91,13 @@ services:
       - LOG_LEVEL=INFO
       - TRANSFORMERS_CACHE=/app/models
       - HF_HOME=/app/models
+      - OPENBLAS_NUM_THREADS=1
     volumes:
       - python_models:/app/models
     ports:
       - "5002:5002"
     networks:
       - deepsearch-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     restart: unless-stopped
     deploy:
       resources:
@@ -114,7 +109,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     image: deepsearch-backend:prod
     container_name: deepsearch-backend-prod
     environment:
@@ -134,22 +129,25 @@ services:
       SEMANTIC_EMBEDDING_ENABLED: true
       SEMANTIC_SEARCH_WEIGHT: 0.3
       PYTHON_CLUSTER_URL: http://python-service:5002
-      JAVA_OPTS: "-Xms1g -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseSerialGC"
     ports:
       - "8080:8080"
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-      python-service:
-        condition: service_healthy
+      - mysql
+      - redis
+      - elasticsearch
+      - python-service
     networks:
       - deepsearch-network
     volumes:
       - ./logs/backend:/app/logs
+    security_opt:
+      - seccomp:unconfined
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65536
+        hard: 65536
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
@@ -167,7 +165,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     image: deepsearch-frontend:prod
     container_name: deepsearch-frontend-prod
     ports:

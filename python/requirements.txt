@@ -3,17 +3,13 @@ fastapi==0.115.0
 uvicorn[standard]==0.32.0
 pydantic==2.9.2
 
-# HTTP 请求
+# HTTP 请求 (调用SiliconFlow API)
 requests==2.32.3
 
-# 机器学习和数据处理
+# 聚类算法依赖
 numpy==1.26.4
 scikit-learn==1.5.2
 umap-learn==0.5.6
-
-# 文本嵌入和重排
-sentence-transformers==3.3.1
-torch>=2.0.0
 
 # 日志
 python-json-logger==2.0.7

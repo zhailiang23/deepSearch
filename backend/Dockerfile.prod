@@ -1,58 +1,24 @@
-# 构建阶段
-FROM openjdk:17-jdk-slim as builder
+# 生产环境Dockerfile - 直接使用已构建的JAR包
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-# 复制项目文件
-COPY pom.xml ./
-COPY .mvn/ .mvn/
-COPY mvnw ./
-COPY src/ src/
+# 复制已构建的JAR包
+COPY target/*.jar app.jar
 
-# 确保mvnw具有执行权限
-RUN chmod +x mvnw
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 构建应用
-RUN ./mvnw clean package -DskipTests -Pprod
-
-# 生产运行时镜像
-FROM openjdk:17-jre-slim
-
-# 安装必要的运行时包
-RUN apt-get update && apt-get install -y \
-    curl \
-    dumb-init \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# 创建应用用户
-RUN groupadd -r spring && useradd -r -g spring spring
-
-# 复制应用jar
-COPY --from=builder /app/target/*.jar app.jar
-
-# 设置文件权限
-RUN chown spring:spring app.jar
-
-# 创建日志目录
-RUN mkdir -p /app/logs && chown spring:spring /app/logs
-
-USER spring
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
+# 暴露端口
 EXPOSE 8080
 
-# 使用dumb-init处理信号
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["java", \
-     "-server", \
-     "-XX:+UseG1GC", \
-     "-XX:MaxGCPauseMillis=200", \
-     "-XX:+UseStringDeduplication", \
-     "-Djava.security.egd=file:/dev/./urandom", \
-     "-Dspring.profiles.active=prod", \
-     "-jar", "app.jar"]
+# 健康检查 (使用wget,JRE镜像已包含)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1
+
+# JVM 参数优化
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# 启动应用
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
