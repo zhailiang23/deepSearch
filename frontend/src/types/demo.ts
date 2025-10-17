@@ -44,6 +44,13 @@ export interface RerankConfig {
   topN: number  // 返回前N条结果，范围 10-100
 }
 
+// 查询理解管道配置
+export interface QueryUnderstandingConfig {
+  enabled: boolean  // 是否启用查询理解管道
+  useEnhancedQuery: boolean  // 是否使用增强后的查询进行搜索和排序
+  keepOriginalForHighlight: boolean  // 是否保留原始查询用于高亮
+}
+
 // 搜索行为配置
 export interface SearchBehaviorConfig {
   debounceMs: number
@@ -81,6 +88,9 @@ export interface SearchDemoConfig {
   // 语义重排序配置
   rerank: RerankConfig
 
+  // 查询理解管道配置
+  queryUnderstanding: QueryUnderstandingConfig
+
   // 分页配置
   pagination: PaginationConfig
 
@@ -104,7 +114,7 @@ export interface ConfigPreset {
 
 // 参数变更事件
 export interface ParameterChangeEvent {
-  type: 'searchSpace' | 'channel' | 'pinyin' | 'semantic' | 'rerank' | 'pagination' | 'behavior' | 'display'
+  type: 'searchSpace' | 'channel' | 'pinyin' | 'semantic' | 'rerank' | 'queryUnderstanding' | 'pagination' | 'behavior' | 'display'
   key: string
   value: any
   previous: any
@@ -173,6 +183,11 @@ export const DEFAULT_SEARCH_DEMO_CONFIG: SearchDemoConfig = {
   rerank: {
     enabled: false,
     topN: 50
+  },
+  queryUnderstanding: {
+    enabled: false,
+    useEnhancedQuery: true,
+    keepOriginalForHighlight: true
   },
   pagination: {
     pageSize: 20,

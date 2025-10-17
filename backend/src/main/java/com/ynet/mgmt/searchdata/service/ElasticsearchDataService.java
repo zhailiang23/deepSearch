@@ -106,8 +106,28 @@ public class ElasticsearchDataService {
                     indexName, request.getQuery(), request.getPage(), request.getSize(),
                     request.getEnablePinyinSearch(), request.getPinyinMode(), request.getChannel());
 
-            // 构建查询
-            Query query = buildQuery(request.getQuery(), request.getEnablePinyinSearch(), request.getPinyinMode(), indexName, request.getEnableSemanticSearch(), request.getSemanticWeight(), request.getEnableQueryUnderstanding());
+            // 保存原始查询用于高亮,并获取增强查询用于搜索和重排序
+            String originalQuery = request.getQuery();
+            String enhancedQuery = originalQuery;
+
+            // 如果启用查询理解,先通过管道处理查询获取增强查询
+            if (request.getEnableQueryUnderstanding() != null && request.getEnableQueryUnderstanding()
+                && StringUtils.hasText(originalQuery)) {
+                try {
+                    com.ynet.mgmt.queryunderstanding.context.QueryContext context =
+                        queryUnderstandingService.understandQuery(originalQuery);
+                    enhancedQuery = context.getCurrentQuery();
+                    log.info("查询理解处理完成: 原始=\"{}\", 增强=\"{}\"", originalQuery, enhancedQuery);
+                    log.debug("查询理解详情: 同义词={}, 意图={}, 置信度={}",
+                        context.getSynonyms(), context.getIntent(), context.getIntentConfidence());
+                } catch (Exception e) {
+                    log.warn("查询理解处理失败,使用原始查询: query={}, error={}", originalQuery, e.getMessage());
+                    enhancedQuery = originalQuery;
+                }
+            }
+
+            // 构建查询 - 使用增强查询进行实际搜索,传false给enableQueryUnderstanding因为查询理解已经在上面处理了
+            Query query = buildQuery(enhancedQuery, request.getEnablePinyinSearch(), request.getPinyinMode(), indexName, request.getEnableSemanticSearch(), request.getSemanticWeight(), false);
 
             // 如果指定了渠道，添加渠道过滤
             if (request.getChannel() != null && !request.getChannel().trim().isEmpty()) {
@@ -163,20 +183,20 @@ public class ElasticsearchDataService {
                     .map(this::convertHitToDocument)
                     .collect(Collectors.toList());
 
-            // 语义重排序（在推荐排序之前）
+            // 语义重排序（在推荐排序之前） - 使用增强查询
             if (request.getEnableRerank() != null && request.getEnableRerank() &&
-                StringUtils.hasText(request.getQuery())) {
+                StringUtils.hasText(enhancedQuery)) {
                 try {
-                    log.info("执行语义重排序: query={}, documentsCount={}, topN={}",
-                            request.getQuery(), documents.size(), request.getRerankTopN());
+                    log.info("执行语义重排序: 原始query={}, 增强query={}, documentsCount={}, topN={}",
+                            originalQuery, enhancedQuery, documents.size(), request.getRerankTopN());
                     documents = rerankService.rerankDocuments(
-                            request.getQuery(),
+                            enhancedQuery,  // 使用增强查询进行重排序
                             documents,
                             request.getRerankTopN()
                     );
                     log.info("重排序完成: newDocumentsCount={}", documents.size());
                 } catch (Exception e) {
-                    log.error("重排序失败，使用原始结果: query={}", request.getQuery(), e);
+                    log.error("重排序失败，使用原始结果: enhancedQuery={}", enhancedQuery, e);
                 }
             }
 

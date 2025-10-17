@@ -468,7 +468,45 @@ export const useMobileSearchDemoStore = defineStore('mobileSearchDemo', () => {
     try {
       const stored = localStorage.getItem('mobile-search-demo-config')
       if (stored) {
-        config.value = { ...DEFAULT_SEARCH_DEMO_CONFIG, ...JSON.parse(stored) }
+        const storedConfig = JSON.parse(stored)
+        // 深度合并配置,确保新添加的字段也会被初始化
+        config.value = {
+          ...DEFAULT_SEARCH_DEMO_CONFIG,
+          ...storedConfig,
+          // 显式合并嵌套对象,确保新字段存在
+          searchSpaces: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.searchSpaces,
+            ...(storedConfig.searchSpaces || {})
+          },
+          pinyinSearch: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.pinyinSearch,
+            ...(storedConfig.pinyinSearch || {})
+          },
+          semanticSearch: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.semanticSearch,
+            ...(storedConfig.semanticSearch || {})
+          },
+          rerank: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.rerank,
+            ...(storedConfig.rerank || {})
+          },
+          queryUnderstanding: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.queryUnderstanding,
+            ...(storedConfig.queryUnderstanding || {})
+          },
+          pagination: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.pagination,
+            ...(storedConfig.pagination || {})
+          },
+          searchBehavior: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.searchBehavior,
+            ...(storedConfig.searchBehavior || {})
+          },
+          resultDisplay: {
+            ...DEFAULT_SEARCH_DEMO_CONFIG.resultDisplay,
+            ...(storedConfig.resultDisplay || {})
+          }
+        }
       }
     } catch (error) {
       console.warn('Failed to load config:', error)

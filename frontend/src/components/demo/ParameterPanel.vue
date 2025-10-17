@@ -97,6 +97,20 @@
         </CollapsibleContent>
       </Collapsible>
 
+      <!-- 查询理解管道配置 -->
+      <Collapsible v-model:open="sections.queryUnderstanding" class="border rounded-lg">
+        <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
+          <span class="text-emerald-700">查询理解管道</span>
+          <ChevronDown class="h-4 w-4 transition-transform duration-200"
+                      :class="{ 'rotate-180': sections.queryUnderstanding }" />
+        </CollapsibleTrigger>
+        <CollapsibleContent class="px-3 pb-3">
+          <QueryUnderstandingConfig
+            v-model="localConfig.queryUnderstanding"
+          />
+        </CollapsibleContent>
+      </Collapsible>
+
       <!-- 分页配置 -->
       <Collapsible v-model:open="sections.pagination" class="border rounded-lg">
         <CollapsibleTrigger class="flex w-full items-center justify-between p-3 font-medium hover:bg-muted/50">
@@ -221,6 +235,7 @@ import MultiSearchSpaceSelector from '../mobile/MultiSearchSpaceSelector.vue'
 import PinyinSearchConfig from './PinyinSearchConfig.vue'
 import SemanticSearchConfig from './SemanticSearchConfig.vue'
 import RerankConfig from './RerankConfig.vue'
+import QueryUnderstandingConfig from './QueryUnderstandingConfig.vue'
 import PagingConfig from './PagingConfig.vue'
 
 import {
@@ -264,6 +279,7 @@ const sections = ref({
   pinyinSearch: false,
   semanticSearch: true,
   rerank: false,
+  queryUnderstanding: false,
   pagination: false,
   advanced: false
 })
@@ -359,6 +375,17 @@ function detectChanges(oldConfig: SearchDemoConfig, newConfig: SearchDemoConfig)
       key: 'config',
       value: newConfig.rerank,
       previous: oldConfig.rerank,
+      timestamp
+    })
+  }
+
+  // 检查查询理解管道配置变更
+  if (JSON.stringify(oldConfig.queryUnderstanding) !== JSON.stringify(newConfig.queryUnderstanding)) {
+    changes.push({
+      type: 'queryUnderstanding',
+      key: 'config',
+      value: newConfig.queryUnderstanding,
+      previous: oldConfig.queryUnderstanding,
       timestamp
     })
   }

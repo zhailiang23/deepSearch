@@ -98,6 +98,9 @@ const handleParameterChange = (event: ParameterChangeEvent) => {
   } else if (event.type === 'rerank') {
     console.log('更新语义重排序配置:', event.value)
     store.updateConfig({ rerank: event.value })
+  } else if (event.type === 'queryUnderstanding') {
+    console.log('更新查询理解管道配置:', event.value)
+    store.updateConfig({ queryUnderstanding: event.value })
   } else if (event.type === 'pagination') {
     console.log('更新分页配置:', event.value)
     store.updateConfig({ pagination: event.value })
