@@ -35,12 +35,12 @@ COPY main_service.py \
 # 创建模型缓存目录
 RUN mkdir -p /app/models
 
-# 暴露端口(统一服务端口)
-EXPOSE 5000
+# 暴露端口(统一服务端口 - 改为5002避免与macOS ControlCenter冲突)
+EXPOSE 5002
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:5002/health || exit 1
 
 # 启动统一服务
-CMD ["uvicorn", "main_service:app", "--host", "0.0.0.0", "--port", "5000", "--log-level", "info"]
+CMD ["uvicorn", "main_service:app", "--host", "0.0.0.0", "--port", "5002", "--log-level", "info"]

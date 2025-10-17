@@ -169,8 +169,6 @@ volumes:
     driver: local
   elasticsearch_data:
     driver: local
-  semantic_logs:
-    driver: local
   python_models:
     driver: local
 
